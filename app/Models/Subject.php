@@ -1,0 +1,27 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Subject extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'subject_code', 'subject_description', 'is_universal', 
+        'academic_period_id', 'department_id', 'course_id', 'instructor_id',
+        'is_deleted', 'created_by', 'updated_by'
+    ];
+
+    public function academicPeriod()
+    {
+        return $this->belongsTo(AcademicPeriod::class);
+    }
+    
+    public function instructor()
+{
+    return $this->belongsTo(User::class, 'instructor_id');
+}
+}
