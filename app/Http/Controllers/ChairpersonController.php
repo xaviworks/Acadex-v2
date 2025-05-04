@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Student;
+use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Routing\Controller;
-use App\Models\User;
-use App\Models\Subject;
-use App\Models\Student;
 
 class ChairpersonController extends Controller
 {
@@ -18,16 +17,17 @@ class ChairpersonController extends Controller
     }
 
     // ============================
-    // Manage Instructors
+    // Instructor Management
     // ============================
 
     public function manageInstructors()
     {
         Gate::authorize('chairperson');
 
-        $instructors = User::where('role', 0) // Instructor role
+        $instructors = User::where('role', 0)
             ->where('department_id', Auth::user()->department_id)
             ->where('is_active', true)
+            ->orderBy('name')
             ->get();
 
         return view('chairperson.manage-instructors', compact('instructors'));
@@ -36,39 +36,31 @@ class ChairpersonController extends Controller
     public function createInstructor()
     {
         Gate::authorize('chairperson');
-
         return view('chairperson.create-instructor');
     }
 
     public function storeInstructor(Request $request)
     {
         Gate::authorize('chairperson');
-    
-        // Validate the input data
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
         ]);
-    
-        // Automatically set the department and course based on the chairperson's data
-        $department_id = Auth::user()->department_id;
-        $course_id = Auth::user()->course_id;
-    
-        // Create the instructor with the department and course set automatically from the chairperson
+
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'role' => 0, // Instructor role
-            'department_id' => $department_id,  // Automatically assign department of the chairperson
-            'course_id' => $course_id,  // Automatically assign course of the chairperson
+            'role' => 0, // Instructor
+            'department_id' => Auth::user()->department_id,
+            'course_id' => Auth::user()->course_id,
             'is_active' => true,
         ]);
-    
-        // Redirect back to the instructors page with a success message
+
         return redirect()->route('chairperson.instructors')->with('success', 'Instructor created successfully.');
-    }    
+    }
 
     public function deactivateInstructor($id)
     {
@@ -79,15 +71,13 @@ class ChairpersonController extends Controller
             ->where('department_id', Auth::user()->department_id)
             ->firstOrFail();
 
-        $instructor->update([
-            'is_active' => false,
-        ]);
+        $instructor->update(['is_active' => false]);
 
         return redirect()->back()->with('success', 'Instructor deactivated successfully.');
     }
 
     // ============================
-    // Assign Subjects
+    // Subject Assignment
     // ============================
 
     public function assignSubjects()
@@ -96,11 +86,13 @@ class ChairpersonController extends Controller
 
         $subjects = Subject::where('department_id', Auth::user()->department_id)
             ->where('is_deleted', false)
+            ->orderBy('subject_code')
             ->get();
 
         $instructors = User::where('role', 0)
             ->where('department_id', Auth::user()->department_id)
             ->where('is_active', true)
+            ->orderBy('name')
             ->get();
 
         return view('chairperson.assign-subjects', compact('subjects', 'instructors'));
@@ -119,15 +111,22 @@ class ChairpersonController extends Controller
             ->where('department_id', Auth::user()->department_id)
             ->firstOrFail();
 
+        $instructor = User::where('id', $request->instructor_id)
+            ->where('role', 0)
+            ->where('department_id', Auth::user()->department_id)
+            ->where('is_active', true)
+            ->firstOrFail();
+
         $subject->update([
-            'instructor_id' => $request->instructor_id,
+            'instructor_id' => $instructor->id,
+            'updated_by' => Auth::id(),
         ]);
 
         return redirect()->route('chairperson.assignSubjects')->with('success', 'Subject assigned successfully.');
     }
 
     // ============================
-    // View Grades - Chairperson
+    // View Grades
     // ============================
 
     public function viewGrades(Request $request)
@@ -136,14 +135,10 @@ class ChairpersonController extends Controller
 
         $selectedYear = $request->input('year_level');
 
-        $students = Student::with(['subjects', 'termGrades', 'course']) // <- include course now
+        $students = Student::with(['subjects', 'termGrades', 'course'])
             ->where('department_id', Auth::user()->department_id)
-            ->when(Auth::user()->course_id, function ($query) {
-                $query->where('course_id', Auth::user()->course_id);
-            })
-            ->when($selectedYear, function ($query) use ($selectedYear) {
-                $query->where('year_level', $selectedYear);
-            })
+            ->when(Auth::user()->course_id, fn($q) => $q->where('course_id', Auth::user()->course_id))
+            ->when($selectedYear, fn($q) => $q->where('year_level', $selectedYear))
             ->where('is_deleted', false)
             ->orderBy('last_name')
             ->get();
@@ -151,15 +146,17 @@ class ChairpersonController extends Controller
         return view('chairperson.view-grades', compact('students', 'selectedYear'));
     }
 
+    // ============================
+    // Students by Year Level
+    // ============================
+
     public function viewStudentsPerYear()
     {
         Gate::authorize('chairperson');
 
         $students = Student::with('course')
             ->where('department_id', Auth::user()->department_id)
-            ->when(Auth::user()->course_id, function ($query) {
-                $query->where('course_id', Auth::user()->course_id);
-            })
+            ->when(Auth::user()->course_id, fn($q) => $q->where('course_id', Auth::user()->course_id))
             ->where('is_deleted', false)
             ->orderBy('year_level')
             ->orderBy('last_name')

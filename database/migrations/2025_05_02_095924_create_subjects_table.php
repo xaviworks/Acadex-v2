@@ -8,13 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('final_grades', function (Blueprint $table) {
+        Schema::create('subjects', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
-            $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
+            $table->string('subject_code')->unique();
+            $table->string('subject_description');
+            $table->boolean('is_universal')->default(false); // GE Subjects shared across multiple courses
+            $table->foreignId('department_id')->nullable()->constrained('departments')->nullOnDelete();
+            $table->foreignId('course_id')->nullable()->constrained('courses')->nullOnDelete();
             $table->foreignId('academic_period_id')->nullable()->constrained('academic_periods')->nullOnDelete();
-            $table->decimal('final_grade', 5, 2)->nullable();
-            $table->string('remarks')->nullable(); // Passed, Failed, Dropped
+            $table->foreignId('instructor_id')->nullable()->constrained('users')->nullOnDelete();
             $table->boolean('is_deleted')->default(false);
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
@@ -24,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('final_grades');
+        Schema::dropIfExists('subjects');
     }
 };

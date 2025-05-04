@@ -16,7 +16,7 @@ class ActivityController extends Controller
         $this->middleware('auth');
     }
 
-    // List Activities for an Instructor's Subjects
+    // 🗂 List Activities for an Instructor's Subjects
     public function index(Request $request)
     {
         Gate::authorize('instructor');
@@ -39,7 +39,7 @@ class ActivityController extends Controller
         return view('instructor.activities.index', compact('subjects', 'activities'));
     }
 
-    // Standard Create Activity (full form)
+    // ➕ Full Create Activity Form
     public function create()
     {
         Gate::authorize('instructor');
@@ -56,7 +56,7 @@ class ActivityController extends Controller
         return view('instructor.activities.create', compact('subjects', 'academicPeriods'));
     }
 
-    // 🎯 New: Quick Add Activity inside Manage Grades
+    // 🎯 Quick Add Form from inside Manage Grades
     public function addActivity(Request $request)
     {
         Gate::authorize('instructor');
@@ -72,7 +72,7 @@ class ActivityController extends Controller
         return view('instructor.activities.add', compact('subject', 'term'));
     }
 
-    // Store New Activity (both standard and quick add)
+    // 💾 Store Activity (both standard and inline)
     public function store(Request $request)
     {
         Gate::authorize('instructor');
@@ -90,19 +90,19 @@ class ActivityController extends Controller
             'term' => $request->term,
             'type' => $request->type,
             'title' => $request->title,
-            'number_of_items' => $request->points, // ✅ internally saved to number_of_items
+            'number_of_items' => $request->points,
             'is_deleted' => false,
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
         ]);
 
-        return redirect()->route('instructor.manageGrades', [
+        return redirect()->route('instructor.grades.index', [
             'subject_id' => $request->subject_id,
             'term' => $request->term,
-        ])->with('success', 'Activity created successfully.');
+        ])->with('success', 'Activity created successfully.');        
     }
 
-    // Soft Delete Activity
+    // 🗑 Soft Delete Activity
     public function delete($id)
     {
         Gate::authorize('instructor');

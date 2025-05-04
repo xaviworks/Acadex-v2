@@ -6,8 +6,8 @@
 
     {{-- Back and Add Button --}}
     <div class="flex justify-between items-center mb-6">
-        <a href="{{ route('instructor.scores') }}" class="text-indigo-600 hover:underline">
-            ← Back to Scores
+        <a href="{{ route('instructor.grades.index') }}" class="text-indigo-600 hover:underline">
+            ← Back to Grades
         </a>
 
         <a href="{{ route('instructor.activities.create') }}" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">
@@ -16,7 +16,7 @@
     </div>
 
     {{-- Filter Form --}}
-    <form method="GET" action="{{ route('instructor.activities') }}" class="mb-6">
+    <form method="GET" action="{{ route('instructor.activities.index') }}" class="mb-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="block font-medium mb-1">Select Subject:</label>

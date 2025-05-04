@@ -8,13 +8,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('activities', function (Blueprint $table) {
+        Schema::create('courses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
-            $table->enum('term', ['prelim', 'midterm', 'prefinal', 'final']);
-            $table->enum('type', ['quiz', 'ocr', 'exam']);
-            $table->string('title');
-            $table->integer('number_of_items');
+            $table->string('course_code')->unique();
+            $table->string('course_description');
+            $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
             $table->boolean('is_deleted')->default(false);
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
@@ -24,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('activities');
+        Schema::dropIfExists('courses');
     }
 };

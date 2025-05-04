@@ -9,6 +9,8 @@ class StudentSubject extends Model
 {
     use HasFactory;
 
+    protected $table = 'student_subjects'; // 👈 This tells Laravel the correct table name
+
     protected $fillable = [
         'student_id',
         'subject_id',

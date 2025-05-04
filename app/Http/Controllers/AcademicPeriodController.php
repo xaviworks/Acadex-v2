@@ -14,7 +14,7 @@ class AcademicPeriodController extends Controller
         $this->middleware('auth');
     }
 
-    // List Academic Periods
+    // 📘 View all academic periods
     public function index()
     {
         Gate::authorize('admin');
@@ -23,26 +23,18 @@ class AcademicPeriodController extends Controller
         return view('admin.academic-periods.index', compact('periods'));
     }
 
-    // Auto Generate New Academic Periods
+    // 🔄 Auto-generate next academic year
     public function generate()
     {
         Gate::authorize('admin');
 
-        // Find latest academic period
         $latest = AcademicPeriod::orderBy('created_at', 'desc')->first();
         $currentYear = now()->year;
 
-        // If latest exists and academic_year is "2025-2026", next should be "2026-2027"
-        if ($latest && $latest->academic_year) {
-            $years = explode('-', $latest->academic_year);
-            if (count($years) == 2) {
-                $startYear = intval($years[0]) + 1;
-                $endYear = intval($years[1]) + 1;
-            } else {
-                // fallback
-                $startYear = $currentYear;
-                $endYear = $currentYear + 1;
-            }
+        if ($latest && preg_match('/^\d{4}-\d{4}$/', $latest->academic_year)) {
+            [$startYear, $endYear] = explode('-', $latest->academic_year);
+            $startYear = intval($startYear) + 1;
+            $endYear = intval($endYear) + 1;
         } else {
             $startYear = $currentYear;
             $endYear = $currentYear + 1;
@@ -50,31 +42,35 @@ class AcademicPeriodController extends Controller
 
         $newAcademicYear = "{$startYear}-{$endYear}";
 
-        // Check if already exists
-        if (!AcademicPeriod::where('academic_year', $newAcademicYear)->exists()) {
+        $alreadyExists = AcademicPeriod::where('academic_year', $newAcademicYear)->count() >= 2 &&
+                         AcademicPeriod::where('academic_year', $startYear)->where('semester', 'Summer')->exists();
 
-            // Create 1st Semester
-            AcademicPeriod::create([
-                'academic_year' => $newAcademicYear,
-                'semester' => '1st',
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
-            ]);
-
-            // Create 2nd Semester
-            AcademicPeriod::create([
-                'academic_year' => $newAcademicYear,
-                'semester' => '2nd',
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
-            ]);
-
-            // Create Summer (Year only, no range)
-            AcademicPeriod::create([
-                'academic_year' => $startYear,
-                'semester' => 'Summer',
-                'created_by' => Auth::id(),
-                'updated_by' => Auth::id(),
+        if (!$alreadyExists) {
+            AcademicPeriod::insert([
+                [
+                    'academic_year' => $newAcademicYear,
+                    'semester' => '1st',
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'academic_year' => $newAcademicYear,
+                    'semester' => '2nd',
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                [
+                    'academic_year' => $startYear,
+                    'semester' => 'Summer',
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
             ]);
         }
 

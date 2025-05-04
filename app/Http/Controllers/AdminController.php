@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicPeriod;
+use App\Models\Course;
+use App\Models\Department;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use App\Models\Department;
-use App\Models\Course;
-use App\Models\Subject;
 
 class AdminController extends Controller
 {
@@ -17,19 +17,24 @@ class AdminController extends Controller
         $this->middleware('auth');
     }
 
-    // Departments Section
+    // ============================
+    // Departments
+    // ============================
+
     public function departments()
     {
         Gate::authorize('admin');
 
-        $departments = Department::where('is_deleted', false)->get();
+        $departments = Department::where('is_deleted', false)
+            ->orderBy('department_code')
+            ->get();
+
         return view('admin.departments', compact('departments'));
     }
 
     public function createDepartment()
     {
         Gate::authorize('admin');
-
         return view('admin.create-department');
     }
 
@@ -53,12 +58,18 @@ class AdminController extends Controller
         return redirect()->route('admin.departments')->with('success', 'Department added successfully.');
     }
 
-    // Courses Section
+    // ============================
+    // Courses
+    // ============================
+
     public function courses()
     {
         Gate::authorize('admin');
 
-        $courses = Course::where('is_deleted', false)->get();
+        $courses = Course::where('is_deleted', false)
+            ->orderBy('course_code')
+            ->get();
+
         return view('admin.courses', compact('courses'));
     }
 
@@ -66,7 +77,10 @@ class AdminController extends Controller
     {
         Gate::authorize('admin');
 
-        $departments = Department::where('is_deleted', false)->get();
+        $departments = Department::where('is_deleted', false)
+            ->orderBy('department_code')
+            ->get();
+
         return view('admin.create-course', compact('departments'));
     }
 
@@ -92,12 +106,18 @@ class AdminController extends Controller
         return redirect()->route('admin.courses')->with('success', 'Course added successfully.');
     }
 
-    // Subjects Section
+    // ============================
+    // Subjects
+    // ============================
+
     public function subjects()
     {
         Gate::authorize('admin');
 
-        $subjects = Subject::where('is_deleted', false)->get();
+        $subjects = Subject::where('is_deleted', false)
+            ->orderBy('subject_code')
+            ->get();
+
         return view('admin.subjects', compact('subjects'));
     }
 
@@ -105,9 +125,9 @@ class AdminController extends Controller
     {
         Gate::authorize('admin');
 
-        $departments = Department::where('is_deleted', false)->get();
-        $courses = Course::where('is_deleted', false)->get();
-        $academicPeriods = AcademicPeriod::all();
+        $departments = Department::where('is_deleted', false)->orderBy('department_code')->get();
+        $courses = Course::where('is_deleted', false)->orderBy('course_code')->get();
+        $academicPeriods = AcademicPeriod::orderBy('academic_year', 'desc')->orderBy('semester')->get();
 
         return view('admin.create-subject', compact('departments', 'courses', 'academicPeriods'));
     }
@@ -115,17 +135,16 @@ class AdminController extends Controller
     public function storeSubject(Request $request)
     {
         Gate::authorize('admin');
-    
+
         $request->validate([
-            'subject_code' => 'required|string|max:255',
+            'subject_code' => 'required|string|max:255|unique:subjects,subject_code',
             'subject_description' => 'required|string|max:255',
-            'units' => 'required|integer|min:1',
+            'units' => 'required|integer|min:1|max:6',
             'academic_period_id' => 'required|exists:academic_periods,id',
-            'department_id' => 'required|exists:departments,id', // <-- no longer optional
-            'course_id' => 'required|exists:courses,id', // <-- no longer optional
+            'department_id' => 'required|exists:departments,id',
+            'course_id' => 'required|exists:courses,id',
         ]);
-        
-    
+
         Subject::create([
             'subject_code' => $request->subject_code,
             'subject_description' => $request->subject_description,
@@ -137,16 +156,19 @@ class AdminController extends Controller
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
         ]);
-    
-        return redirect()->route('admin.subjects')->with('success', 'Subject added successfully.');
-    }       
 
-    // Academic Periods Section
+        return redirect()->route('admin.subjects')->with('success', 'Subject added successfully.');
+    }
+
+    // ============================
+    // Academic Periods (legacy fallback view)
+    // ============================
+
     public function academicPeriods()
     {
         Gate::authorize('admin');
 
-        $periods = AcademicPeriod::all();
+        $periods = AcademicPeriod::orderBy('academic_year', 'desc')->orderBy('semester')->get();
         return view('admin.academic-periods', compact('periods'));
     }
 }

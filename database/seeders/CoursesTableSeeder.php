@@ -10,19 +10,29 @@ class CoursesTableSeeder extends Seeder
 {
     public function run(): void
     {
-        $bsit = Department::where('department_code', 'BSIT')->first();
-        $bsba = Department::where('department_code', 'BSBA')->first();
+        $asbm = Department::where('department_code', 'ASBM')->first();
+        $nursing = Department::where('department_code', 'NURSING')->first();
+
+        if (!$asbm || !$nursing) {
+            throw new \Exception('Required departments not found. Seed departments first.');
+        }
 
         Course::create([
             'course_code' => 'BSIT',
             'course_description' => 'Bachelor of Science in Information Technology',
-            'department_id' => $bsit->id,
+            'department_id' => $asbm->id,
         ]);
 
         Course::create([
             'course_code' => 'BSBA',
             'course_description' => 'Bachelor of Science in Business Administration',
-            'department_id' => $bsba->id,
+            'department_id' => $asbm->id,
+        ]);
+
+        Course::create([
+            'course_code' => 'BSN',
+            'course_description' => 'Bachelor of Science in Nursing',
+            'department_id' => $nursing->id,
         ]);
     }
 }

@@ -8,7 +8,7 @@
     @endphp
 
     <div class="space-y-4 text-sm text-gray-700 dark:text-gray-300">
-        @if ($role == 1) {{-- Chairperson --}}
+        @if ($role === 1) {{-- Chairperson --}}
             <div>
                 <h4 class="text-xs font-semibold text-gray-400 uppercase mb-2">Chairperson Panel</h4>
                 <x-nav-link :href="route('chairperson.instructors')" :active="request()->routeIs('chairperson.instructors')">
@@ -21,26 +21,28 @@
                     📈 View Grades
                 </x-nav-link>
                 <x-nav-link :href="route('chairperson.studentsByYear')" :active="request()->routeIs('chairperson.studentsByYear')">
-                    👨‍🎓 View Students by Year
+                    👨‍🎓 Students by Year
                 </x-nav-link>
             </div>
-        @elseif ($role == 0) {{-- Instructor --}}
+
+        @elseif ($role === 0) {{-- Instructor --}}
             <div>
                 <h4 class="text-xs font-semibold text-gray-400 uppercase mb-2">Instructor Panel</h4>
-                <x-nav-link :href="route('instructor.manageStudents')" :active="request()->routeIs('instructor.manageStudents')">
+                <x-nav-link :href="route('instructor.students.index')" :active="request()->routeIs('instructor.students.*')">
                     👨‍🎓 Manage Students
                 </x-nav-link>
-                <x-nav-link :href="route('instructor.manageGrades')" :active="request()->routeIs('instructor.manageGrades')">
+                <x-nav-link :href="route('instructor.grades.index')" :active="request()->routeIs('instructor.grades.*')">
                     📝 Manage Grades
                 </x-nav-link>
-                <x-nav-link :href="route('instructor.activities')" :active="request()->routeIs('instructor.activities')">
+                <x-nav-link :href="route('instructor.activities.index')" :active="request()->routeIs('instructor.activities.*')">
                     📌 Manage Activities
                 </x-nav-link>
-                <x-nav-link :href="route('instructor.finalGrades')" :active="request()->routeIs('instructor.finalGrades')">
+                <x-nav-link :href="route('instructor.final-grades.index')" :active="request()->routeIs('instructor.final-grades.*')">
                     📈 Final Grades
                 </x-nav-link>
             </div>
-        @elseif ($role == 2) {{-- Dean --}}
+
+        @elseif ($role === 2) {{-- Dean --}}
             <div>
                 <h4 class="text-xs font-semibold text-gray-400 uppercase mb-2">Dean Panel</h4>
                 <x-nav-link :href="route('dean.instructors')" :active="request()->routeIs('dean.instructors')">
@@ -53,24 +55,26 @@
                     📈 View Grades
                 </x-nav-link>
             </div>
-        @elseif ($role == 3) {{-- Admin --}}
+
+        @elseif ($role === 3) {{-- Admin --}}
             <div>
                 <h4 class="text-xs font-semibold text-gray-400 uppercase mb-2">Admin Panel</h4>
                 <x-nav-link :href="route('admin.departments')" :active="request()->routeIs('admin.departments')">
-                    🏢 Manage Departments
+                    🏢 Departments
                 </x-nav-link>
                 <x-nav-link :href="route('admin.courses')" :active="request()->routeIs('admin.courses')">
-                    📘 Manage Courses
+                    📘 Courses
                 </x-nav-link>
                 <x-nav-link :href="route('admin.subjects')" :active="request()->routeIs('admin.subjects')">
-                    📖 Manage Subjects
+                    📖 Subjects
                 </x-nav-link>
                 <x-nav-link :href="route('admin.academicPeriods')" :active="request()->routeIs('admin.academicPeriods')">
-                    📅 Manage Academic Periods
+                    📅 Academic Periods
                 </x-nav-link>
             </div>
         @endif
 
+        {{-- Common Bottom Links --}}
         <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
             <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 🏠 Dashboard
@@ -84,11 +88,3 @@
         </div>
     </div>
 </div>
-
-
-{{-- Add this style to your app.css or use Tailwind directives --}}
-<style>
-    .nav-link {
-        @apply block py-2 px-2 rounded-md hover:bg-indigo-50 hover:text-indigo-600 transition;
-    }
-</style>

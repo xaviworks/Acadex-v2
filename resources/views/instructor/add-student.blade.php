@@ -12,7 +12,7 @@
     @endif
 
     {{-- Enroll Student Form --}}
-    <form action="{{ route('instructor.enrollStudent') }}" method="POST" class="space-y-6">
+    <form action="{{ route('instructor.students.store') }}" method="POST" class="space-y-6">
         @csrf
 
         {{-- First Name --}}

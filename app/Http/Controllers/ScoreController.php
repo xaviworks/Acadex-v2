@@ -155,7 +155,7 @@ class ScoreController extends Controller
 
             $termGrade = null;
             if (!is_null($quizGrade) && !is_null($ocrGrade) && !is_null($examGrade)) {
-                $termGrade = round(($quizGrade * 0.3) + ($ocrGrade * 0.3) + ($examGrade * 0.4), 2);
+                $termGrade = round(($quizGrade * 0.4) + ($ocrGrade * 0.2) + ($examGrade * 0.4), 2);
             }
 
             TermGrade::updateOrCreate(

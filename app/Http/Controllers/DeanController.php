@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Routing\Controller;
+use App\Models\Course;
+use App\Models\FinalGrade;
+use App\Models\Student;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Student;
-use App\Models\Course;
-use App\Models\TermGrade;
-use App\Models\FinalGrade;
 
 class DeanController extends Controller
 {
@@ -27,9 +25,10 @@ class DeanController extends Controller
     {
         Gate::authorize('dean');
 
-        $instructors = User::where('role', 0)  // Instructor role
+        $instructors = User::where('role', 0) // Instructor role
             ->where('department_id', Auth::user()->department_id)
             ->where('is_active', true)
+            ->orderBy('name')
             ->get();
 
         return view('dean.instructors', compact('instructors'));
@@ -43,16 +42,17 @@ class DeanController extends Controller
     {
         Gate::authorize('dean');
 
-        $students = Student::with('course')  // Eager load the course relationship
+        $students = Student::with('course')
             ->where('department_id', Auth::user()->department_id)
             ->where('is_deleted', false)
+            ->orderBy('last_name')
             ->get();
 
         return view('dean.students', compact('students'));
     }
 
     // ============================
-    // View Final Grades under Dean
+    // View Final Grades by Course
     // ============================
 
     public function viewGrades(Request $request)
@@ -61,24 +61,26 @@ class DeanController extends Controller
 
         $departmentId = Auth::user()->department_id;
 
-        // Fetch courses for the department
+        // List of courses in dean's department
         $courses = Course::where('department_id', $departmentId)
             ->where('is_deleted', false)
+            ->orderBy('course_code')
             ->get();
 
         $students = collect();
         $finalGrades = collect();
 
         if ($request->filled('course_id')) {
-            // Fetch students filtered by course_id
+            $courseId = $request->input('course_id');
+
             $students = Student::where('department_id', $departmentId)
-                ->where('course_id', $request->course_id)
+                ->where('course_id', $courseId)
                 ->where('is_deleted', false)
+                ->orderBy('last_name')
                 ->get();
 
-            // Fetch final grades for the selected students
-            $finalGrades = FinalGrade::whereIn('student_id', $students->pluck('id'))
-                ->with('student', 'subject')  // Eager load student and subject
+            $finalGrades = FinalGrade::with(['student', 'subject'])
+                ->whereIn('student_id', $students->pluck('id'))
                 ->get();
         }
 

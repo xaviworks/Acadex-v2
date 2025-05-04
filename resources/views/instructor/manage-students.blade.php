@@ -5,7 +5,7 @@
     <h1 class="text-2xl font-bold mb-6">Manage Students</h1>
 
     {{-- Subject Selection --}}
-    <form method="GET" action="{{ route('instructor.manageStudents') }}" class="mb-6">
+    <form method="GET" action="{{ route('instructor.students.index') }}" class="mb-6">
         <label class="block mb-2 font-medium">Select Subject:</label>
         <select name="subject_id" class="border rounded px-3 py-2 w-full" onchange="this.form.submit()">
             <option value="">-- Select Subject --</option>
@@ -19,7 +19,7 @@
 
     {{-- Add Student Button --}}
     <div class="mb-4">
-        <a href="{{ route('instructor.addStudentForm') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
+        <a href="{{ route('instructor.students.create') }}" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
             Add Student
         </a>
     </div>
@@ -43,7 +43,7 @@
                                 {{ $student->first_name }} {{ $student->last_name }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <form method="POST" action="{{ route('instructor.dropStudent', $student->id) }}">
+                                <form method="POST" action="{{ route('instructor.students.drop', $student->id) }}">
                                     @csrf
                                     @method('DELETE')
                                     <input type="hidden" name="subject_id" value="{{ request('subject_id') }}">

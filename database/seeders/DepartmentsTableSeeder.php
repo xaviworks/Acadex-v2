@@ -15,8 +15,18 @@ class DepartmentsTableSeeder extends Seeder
         ]);
 
         Department::create([
-            'department_code' => 'N',
-            'department_description' => 'Nursing Dept',
+            'department_code' => 'NURSING',
+            'department_description' => 'School of Nursing',
+        ]);
+
+        Department::create([
+            'department_code' => 'Medicine',
+            'department_description' => 'School of Medicine',
+        ]);
+
+        Department::create([
+            'department_code' => 'ALLIED',
+            'department_description' => 'Allied Healh',
         ]);
     }
 }
