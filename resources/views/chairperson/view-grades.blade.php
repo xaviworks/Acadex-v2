@@ -4,17 +4,33 @@
 <div class="max-w-7xl mx-auto py-8">
     <h1 class="text-2xl font-bold mb-6">View Students' Final Grades</h1>
 
-    {{-- Year Level Filter --}}
-    <form method="GET" action="{{ route('chairperson.viewGrades') }}" class="mb-6">
-        <label class="block text-sm font-medium mb-2">Filter by Year Level (optional):</label>
-        <select name="year_level" class="border rounded px-3 py-2 w-64" onchange="this.form.submit()">
-            <option value="">-- All Year Levels --</option>
-            @foreach([1,2,3,4,5] as $year)
-                <option value="{{ $year }}" {{ request('year_level') == $year ? 'selected' : '' }}>
-                    {{ $year }}{{ $year == 1 ? 'st' : ($year == 2 ? 'nd' : ($year == 3 ? 'rd' : 'th')) }} Year
-                </option>
-            @endforeach
-        </select>
+    {{-- Filter Form --}}
+    <form method="GET" action="{{ route('chairperson.viewGrades') }}" class="flex gap-6 mb-6">
+        {{-- Academic Period --}}
+        <div>
+            <label class="block text-sm font-medium mb-2">Academic Period:</label>
+            <select name="academic_period_id" class="border rounded px-3 py-2 w-72" onchange="this.form.submit()">
+                <option value="">-- All Periods --</option>
+                @foreach($academicPeriods as $period)
+                    <option value="{{ $period->id }}" {{ request('academic_period_id') == $period->id ? 'selected' : '' }}>
+                        {{ $period->academic_year }} - {{ ucfirst($period->semester) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        {{-- Year Level --}}
+        <div>
+            <label class="block text-sm font-medium mb-2">Year Level:</label>
+            <select name="year_level" class="border rounded px-3 py-2 w-64" onchange="this.form.submit()">
+                <option value="">-- All Year Levels --</option>
+                @foreach([1,2,3,4,5] as $year)
+                    <option value="{{ $year }}" {{ request('year_level') == $year ? 'selected' : '' }}>
+                        {{ $year }}{{ $year == 1 ? 'st' : ($year == 2 ? 'nd' : ($year == 3 ? 'rd' : 'th')) }} Year
+                    </option>
+                @endforeach
+            </select>
+        </div>
     </form>
 
     {{-- Students Table --}}

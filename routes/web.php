@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ChairpersonController;
 use App\Http\Controllers\InstructorController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\StudentController;
+use App\Http\Middleware\EnsureAcademicPeriodSet;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,11 +24,6 @@ use App\Http\Controllers\StudentController;
 // Welcome Page
 Route::get('/', fn () => view('welcome'));
 
-// Dashboard (after login)
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
 // Profile Management
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -34,50 +31,81 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Academic Period Selection (shown after login)
+Route::middleware('auth')->group(function () {
+    Route::get('/select-academic-period', function () {
+        $periods = \App\Models\AcademicPeriod::where('is_deleted', false)
+            ->orderByDesc('academic_year')
+            ->orderByRaw("FIELD(semester, '1st', '2nd', 'Summer')")
+            ->get();
+
+        return view('instructor.select-academic-period', compact('periods'));
+    })->name('select.academicPeriod');
+
+    Route::post('/set-academic-period', function (Request $request) {
+        $request->validate([
+            'academic_period_id' => 'required|exists:academic_periods,id',
+        ]);
+        session(['active_academic_period_id' => $request->academic_period_id]);
+        return redirect()->intended('/dashboard');
+    })->name('set.academicPeriod');
+});
+
+// Dashboard (role-based with academic period check)
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified', 'academic.period.set'])
+    ->name('dashboard');
+
 // -----------------------------
 // Chairperson Routes
 // -----------------------------
-Route::prefix('chairperson')->middleware('auth')->name('chairperson.')->group(function () {
-    Route::get('/instructors', [ChairpersonController::class, 'manageInstructors'])->name('instructors');
-    Route::get('/instructors/create', [ChairpersonController::class, 'createInstructor'])->name('createInstructor');
-    Route::post('/instructors/store', [ChairpersonController::class, 'storeInstructor'])->name('storeInstructor');
-    Route::post('/instructors/{id}/deactivate', [ChairpersonController::class, 'deactivateInstructor'])->name('deactivateInstructor');
+Route::prefix('chairperson')
+    ->middleware(['auth', 'academic.period.set'])
+    ->name('chairperson.')
+    ->group(function () {
+        Route::get('/instructors', [ChairpersonController::class, 'manageInstructors'])->name('instructors');
+        Route::get('/instructors/create', [ChairpersonController::class, 'createInstructor'])->name('createInstructor');
+        Route::post('/instructors/store', [ChairpersonController::class, 'storeInstructor'])->name('storeInstructor');
+        Route::post('/instructors/{id}/deactivate', [ChairpersonController::class, 'deactivateInstructor'])->name('deactivateInstructor');
 
-    Route::get('/assign-subjects', [ChairpersonController::class, 'assignSubjects'])->name('assignSubjects');
-    Route::post('/assign-subjects/store', [ChairpersonController::class, 'storeAssignedSubject'])->name('storeAssignedSubject');
+        Route::get('/assign-subjects', [ChairpersonController::class, 'assignSubjects'])->name('assignSubjects');
+        Route::post('/assign-subjects/store', [ChairpersonController::class, 'storeAssignedSubject'])->name('storeAssignedSubject');
 
-    Route::get('/grades', [ChairpersonController::class, 'viewGrades'])->name('viewGrades');
-    Route::get('/students-by-year', [ChairpersonController::class, 'viewStudentsPerYear'])->name('studentsByYear');
-});
+        Route::get('/grades', [ChairpersonController::class, 'viewGrades'])->name('viewGrades');
+        Route::get('/students-by-year', [ChairpersonController::class, 'viewStudentsPerYear'])->name('studentsByYear');
+    });
 
 // -----------------------------
 // Instructor Routes
 // -----------------------------
-Route::prefix('instructor')->middleware('auth')->name('instructor.')->group(function () {
-    Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('dashboard');
+Route::prefix('instructor')
+    ->middleware(['auth', EnsureAcademicPeriodSet::class])
+    ->name('instructor.')
+    ->group(function () {
+        Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('dashboard');
 
-    // Student Management
-    Route::get('/students', [StudentController::class, 'index'])->name('students.index');
-    Route::get('/students/enroll', [StudentController::class, 'create'])->name('students.create');
-    Route::post('/students', [StudentController::class, 'store'])->name('students.store');
-    Route::delete('/students/{student}/drop', [StudentController::class, 'drop'])->name('students.drop');
+        // Student Management
+        Route::get('/students', [StudentController::class, 'index'])->name('students.index');
+        Route::get('/students/enroll', [StudentController::class, 'create'])->name('students.create');
+        Route::post('/students', [StudentController::class, 'store'])->name('students.store');
+        Route::delete('/students/{student}/drop', [StudentController::class, 'drop'])->name('students.drop');
 
-    // Grades and Scores
-    Route::get('/grades', [GradeController::class, 'index'])->name('grades.index');
-    Route::get('/grades/partial', [GradeController::class, 'partial'])->name('grades.partial'); // ✅ Added this line
-    Route::post('/grades/save', [GradeController::class, 'store'])->name('grades.store');
-    Route::post('/grades/ajax-save-score', [GradeController::class, 'ajaxSaveScore'])->name('grades.ajaxSaveScore');
+        // Grades and Scores
+        Route::get('/grades', [GradeController::class, 'index'])->name('grades.index');
+        Route::get('/grades/partial', [GradeController::class, 'partial'])->name('grades.partial');
+        Route::post('/grades/save', [GradeController::class, 'store'])->name('grades.store');
+        Route::post('/grades/ajax-save-score', [GradeController::class, 'ajaxSaveScore'])->name('grades.ajaxSaveScore');
 
-    // Final Grades
-    Route::get('/final-grades', [FinalGradeController::class, 'index'])->name('final-grades.index');
-    Route::post('/final-grades/generate', [FinalGradeController::class, 'generate'])->name('final-grades.generate');
+        // Final Grades
+        Route::get('/final-grades', [FinalGradeController::class, 'index'])->name('final-grades.index');
+        Route::post('/final-grades/generate', [FinalGradeController::class, 'generate'])->name('final-grades.generate');
 
-    // Activities
-    Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
-    Route::get('/activities/create', [ActivityController::class, 'create'])->name('activities.create');
-    Route::post('/activities/store', [ActivityController::class, 'store'])->name('activities.store');
-    Route::delete('/activities/{id}', [ActivityController::class, 'delete'])->name('activities.delete');
-});
+        // Activities
+        Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
+        Route::get('/activities/create', [ActivityController::class, 'create'])->name('activities.create');
+        Route::post('/activities/store', [ActivityController::class, 'store'])->name('activities.store');
+        Route::delete('/activities/{id}', [ActivityController::class, 'delete'])->name('activities.delete');
+    });
 
 // -----------------------------
 // Dean Routes
@@ -110,6 +138,6 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
 });
 
 // -----------------------------
-// Auth Routes
+// Auth Routes (Breeze/Fortify)
 // -----------------------------
 require __DIR__.'/auth.php';

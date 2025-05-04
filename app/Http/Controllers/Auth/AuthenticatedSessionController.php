@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -28,6 +29,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Always clear any previous session academic period
+        Session::forget('active_academic_period_id');
+
+        $user = Auth::user();
+
+        // Require academic period selection for instructor or chairperson
+        if (in_array($user->role, [0, 2])) {
+            return redirect()->route('select.academicPeriod');
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
@@ -39,7 +50,6 @@ class AuthenticatedSessionController extends Controller
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

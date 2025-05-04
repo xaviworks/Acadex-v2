@@ -24,13 +24,25 @@ class GradeController extends Controller
     {
         Gate::authorize('instructor');
 
-        $subjects = Subject::where('instructor_id', Auth::id())->get();
-        $term = $request->term ?? 'prelim';
+        $academicPeriodId = session('active_academic_period_id'); // You can change to request()->input('academic_period_id') if passed in URL
+
+        $subjects = Subject::where('instructor_id', Auth::id())
+            ->when($academicPeriodId, fn($q) => $q->where('academic_period_id', $academicPeriodId))
+            ->get();
+                $term = $request->term ?? 'prelim';
         $students = $activities = $scores = $termGrades = [];
         $subject = null;
 
         if ($request->filled('subject_id')) {
-            $subject = Subject::find($request->subject_id);
+            $subject = Subject::where('id', $request->subject_id)
+                ->when($academicPeriodId, fn($q) => $q->where('academic_period_id', $academicPeriodId))
+                ->firstOrFail();
+
+
+            if ($academicPeriodId && $subject->academic_period_id !== (int) $academicPeriodId) {
+                abort(403, 'Subject does not belong to the current academic period.');
+            }
+            
 
             $students = Student::whereHas('subjects', fn($q) => $q->where('subject_id', $subject->id))
                 ->where('is_deleted', false)->get();

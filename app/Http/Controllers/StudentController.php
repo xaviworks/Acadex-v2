@@ -9,6 +9,8 @@ use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Activity;
+
 
 class StudentController extends Controller
 {
@@ -21,20 +23,32 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('instructor');
-
-        $subjects = Subject::where('instructor_id', Auth::id())->get();
-        $students = [];
-
-        if ($request->filled('subject_id')) {
-            $students = Student::whereHas('subjects', function ($query) use ($request) {
-                    $query->where('subject_id', $request->subject_id);
-                })
-                ->where('is_deleted', false)
+    
+        $academicPeriodId = session('active_academic_period_id');
+    
+        $subjects = Subject::where('instructor_id', Auth::id())
+            ->where('is_deleted', false)
+            ->where('academic_period_id', $academicPeriodId)
+            ->get();
+    
+        $courses = Course::where('department_id', Auth::user()->department_id)->get();
+    
+        $students = null;
+        if ($request->has('subject_id')) {
+            $subject = Subject::findOrFail($request->subject_id);
+            if ($subject->instructor_id !== Auth::id()) {
+                abort(403);
+            }
+    
+            $students = $subject->students()
+                ->where('students.is_deleted', 0)
                 ->get();
-        }
 
-        return view('instructor.manage-students', compact('subjects', 'students'));
+        }
+    
+        return view('instructor.manage-students', compact('subjects', 'courses', 'students'));
     }
+    
 
     // ➕ Show Enrollment Form
     public function create()
@@ -47,11 +61,10 @@ class StudentController extends Controller
         return view('instructor.add-student', compact('subjects', 'courses'));
     }
 
-    // 💾 Enroll Student
     public function store(Request $request)
     {
         Gate::authorize('instructor');
-
+    
         $request->validate([
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
@@ -60,9 +73,9 @@ class StudentController extends Controller
             'subject_id' => 'required|exists:subjects,id',
             'course_id' => 'required|exists:courses,id',
         ]);
-
+    
         $subject = Subject::findOrFail($request->subject_id);
-
+    
         $student = Student::create([
             'first_name' => $request->first_name,
             'middle_name' => $request->middle_name,
@@ -74,14 +87,45 @@ class StudentController extends Controller
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
         ]);
-
+    
         StudentSubject::create([
             'student_id' => $student->id,
             'subject_id' => $subject->id,
         ]);
-
-        return redirect()->route('instructor.students.index')->with('success', 'Student enrolled successfully.');
+    
+        // ✅ Automatically insert default activities for all terms
+        $terms = ['prelim', 'midterm', 'prefinal', 'final'];
+        foreach ($terms as $term) {
+            $exists = Activity::where('subject_id', $subject->id)
+                ->where('term', $term)
+                ->exists();
+    
+            if (!$exists) {
+                $defaultActivities = [];
+                foreach (['quiz' => 3, 'ocr' => 3, 'exam' => 1] as $type => $count) {
+                    for ($i = 1; $i <= $count; $i++) {
+                        $defaultActivities[] = [
+                            'subject_id' => $subject->id,
+                            'term' => $term,
+                            'type' => $type,
+                            'title' => ucfirst($type) . " $i",
+                            'number_of_items' => 100,
+                            'is_deleted' => false,
+                            'created_by' => Auth::id(),
+                            'updated_by' => Auth::id(),
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                }
+                Activity::insert($defaultActivities);
+            }
+        }
+    
+        return redirect()->route('instructor.students.index')->with('success', 'Student enrolled successfully with default activities.');
     }
+    
+    
 
     // 🗑 Drop Student from a Subject
     public function drop(Request $request, $studentId)

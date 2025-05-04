@@ -110,4 +110,10 @@ class Student extends Model
             default => 'N/A',
         };
     }
+
+    public function subject()
+{
+    return $this->belongsTo(Subject::class);
+}
+
 }
