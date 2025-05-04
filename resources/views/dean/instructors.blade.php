@@ -2,27 +2,40 @@
 
 @section('content')
 <div class="py-6">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-        <h1 class="text-2xl font-bold mb-6">Instructors in Department</h1>
+    <div class="max-w-7xl mx-auto px-4">
+        <h1 class="text-2xl font-bold mb-6">
+            <i class="bi bi-person-check text-success me-2"></i>
+            Instructors in Department
+        </h1>
 
         @if($instructors->isEmpty())
-            <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
+            <div class="alert alert-warning bg-warning bg-opacity-25 border border-warning text-warning rounded-4 shadow-sm">
                 No instructors found under your department.
             </div>
         @else
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border">
-                    <thead class="bg-gray-100">
+            <div class="bg-white shadow-lg rounded-4 overflow-x-auto">
+                <table class="table table-bordered align-middle mb-0">
+                    <thead class="table-light">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Course</th>
+                            <th class="text-center">Status</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody>
                         @foreach($instructors as $instructor)
                             <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $instructor->name }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">{{ $instructor->email }}</td>
+                                <td>{{ $instructor->name }}</td>
+                                <td>{{ $instructor->email }}</td>
+                                <td>{{ $instructor->course->course_code ?? 'N/A' }}</td>
+                                <td class="text-center">
+                                    @if($instructor->is_active)
+                                        <span class="badge bg-success-subtle text-success fw-semibold px-3 py-2 rounded-pill">Active</span>
+                                    @else
+                                        <span class="badge bg-danger-subtle text-danger fw-semibold px-3 py-2 rounded-pill">Deactivated</span>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

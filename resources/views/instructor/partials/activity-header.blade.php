@@ -1,77 +1,60 @@
+<!-- Trigger Button -->
 <div class="d-flex justify-content-between align-items-center mb-4 mt-2 flex-wrap gap-2">
     <h4 class="mb-0 fw-semibold text-dark">
         <i class="bi bi-journal-text me-2 text-primary"></i>
         Activities & Grades – {{ ucfirst($term) }}
     </h4>
 
-    <div x-data="{ open: false }" x-init="$nextTick(() => open = false)" class="position-relative" x-cloak>
-        <!-- Trigger Button -->
-        <button @click="open = true" type="button"
-                class="btn btn-primary d-flex align-items-center gap-2 shadow-sm">
-            <i class="bi bi-plus-circle-fill"></i> Add Activity
-        </button>
+    <button class="btn btn-success d-flex align-items-center gap-2 shadow-sm"
+            data-bs-toggle="modal" data-bs-target="#addActivityModal">
+        <i class="bi bi-plus-circle-fill"></i> Add Activity
+    </button>
+</div>
 
-        <!-- Modal Overlay -->
-        <div x-show="open"
-             x-transition.opacity
-             x-cloak
-             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-             @keydown.escape.window="open = false"
-             @click.self="open = false">
+<!-- Add Activity Modal -->
+<div class="modal fade" id="addActivityModal" tabindex="-1" aria-labelledby="addActivityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form method="POST" action="{{ route('instructor.activities.store') }}">
+            @csrf
+            <input type="hidden" name="subject_id" value="{{ $subject->id }}">
+            <input type="hidden" name="term" value="{{ $term }}">
 
-            <!-- Modal Content -->
-            <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 relative"
-                 @click.stop>
-                <!-- Close Button -->
-                <button @click="open = false" type="button"
-                        class="absolute top-3 right-3 text-gray-600 hover:text-black text-xl font-bold focus:outline-none">
-                    &times;
-                </button>
+            <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+                <!-- Modal Header -->
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #4da674, #3d865f);">
+                    <h5 class="modal-title" id="addActivityModalLabel">📋 Add New Activity</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
 
-                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Add New Activity</h2>
-
-                <form method="POST" action="{{ route('instructor.activities.store') }}" class="space-y-4">
-                    @csrf
-                    <input type="hidden" name="subject_id" value="{{ $subject->id }}">
-                    <input type="hidden" name="term" value="{{ $term }}">
-
-                    <!-- Activity Type -->
-                    <div>
-                        <label for="type" class="block text-sm font-medium text-gray-700 mb-1">Activity Type</label>
-                        <select name="type" id="type"
-                                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
-                                required>
-                            <option value="">-- Select Type --</option>
-                            <option value="quiz">Quiz</option>
-                            <option value="ocr">OCR</option>
-                            <option value="exam">Exam</option>
-                        </select>
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Activity Type <span class="text-danger">*</span></label>
+                            <select name="type" class="form-select" required>
+                                <option value="">-- Select Type --</option>
+                                <option value="quiz">Quiz</option>
+                                <option value="ocr">OCR</option>
+                                <option value="exam">Exam</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Number of Items <span class="text-danger">*</span></label>
+                            <input type="number" name="number_of_items" class="form-control" required min="1">
+                        </div>
                     </div>
+                </div>
 
-                    <!-- Title -->
-                    <div>
-                        <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <input type="text" name="title" id="title"
-                               class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
-                               required>
-                    </div>
-
-                    <!-- Number of Items -->
-                    <div>
-                        <label for="points" class="block text-sm font-medium text-gray-700 mb-1">Number of Items</label>
-                        <input type="number" name="points" id="points" min="1"
-                               class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
-                               required>
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit"
-                                class="bg-green-600 hover:bg-green-700 text-white font-medium px-5 py-2 rounded shadow-sm">
-                            Save Activity
-                        </button>
-                    </div>
-                </form>
+                <!-- Modal Footer -->
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Activity</button>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
 </div>

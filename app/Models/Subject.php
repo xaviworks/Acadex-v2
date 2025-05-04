@@ -27,8 +27,12 @@ class Subject extends Model
 
 public function students()
 {
-    return $this->belongsToMany(Student::class, 'student_subjects', 'subject_id', 'student_id');
+    return $this->belongsToMany(Student::class, 'student_subjects', 'subject_id', 'student_id')
+        ->withTimestamps()
+        ->wherePivot('is_deleted', false);
 }
+
+
 
 
 }

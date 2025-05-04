@@ -9,20 +9,21 @@ class StudentSubject extends Model
 {
     use HasFactory;
 
-    protected $table = 'student_subjects'; // 👈 This tells Laravel the correct table name
+    protected $table = 'student_subjects';
 
     protected $fillable = [
         'student_id',
         'subject_id',
+        'is_deleted',
     ];
 
-    // ✅ Relationship to Student
+    public $timestamps = true; // 👈 Only if your table has created_at/updated_at
+
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_id');
     }
 
-    // ✅ Relationship to Subject
     public function subject()
     {
         return $this->belongsTo(Subject::class, 'subject_id');

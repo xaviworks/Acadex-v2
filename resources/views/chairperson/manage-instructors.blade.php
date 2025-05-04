@@ -2,53 +2,60 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto py-8">
-    <h1 class="text-2xl font-bold mb-6">Manage Instructors</h1>
+    <h1 class="text-2xl font-bold mb-6">
+        <i class="bi bi-person-lines-fill text-success me-2"></i>
+        Manage Instructors
+    </h1>
 
     {{-- Add Button --}}
     <div class="mb-6">
-        <button onclick="openModal('addInstructorModal')" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2 rounded">
-            + Add New Instructor
+        <button type="button"
+            class="btn btn-success d-inline-flex align-items-center gap-2 shadow-sm"
+            data-bs-toggle="modal" data-bs-target="#addInstructorModal">
+            <i class="bi bi-person-plus-fill"></i> Add New Instructor
         </button>
     </div>
 
     {{-- Instructors Table --}}
     @if($instructors->isEmpty())
-        <div class="bg-blue-100 text-blue-800 p-4 rounded">
+        <div class="alert alert-warning rounded shadow-sm">
             No instructors found.
         </div>
     @else
-        <div class="overflow-x-auto bg-white shadow rounded">
-            <table class="min-w-full table-auto">
-                <thead class="bg-gray-100">
+        <div class="table-responsive bg-white shadow rounded-4">
+            <table class="table table-bordered align-middle mb-0">
+                <thead class="table-light">
                     <tr>
-                        <th class="px-4 py-2 text-left font-semibold">Name</th>
-                        <th class="px-4 py-2 text-left font-semibold">Email</th>
-                        <th class="px-4 py-2 text-center font-semibold">Status</th>
-                        <th class="px-4 py-2 text-center font-semibold">Actions</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($instructors as $instructor)
-                        <tr class="border-t hover:bg-gray-50">
-                            <td class="px-4 py-2">{{ $instructor->name }}</td>
-                            <td class="px-4 py-2">{{ $instructor->email }}</td>
-                            <td class="px-4 py-2 text-center">
+                        <tr>
+                            <td>{{ $instructor->name }}</td>
+                            <td>{{ $instructor->email }}</td>
+                            <td class="text-center">
                                 @if($instructor->is_active)
-                                    <span class="inline-block bg-green-200 text-green-800 text-xs font-semibold px-2 py-1 rounded">Active</span>
+                                    <span class="badge bg-success-subtle text-success fw-semibold px-3 py-2 rounded-pill">Active</span>
                                 @else
-                                    <span class="inline-block bg-red-200 text-red-800 text-xs font-semibold px-2 py-1 rounded">Deactivated</span>
+                                    <span class="badge bg-danger-subtle text-danger fw-semibold px-3 py-2 rounded-pill">Deactivated</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-2 text-center">
+                            <td class="text-center">
                                 @if($instructor->is_active)
-                                    <form action="{{ route('chairperson.deactivateInstructor', $instructor->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to deactivate this instructor?');">
-                                        @csrf
-                                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded text-sm">
-                                            Deactivate
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        class="btn btn-sm btn-danger shadow-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmDeactivateModal"
+                                        data-instructor-id="{{ $instructor->id }}"
+                                        data-instructor-name="{{ $instructor->name }}">
+                                        <i class="bi bi-person-x-fill me-1"></i> Deactivate
+                                    </button>
                                 @else
-                                    <span class="text-gray-400 text-sm">No Actions</span>
+                                    <span class="text-muted">No Actions</span>
                                 @endif
                             </td>
                         </tr>
@@ -59,51 +66,75 @@
     @endif
 </div>
 
-{{-- Modal --}}
-<div id="addInstructorModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
-    <div class="bg-white w-full max-w-xl mx-auto rounded-lg shadow-lg p-6 relative">
-        {{-- Close Button --}}
-        <button onclick="closeModal('addInstructorModal')" class="absolute top-2 right-3 text-gray-600 text-xl font-bold">&times;</button>
-
-        <h2 class="text-xl font-bold mb-4">Add New Instructor</h2>
-
-        @if ($errors->any())
-            <div class="bg-red-100 text-red-700 p-4 rounded mb-4">
-                <ul class="list-disc pl-5">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form action="{{ route('chairperson.storeInstructor') }}" method="POST" class="space-y-5">
+{{-- Add Instructor Modal --}}
+<div class="modal fade" id="addInstructorModal" tabindex="-1" aria-labelledby="addInstructorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <form action="{{ route('chairperson.storeInstructor') }}" method="POST">
             @csrf
+            <div class="modal-content rounded-4 shadow-lg overflow-hidden">
+                <div class="modal-header text-white" style="background: linear-gradient(135deg, #4da674, #3d865f);">
+                    <h5 class="modal-title" id="addInstructorModalLabel">📋 Add New Instructor</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0 ps-3">
+                                @foreach ($errors->all() as $error)
+                                    <li class="small">{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
-            <div>
-                <label class="block font-semibold mb-1">Name</label>
-                <input type="text" name="name" class="w-full border px-3 py-2 rounded" value="{{ old('name') }}" required>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Name</label>
+                            <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Password</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Confirm Password</label>
+                            <input type="password" name="password_confirmation" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Create Instructor</button>
+                </div>
             </div>
+        </form>
+    </div>
+</div>
 
-            <div>
-                <label class="block font-semibold mb-1">Email</label>
-                <input type="email" name="email" class="w-full border px-3 py-2 rounded" value="{{ old('email') }}" required>
-            </div>
-
-            <div>
-                <label class="block font-semibold mb-1">Password</label>
-                <input type="password" name="password" class="w-full border px-3 py-2 rounded" required>
-            </div>
-
-            <div>
-                <label class="block font-semibold mb-1">Confirm Password</label>
-                <input type="password" name="password_confirmation" class="w-full border px-3 py-2 rounded" required>
-            </div>
-
-            <div class="text-right">
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2 rounded">
-                    Create Instructor
-                </button>
+{{-- Confirm Deactivation Modal --}}
+<div class="modal fade" id="confirmDeactivateModal" tabindex="-1" aria-labelledby="confirmDeactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form id="deactivateForm" method="POST">
+            @csrf
+            <div class="modal-content rounded-4 shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="confirmDeactivateModalLabel">⚠ Confirm Deactivation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to deactivate <strong id="instructorName"></strong>?
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Yes, Deactivate</button>
+                </div>
             </div>
         </form>
     </div>
@@ -112,22 +143,25 @@
 {{-- Modal Scripts --}}
 @push('scripts')
 <script>
-    function openModal(id) {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-    }
+    const confirmModal = document.getElementById('confirmDeactivateModal');
+    confirmModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const instructorId = button.getAttribute('data-instructor-id');
+        const instructorName = button.getAttribute('data-instructor-name');
 
-    function closeModal(id) {
-        const modal = document.getElementById(id);
-        if (modal) {
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-    }
+        const form = document.getElementById('deactivateForm');
+        const namePlaceholder = document.getElementById('instructorName');
+
+        form.action = `/chairperson/instructors/${instructorId}/deactivate`;
+        namePlaceholder.textContent = instructorName;
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        @if ($errors->any())
+            const addModal = new bootstrap.Modal(document.getElementById('addInstructorModal'));
+            addModal.show();
+        @endif
+    });
 </script>
 @endpush
-
 @endsection

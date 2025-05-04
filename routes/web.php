@@ -104,7 +104,9 @@ Route::prefix('instructor')
         Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
         Route::get('/activities/create', [ActivityController::class, 'create'])->name('activities.create');
         Route::post('/activities/store', [ActivityController::class, 'store'])->name('activities.store');
+        Route::put('/activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
         Route::delete('/activities/{id}', [ActivityController::class, 'delete'])->name('activities.delete');
+
     });
 
 // -----------------------------
@@ -115,6 +117,8 @@ Route::prefix('dean')->middleware('auth')->name('dean.')->group(function () {
     Route::get('/students', [DeanController::class, 'viewStudents'])->name('students');
     Route::get('/grades', [DeanController::class, 'viewGrades'])->name('grades');
     Route::get('/instructor/grades/partial', [GradeController::class, 'partial'])->name('instructor.grades.partial');
+    Route::get('/dean/students', [DeanController::class, 'viewStudents'])->name('dean.students');
+
 });
 
 // -----------------------------

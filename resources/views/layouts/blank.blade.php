@@ -9,7 +9,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+<body class="bg-[#EAF8E7] text-gray-900 dark:text-white">
     <main class="min-h-screen flex items-center justify-center p-4">
         @yield('content')
     </main>

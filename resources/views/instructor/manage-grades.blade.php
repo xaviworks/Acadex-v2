@@ -5,21 +5,21 @@
     <div id="grade-section">
         @if (!$subject)
             {{-- SUBJECT SELECTION --}}
-            <div class="row g-4" id="subject-selection">
+            <div class="row g-4 px-4" id="subject-selection">
                 @foreach($subjects as $subjectItem)
                     <div class="col-md-4">
                         <div
-                            class="subject-card card h-100 border-0 shadow rounded-4 hover-shadow-lg transition-all"
+                            class="subject-card card h-100 bg-white border-0 shadow-lg rounded-4 transform transition hover:scale-105 hover:shadow-xl"
                             data-url="{{ route('instructor.grades.index') }}?subject_id={{ $subjectItem->id }}&term=prelim"
                             style="cursor: pointer;"
                         >
-                            <div class="card-body d-flex flex-column justify-content-between bg-white p-4 rounded-4">
+                            <div class="card-body d-flex flex-column justify-content-between p-4 rounded-4">
                                 <div class="text-center mb-3">
-                                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center text-white shadow-lg"
-                                        style="width: 80px; height: 80px; background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center text-white shadow"
+                                        style="width: 80px; height: 80px; background: linear-gradient(135deg, #4da674, #023336); transition: background 0.3s ease;">
                                         <h5 class="mb-0 fw-bold">{{ $subjectItem->subject_code }}</h5>
                                     </div>
-                                    <h6 class="fw-semibold mt-3 text-truncate" title="{{ $subjectItem->subject_description }}">
+                                    <h6 class="fw-semibold mt-3 text-truncate text-dark" title="{{ $subjectItem->subject_description }}">
                                         {{ $subjectItem->subject_description }}
                                     </h6>
                                 </div>
@@ -34,8 +34,8 @@
         @else
             {{-- TERM NAVIGATION STEPPER --}}
             @include('instructor.partials.term-stepper')
-            
-            {{-- ADD ACTIVITY MODAL --}}
+
+            {{-- ADD ACTIVITY HEADER & MODAL --}}
             @include('instructor.partials.activity-header', ['subject' => $subject, 'term' => $term])
 
             {{-- GRADES TABLE --}}
@@ -49,7 +49,7 @@
             {{-- SUCCESS TOAST --}}
             @if(session('success'))
                 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
-                    <div class="toast show align-items-center text-bg-success border-0" role="alert">
+                    <div class="toast show align-items-center text-bg-success border-0 shadow" role="alert">
                         <div class="d-flex">
                             <div class="toast-body">{{ session('success') }}</div>
                             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
@@ -73,18 +73,20 @@
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.75);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease-in-out;
 }
 .fade-overlay.d-none {
     display: none !important;
 }
 .spinner {
     border: 4px solid #e5e7eb;
-    border-top: 4px solid #2563eb;
+    border-top: 4px solid #4da674;
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -92,6 +94,12 @@
 }
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+.subject-card {
+    transition: all 0.3s ease;
+}
+.subject-card:hover {
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
 }
 </style>
 @endpush

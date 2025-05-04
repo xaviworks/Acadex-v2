@@ -72,7 +72,6 @@ class ActivityController extends Controller
         return view('instructor.activities.index', compact('subjects', 'activities'));
     }    
     
-
     // ➕ Full Create Activity Form
     public function create()
     {
@@ -112,7 +111,6 @@ class ActivityController extends Controller
             'term' => $request->term
         ]);
     }
-    
 
     // 💾 Store Activity (both standard and inline)
     public function store(Request $request)
@@ -124,7 +122,7 @@ class ActivityController extends Controller
             'term' => 'required|in:prelim,midterm,prefinal,final',
             'type' => 'required|in:quiz,ocr,exam',
             'title' => 'required|string|max:255',
-            'points' => 'required|integer|min:1',
+            'number_of_items' => 'required|integer|min:1',
         ]);
     
         $subject = Subject::findOrFail($request->subject_id);
@@ -139,7 +137,7 @@ class ActivityController extends Controller
             'term' => $request->term,
             'type' => $request->type,
             'title' => $request->title,
-            'number_of_items' => $request->points,
+            'number_of_items' => $request->number_of_items,
             'is_deleted' => false,
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
@@ -150,6 +148,43 @@ class ActivityController extends Controller
             'term' => $request->term,
         ])->with('success', 'Activity created successfully.');
     }    
+
+    // 🔁 Update Activity
+    public function update(Request $request, Activity $activity)
+    {
+        Gate::authorize('instructor');
+
+        $request->validate([
+            'type' => 'required|in:quiz,ocr,exam',
+            'title' => 'required|string|max:255',
+            'number_of_items' => 'required|integer|min:1',
+        ]);
+
+        $subject = $activity->subject;
+
+        // Authorization check
+        if ($subject->instructor_id !== Auth::id()) {
+            abort(403, 'You are not authorized to update this activity.');
+        }
+
+        // Academic period check
+        $academicPeriodId = session('active_academic_period_id');
+        if ($academicPeriodId && $subject->academic_period_id !== (int) $academicPeriodId) {
+            abort(403, 'This subject does not belong to the current academic period.');
+        }
+
+        $activity->update([
+            'type' => $request->type,
+            'title' => $request->title,
+            'number_of_items' => $request->number_of_items,
+            'updated_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('instructor.activities.index', [
+            'subject_id' => $activity->subject_id,
+            'term' => $activity->term,
+        ])->with('success', 'Activity updated successfully.');
+    }
 
     // 🗑 Soft Delete Activity
     public function delete($id)
