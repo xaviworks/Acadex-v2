@@ -7,19 +7,23 @@
 
     <hr class="border-white-50">
 
+    <!-- Always visible Dashboard link -->
+    <ul class="nav nav-pills flex-column mb-4">
+        <li>
+            <a href="{{ route('dashboard') }}" class="nav-link text-white {{ request()->routeIs('dashboard') ? 'active bg-success' : '' }}">
+                <div class="d-flex align-items-center">
+                    <span class="me-2" style="width: 20px;">🏠</span> Dashboard
+                </div>
+            </a>
+        </li>
+    </ul>
+
     @php $role = Auth::user()->role; @endphp
 
     {{-- Instructor --}}
     @if ($role === 0)
         <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Instructor</h6>
         <ul class="nav nav-pills flex-column mb-4">
-            <li>
-                <a href="{{ route('dashboard') }}" class="nav-link text-white {{ request()->routeIs('dashboard') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">🏠</span> Dashboard
-                    </div>
-                </a>
-            </li>
             <li>
                 <a href="{{ route('instructor.students.index') }}" class="nav-link text-white {{ request()->routeIs('instructor.students.*') ? 'active bg-success' : '' }}">
                     <div class="d-flex align-items-center">
