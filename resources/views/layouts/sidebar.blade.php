@@ -1,4 +1,4 @@
-<div class="d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 250px; background-color: #4da674; min-height: 100vh;">
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 250px; background-color: #2e9c5e; min-height: 100vh;">
     <!-- Logo -->
     <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-3 text-white text-decoration-none">
         <img src="{{ asset('logo.png') }}" alt="Logo" style="width: 28px; height: 28px;" class="me-2">

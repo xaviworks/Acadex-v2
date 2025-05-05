@@ -26,8 +26,9 @@
                             <td>{{ $subject->instructor ? $subject->instructor->name : '—' }}</td>
                             <td class="text-center">
                                 @if ($subject->instructor)
-                                    <span class="text-muted">Already Assigned</span>
-                                @else
+                                <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm" disabled>
+                                    <i class="bi bi-check-circle me-1"></i> Assigned
+                                </button>                                                                @else
                                     <button
                                         onclick="openAssignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
                                         class="btn btn-success shadow-sm">

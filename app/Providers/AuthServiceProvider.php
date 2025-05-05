@@ -27,5 +27,9 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('chairperson', fn($user) => $user->role === 1);
         Gate::define('dean', fn($user) => $user->role === 2);
         Gate::define('instructor', fn($user) => $user->role === 0);
+        Gate::define('admin-chair', function ($user) {
+            return in_array($user->role, [1, 2]); // 1 = Admin, 2 = Chairperson
+        });
+        
     }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\CurriculumController;
 use App\Http\Middleware\EnsureAcademicPeriodSet;
 
 /*
@@ -76,6 +77,18 @@ Route::prefix('chairperson')
     });
 
 // -----------------------------
+// Curriculum Routes (Admin & Chair)
+// -----------------------------
+Route::middleware(['auth', 'academic.period.set'])->group(function () {
+    Route::get('/curriculum/select-subjects', [CurriculumController::class, 'selectSubjects'])->name('curriculum.selectSubjects');
+    Route::post('/curriculum/confirm-subjects', [CurriculumController::class, 'confirmSubjects'])->name('curriculum.confirmSubjects');
+    Route::get('/curriculum/{curriculum}/fetch-subjects', [CurriculumController::class, 'fetchSubjects'])->name('curriculum.fetchSubjects');
+    
+    // ✅ Fetch subjects for selected curriculum
+    Route::get('/curriculum/{curriculum}/fetch-subjects', [CurriculumController::class, 'fetchSubjects'])->name('curriculum.fetchSubjects');
+});
+
+// -----------------------------
 // Instructor Routes
 // -----------------------------
 Route::prefix('instructor')
@@ -106,7 +119,6 @@ Route::prefix('instructor')
         Route::post('/activities/store', [ActivityController::class, 'store'])->name('activities.store');
         Route::put('/activities/{activity}', [ActivityController::class, 'update'])->name('activities.update');
         Route::delete('/activities/{id}', [ActivityController::class, 'delete'])->name('activities.delete');
-
     });
 
 // -----------------------------
@@ -118,7 +130,6 @@ Route::prefix('dean')->middleware('auth')->name('dean.')->group(function () {
     Route::get('/grades', [DeanController::class, 'viewGrades'])->name('grades');
     Route::get('/instructor/grades/partial', [GradeController::class, 'partial'])->name('instructor.grades.partial');
     Route::get('/dean/students', [DeanController::class, 'viewStudents'])->name('dean.students');
-
 });
 
 // -----------------------------
