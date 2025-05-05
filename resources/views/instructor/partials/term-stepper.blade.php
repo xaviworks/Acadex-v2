@@ -43,8 +43,13 @@
         left: calc(50% + 40px);
         width: calc(100% - 80px);
         height: 2px;
-        background-color: #e5e7eb;
+        background-color: #d1e7db; /* default line */
         z-index: 0;
+        transition: background-color 0.3s ease;
+    }
+
+    .step.highlight-line:not(:last-child)::after {
+        background-color: #4da674; /* highlighted green line */
     }
 
     .circle-wrapper {
@@ -76,17 +81,17 @@
     }
 
     .completed .circle {
-        background-color: #2563eb;
+        background-color: #4da674;
     }
 
     .active .circle {
-        background-color: #ef4444;
+        background-color: #023336;
         animation: pulse 1.5s infinite;
     }
 
     .upcoming .circle {
-        background-color: #cbd5e1;
-        color: #374151;
+        background-color: #e6f4eb;
+        color: #4da674;
     }
 
     .progress-ring {
@@ -104,11 +109,11 @@
     }
 
     .progress-ring-bg {
-        stroke: #e5e7eb;
+        stroke: #d1e7db;
     }
 
     .progress-ring-bar {
-        stroke: #2563eb;
+        stroke: #4da674;
         transition: stroke-dashoffset 0.4s ease-in-out;
     }
 
@@ -118,28 +123,28 @@
     }
 
     .completed .step-label {
-        color: #1e3a8a;
-        font-weight: 500;
-    }
-
-    .active .step-label {
-        color: #dc2626;
+        color: #357a55;
         font-weight: 600;
     }
 
+    .active .step-label {
+        color: #023336;
+        font-weight: 700;
+    }
+
     .upcoming .step-label {
-        color: #6b7280;
+        color: #94a89e;
     }
 
     @keyframes pulse {
         0% {
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 0 0 rgba(2, 51, 54, 0.4);
         }
         70% {
-            box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+            box-shadow: 0 0 0 15px rgba(2, 51, 54, 0);
         }
         100% {
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            box-shadow: 0 0 0 0 rgba(2, 51, 54, 0);
         }
     }
 
@@ -163,7 +168,7 @@
 
     .spinner {
         border: 4px solid #e5e7eb;
-        border-top: 4px solid #2563eb;
+        border-top: 4px solid #4da674;
         border-radius: 50%;
         width: 40px;
         height: 40px;
@@ -184,10 +189,13 @@
             $isActive = $term === $termSlug;
             $isCompleted = array_search($term, $terms) > $index;
             $class = $isActive ? 'active' : ($isCompleted ? 'completed' : 'upcoming');
+
+            // highlight line if current step is before or equal to the active one
+            $highlightLine = $index < array_search($term, $terms);
         @endphp
 
         <button type="button"
-                class="step term-step {{ $class }}"
+                class="step term-step {{ $class }} {{ $highlightLine ? 'highlight-line' : '' }}"
                 data-term="{{ $termSlug }}">
             <div class="circle-wrapper">
                 <svg class="progress-ring" width="80" height="80">
