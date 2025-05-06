@@ -13,8 +13,8 @@ return new class extends Migration
             $table->string('department_code')->unique();
             $table->string('department_description');
             $table->boolean('is_deleted')->default(false);
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
     }
@@ -24,3 +24,4 @@ return new class extends Migration
         Schema::dropIfExists('departments');
     }
 };
+ 

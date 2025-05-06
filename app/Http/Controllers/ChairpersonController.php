@@ -27,7 +27,7 @@ class ChairpersonController extends Controller
         $instructors = User::where('role', 0)
             ->where('department_id', Auth::user()->department_id)
             ->where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('last_name')
             ->get();
 
         return view('chairperson.manage-instructors', compact('instructors'));
@@ -95,7 +95,7 @@ class ChairpersonController extends Controller
         $instructors = User::where('role', 0)
             ->where('department_id', Auth::user()->department_id)
             ->where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('last_name')
             ->get();
     
         return view('chairperson.assign-subjects', compact('subjects', 'instructors'));

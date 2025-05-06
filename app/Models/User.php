@@ -12,23 +12,22 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'middle_name',
+        'last_name',
         'email',
         'password',
         'role',
         'is_active',
-        'department_id',  // Added
-        'course_id',      // Added
+        'department_id',
+        'course_id',
+        'is_universal',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -37,51 +36,68 @@ class User extends Authenticatable
 
     /**
      * The attributes that should be cast to native types.
-     *
-     * @var array<string, string>
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'role' => 'integer',
         'is_active' => 'boolean',
+        'is_universal' => 'boolean',
     ];
+
+    /**
+     * Accessor to get the full name of the user.
+     * Example: Juan Pedro Santos
+     */
+    public function getFullNameAttribute(): string
+    {
+        $names = [$this->first_name];
+        if ($this->middle_name) {
+            $names[] = $this->middle_name;
+        }
+        $names[] = $this->last_name;
+
+        return implode(' ', $names);
+    }
+
+    /**
+     * Accessor to get a virtual `name` attribute for compatibility.
+     * Example: Juan Pedro Santos
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->full_name;
+    }
 
     /**
      * Relationships
      */
 
-    // Subjects assigned to the instructor
     public function subjects()
     {
         return $this->hasMany(Subject::class, 'instructor_id');
     }
 
-    // Students created by the user
     public function createdStudents()
     {
         return $this->hasMany(Student::class, 'created_by');
     }
 
-    // Subjects created by the user
     public function createdSubjects()
     {
         return $this->hasMany(Subject::class, 'created_by');
     }
 
-    // Activities created by the user
     public function createdActivities()
     {
         return $this->hasMany(Activity::class, 'created_by');
     }
 
-    // New: User belongs to a Department
     public function department()
     {
         return $this->belongsTo(Department::class);
     }
 
-    // New: User belongs to a Course
     public function course()
     {
         return $this->belongsTo(Course::class);

@@ -2,57 +2,61 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Department;
+use App\Models\Course;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Admin User
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'), // Password: password
-            'role' => 3, // Admin
-            'is_universal' => true,
-        ]);
+        // Fetch Department and Course dynamically
+        $department = Department::where('department_code', 'ASBM')->first();
+        $course = Course::where('course_code', 'BSBA')->first();
 
-        // Chairperson / Program Head
-        User::create([
-            'name' => 'Chairperson User',
-            'email' => 'chairperson@example.com',
-            'password' => Hash::make('password'), // Password: password
-            'role' => 1, // Chairperson
-            'is_universal' => false,
-            'department_id' => 1, // Example department
-            'course_id' => 1,      // Example course
-        ]);
+        $users = [
+            [
+                'first_name' => 'Admin',
+                'middle_name' => null,
+                'last_name' => 'User',
+                'email' => 'admin@brokenshire.edu.ph',
+                'role' => 3,
+            ],
+            [
+                'first_name' => 'Chairperson',
+                'middle_name' => null,
+                'last_name' => 'User',
+                'email' => 'chairperson@brokenshire.edu.ph',
+                'role' => 1,
+            ],
+            [
+                'first_name' => 'Dean',
+                'middle_name' => null,
+                'last_name' => 'User',
+                'email' => 'dean@brokenshire.edu.ph',
+                'role' => 2,
+            ],
+            [
+                'first_name' => 'Instructor',
+                'middle_name' => null,
+                'last_name' => 'User',
+                'email' => 'instructor@brokenshire.edu.ph',
+                'role' => 0,
+            ],
+        ];
 
-        // Dean User
-        User::create([
-            'name' => 'Dean User',
-            'email' => 'dean@example.com',
-            'password' => Hash::make('password'), // Password: password
-            'role' => 2, // Dean
-            'is_universal' => false,
-            'department_id' => 1, // Example department
-            'course_id' => 1,      // Example course
-        ]);
-
-        // Instructor User
-        User::create([
-            'name' => 'Instructor User',
-            'email' => 'instructor@example.com',
-            'password' => Hash::make('password'), // Password: password
-            'role' => 0, // Instructor
-            'is_universal' => false, // set true if General Education instructor
-            'department_id' => 1, // Example department
-            'course_id' => 1,      // Example course
-        ]);
+        foreach ($users as $data) {
+            User::updateOrCreate(
+                ['email' => $data['email']],
+                array_merge($data, [
+                    'password' => Hash::make('password'),
+                    'is_active' => true,
+                    'department_id' => $department?->id ?? 1,
+                    'course_id' => $course?->id ?? 1,
+                ])
+            );
+        }
     }
 }

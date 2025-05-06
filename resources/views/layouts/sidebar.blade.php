@@ -87,6 +87,13 @@
                     </div>
                 </a>
             </li>
+            <li>
+                <a href="{{ route('curriculum.selectSubjects') }}" class="nav-link text-white {{ request()->routeIs('curriculum.selectSubjects') ? 'active bg-success' : '' }}">
+                    <div class="d-flex align-items-center">
+                        <span class="me-2" style="width: 20px;">📥</span> Import Subjects
+                    </div>
+                </a>
+            </li>
         </ul>
     @endif
 

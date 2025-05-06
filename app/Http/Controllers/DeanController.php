@@ -28,7 +28,7 @@ class DeanController extends Controller
         $instructors = User::where('role', 0) // Instructor role
             ->where('department_id', Auth::user()->department_id)
             ->where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('last_name')
             ->get();
 
         return view('dean.instructors', compact('instructors'));

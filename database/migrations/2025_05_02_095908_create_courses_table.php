@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('course_description');
             $table->foreignId('department_id')->constrained('departments')->cascadeOnDelete();
             $table->boolean('is_deleted')->default(false);
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
     }

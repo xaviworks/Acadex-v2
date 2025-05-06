@@ -1,107 +1,188 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+    <div class="max-w-xl mx-auto mt-16 p-8 bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl transition-all duration-300">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Instructor Registration</h1>
 
-        <!-- First Name -->
-        <div>
-            <x-input-label for="first_name" :value="__('First Name')" />
-            <x-text-input id="first_name" class="block mt-1 w-full" type="text" name="first_name" :value="old('first_name')" required autofocus />
-            <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
-        </div>
+        <form method="POST" action="{{ route('register') }}" class="space-y-6" novalidate>
+            @csrf
 
-        <!-- Middle Name (Optional) -->
-        <div class="mt-4">
-            <x-input-label for="middle_name" :value="__('Middle Name (Optional)')" />
-            <x-text-input id="middle_name" class="block mt-1 w-full" type="text" name="middle_name" :value="old('middle_name')" />
-            <x-input-error :messages="$errors->get('middle_name')" class="mt-2" />
-        </div>
+            {{-- Name Section --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <x-input-label for="first_name" :value="__('First Name')" />
+                    <x-text-input id="first_name" name="first_name" type="text" placeholder="Juan" class="w-full mt-1" :value="old('first_name')" required />
+                    <x-input-error :messages="$errors->get('first_name')" class="mt-2" />
+                </div>
 
-        <!-- Last Name -->
-        <div class="mt-4">
-            <x-input-label for="last_name" :value="__('Last Name')" />
-            <x-text-input id="last_name" class="block mt-1 w-full" type="text" name="last_name" :value="old('last_name')" required />
-            <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
-        </div>
+                <div>
+                    <x-input-label for="middle_name" :value="__('Middle Name')" />
+                    <x-text-input id="middle_name" name="middle_name" type="text" placeholder="(optional)" class="w-full mt-1" :value="old('middle_name')" />
+                    <x-input-error :messages="$errors->get('middle_name')" class="mt-2" />
+                </div>
 
-        <!-- Email -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Institutional Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" pattern=".*@brokenshire\.edu\.ph" required />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-            <small class="text-gray-500">Must be an @brokenshire.edu.ph email</small>
-        </div>
+                <div class="md:col-span-2">
+                    <x-input-label for="last_name" :value="__('Last Name')" />
+                    <x-text-input id="last_name" name="last_name" type="text" placeholder="Dela Cruz" class="w-full mt-1" :value="old('last_name')" required />
+                    <x-input-error :messages="$errors->get('last_name')" class="mt-2" />
+                </div>
+            </div>
 
-        <!-- Department -->
-        <div class="mt-4">
-            <x-input-label for="department_id" :value="__('Department')" />
-            <select name="department_id" id="department_id" class="block mt-1 w-full rounded border-gray-300 shadow-sm" required>
-                <option value="">-- Select Department --</option>
-                @foreach($departments as $department)
-                    <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
-                        {{ $department->name }}
-                    </option>
-                @endforeach
-            </select>
-            <x-input-error :messages="$errors->get('department_id')" class="mt-2" />
-        </div>
+            {{-- Email Username --}}
+            <div>
+                <x-input-label for="email" :value="__('Email Username')" />
+                <div class="flex rounded-md shadow-sm">
+                    <x-text-input id="email" name="email" type="text"
+                        placeholder="jdelacruz"
+                        class="rounded-r-none w-full mt-1"
+                        :value="old('email')"
+                        required
+                        pattern="^[^@]+$"
+                        title="Do not include '@' or domain — just the username." />
+                    <span class="inline-flex items-center px-3 rounded-r-md bg-gray-200 border border-l-0 border-gray-300 mt-1 text-sm text-gray-600">@brokenshire.edu.ph</span>
+                </div>
 
-        <!-- Course -->
-        <div class="mt-4">
-            <x-input-label for="course_id" :value="__('Course')" />
-            <select name="course_id" id="course_id" class="block mt-1 w-full rounded border-gray-300 shadow-sm" required>
-                <option value="">-- Select Course --</option>
-                {{-- This will be populated via JavaScript --}}
-            </select>
-            <x-input-error :messages="$errors->get('course_id')" class="mt-2" />
-        </div>
+                {{-- Live warning --}}
+                <p id="email-warning" class="text-sm text-red-600 mt-1 hidden">
+                    Please enter only your username — do not include '@' or email domain.
+                </p>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+                <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-            <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required />
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
+            {{-- Department --}}
+            <div>
+                <x-input-label for="department_id" :value="__('Select Department')" />
+                <select id="department_id" name="department_id" class="w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+                    <option value="">-- Choose Department --</option>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept->id }}">{{ $dept->department_description }}</option>
+                    @endforeach
+                </select>
+                <x-input-error :messages="$errors->get('department_id')" class="mt-2" />
+            </div>
 
-        <!-- Actions -->
-        <div class="flex items-center justify-end mt-6">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
+            {{-- Course --}}
+            <div class="hidden transition-opacity duration-300" id="course-wrapper">
+                <x-input-label for="course_id" :value="__('Select Course')" />
+                <select id="course_id" name="course_id" class="w-full mt-1 border-gray-300 rounded-md shadow-sm" required>
+                    <option value="">-- Choose Course --</option>
+                </select>
+                <x-input-error :messages="$errors->get('course_id')" class="mt-2" />
+            </div>
 
-            <x-primary-button class="ml-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
+            {{-- Password --}}
+            <div>
+                <x-input-label for="password" :value="__('Password')" />
+                <x-text-input id="password" name="password" type="password" class="w-full mt-1" required placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkPassword(this.value)" />
+                <x-input-error :messages="$errors->get('password')" class="mt-2" />
 
-    <!-- Dependent Course Dropdown Script -->
+                {{-- Password Rules in 2 Columns --}}
+                <div id="password-requirements" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm text-gray-700">
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div id="circle-length" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
+                            <span>Minimum 8 characters</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div id="circle-case" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
+                            <span>Upper & lowercase</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div id="circle-number" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
+                            <span>At least 1 number</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div id="circle-special" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
+                            <span>Special character</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Confirm Password --}}
+            <div>
+                <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+                <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="w-full mt-1" required autocomplete="new-password" />
+                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            </div>
+
+            {{-- Submit --}}
+            <div class="flex items-center justify-between pt-4">
+                <a href="{{ route('login') }}" class="text-sm text-gray-600 hover:underline">Already registered?</a>
+                <x-primary-button>
+                    {{ __('Register') }}
+                </x-primary-button>
+            </div>
+        </form>
+    </div>
+
+    {{-- JavaScript --}}
     <script>
-        document.getElementById('department_id').addEventListener('change', function () {
-            const departmentId = this.value;
-            const courseSelect = document.getElementById('course_id');
-            courseSelect.innerHTML = '<option value="">Loading...</option>';
+        document.addEventListener('DOMContentLoaded', function () {
+            // Email @ symbol warning
+            const emailInput = document.getElementById('email');
+            const emailWarning = document.getElementById('email-warning');
 
-            fetch(`/api/departments/${departmentId}/courses`)
-                .then(res => res.json())
-                .then(data => {
-                    courseSelect.innerHTML = '<option value="">-- Select Course --</option>';
-                    data.forEach(course => {
-                        const option = document.createElement('option');
-                        option.value = course.id;
-                        option.textContent = course.name;
-                        courseSelect.appendChild(option);
+            emailInput.addEventListener('input', () => {
+                const hasAtSymbol = emailInput.value.includes('@');
+
+                if (hasAtSymbol) {
+                    emailWarning.classList.remove('hidden');
+                    emailInput.setCustomValidity("Please enter only your username, not the full email.");
+                } else {
+                    emailWarning.classList.add('hidden');
+                    emailInput.setCustomValidity("");
+                }
+            });
+
+            // Department -> Course cascade
+            const deptSelect = document.getElementById('department_id');
+            const courseSelect = document.getElementById('course_id');
+            const courseWrapper = document.getElementById('course-wrapper');
+
+            deptSelect.addEventListener('change', function () {
+                const deptId = this.value;
+                if (!deptId) {
+                    courseWrapper.classList.add('hidden');
+                    courseSelect.innerHTML = '<option value="">-- Choose Course --</option>';
+                    return;
+                }
+                courseWrapper.classList.remove('hidden');
+                courseSelect.innerHTML = '<option value="">Loading...</option>';
+                fetch(`/api/department/${deptId}/courses`)
+                    .then(response => response.json())
+                    .then(data => {
+                        courseSelect.innerHTML = '<option value="">-- Choose Course --</option>';
+                        data.forEach(course => {
+                            courseSelect.innerHTML += `<option value="${course.id}">${course.name}</option>`;
+                        });
                     });
-                })
-                .catch(() => {
-                    courseSelect.innerHTML = '<option value="">Failed to load courses</option>';
-                });
+            });
         });
+
+        function checkPassword(password) {
+            const checks = {
+                length: password.length >= 8,
+                number: /[0-9]/.test(password),
+                case: /[a-z]/.test(password) && /[A-Z]/.test(password),
+                special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            };
+
+            const update = (id, valid) => {
+                const el = document.getElementById(`circle-${id}`);
+                el.classList.remove('bg-red-400', 'bg-green-500', 'bg-gray-300');
+                el.classList.add(valid ? 'bg-green-500' : 'bg-red-400');
+            };
+
+            update('length', checks.length);
+            update('number', checks.number);
+            update('case', checks.case);
+            update('special', checks.special);
+
+            const requirementsBox = document.getElementById('password-requirements');
+            const allValid = Object.values(checks).every(Boolean);
+            requirementsBox.classList.toggle('hidden', allValid);
+        }
     </script>
 </x-guest-layout>
