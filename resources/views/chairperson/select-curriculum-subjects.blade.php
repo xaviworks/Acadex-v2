@@ -34,7 +34,7 @@
         <input type="hidden" name="curriculum_id" id="formCurriculumId">
 
         <div class="table-responsive d-none" id="subjectsContainer">
-            {{-- Tabs for Year Levels with Select All Button Aligned Right --}}
+            {{-- Tabs for Year Levels --}}
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <ul class="nav nav-tabs" id="yearTabs" style="margin-bottom: 0;"></ul>
                 <button type="button" class="btn btn-success btn-sm" id="selectAllBtn" data-selected="false">
@@ -45,7 +45,7 @@
             <div class="tab-content mt-3" id="subjectsTableBody"></div>
 
             <div class="text-end mt-3">
-                <button type="submit" class="btn btn-success shadow-sm">
+                <button type="button" class="btn btn-success shadow-sm" data-bs-toggle="modal" data-bs-target="#confirmModal">
                     <i class="bi bi-check-circle me-1"></i> Confirm Selected Subjects
                 </button>
             </div>
@@ -65,6 +65,25 @@
             </div>
         </div>
     @endif
+</div>
+
+{{-- Confirmation Modal --}}
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 shadow">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="confirmModalLabel">Confirm Submission</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to confirm and save the selected subjects for this curriculum?
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="submitConfirmBtn" class="btn btn-success">Yes, Confirm</button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -183,6 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Select/Unselect All Handler
     document.addEventListener('click', function (e) {
         if (e.target.closest('#selectAllBtn')) {
             const btn = e.target.closest('#selectAllBtn');
@@ -196,6 +216,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? '<i class="bi bi-x-square me-1"></i> Unselect All'
                 : '<i class="bi bi-check2-square me-1"></i> Select All';
         }
+    });
+
+    // Confirm Modal Submission
+    document.getElementById('submitConfirmBtn')?.addEventListener('click', function () {
+        document.getElementById('confirmForm')?.submit();
     });
 });
 </script>
