@@ -25,9 +25,17 @@
         <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Instructor</h6>
         <ul class="nav nav-pills flex-column mb-4">
             <li>
-                <a href="{{ route('instructor.students.index') }}" class="nav-link text-white {{ request()->routeIs('instructor.students.*') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
+                <a href="{{ route('instructor.students.index') }}"
+                class="nav-link text-white {{ request()->routeIs('instructor.students.index') ? 'active bg-success' : '' }}">
+                                 <div class="d-flex align-items-center">
                         <span class="me-2" style="width: 20px;">🎓</span> Manage Students
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('instructor.students.import') }}" class="nav-link text-white {{ request()->routeIs('instructor.students.import') ? 'active bg-success' : '' }}">
+                    <div class="d-flex align-items-center">
+                        <span class="me-2" style="width: 20px;">📤</span> Import Student List
                     </div>
                 </a>
             </li>
@@ -154,6 +162,13 @@
                 <a href="{{ route('admin.academicPeriods') }}" class="nav-link text-white {{ request()->routeIs('admin.academicPeriods') ? 'active bg-success' : '' }}">
                     <div class="d-flex align-items-center">
                         <span class="me-2" style="width: 20px;">📅</span> Academic Periods
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('instructor.students.import') }}" class="nav-link text-white {{ request()->routeIs('instructor.students.import') ? 'active bg-success' : '' }}">
+                    <div class="d-flex align-items-center">
+                        <span class="me-2" style="width: 20px;">📤</span> Import Student List
                     </div>
                 </a>
             </li>

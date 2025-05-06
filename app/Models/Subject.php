@@ -25,6 +25,12 @@ class Subject extends Model
     return $this->belongsTo(User::class, 'instructor_id');
 }
 
+public function course()
+{
+    return $this->belongsTo(Course::class);
+}
+
+
 public function students()
 {
     return $this->belongsToMany(Student::class, 'student_subjects', 'subject_id', 'student_id')

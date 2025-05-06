@@ -15,6 +15,7 @@ use App\Http\Controllers\GradeController;
 use App\Http\Controllers\FinalGradeController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\CurriculumController;
+use App\Http\Controllers\StudentImportController;
 use App\Http\Middleware\EnsureAcademicPeriodSet;
 
 // Welcome Page
@@ -27,7 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Academic Period Selection (shown after login)
+// Academic Period Selection
 Route::middleware('auth')->group(function () {
     Route::get('/select-academic-period', function () {
         $periods = \App\Models\AcademicPeriod::where('is_deleted', false)
@@ -47,7 +48,7 @@ Route::middleware('auth')->group(function () {
     })->name('set.academicPeriod');
 });
 
-// Dashboard (role-based with academic period check)
+// Dashboard
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified', 'academic.period.set'])
     ->name('dashboard');
@@ -68,13 +69,12 @@ Route::prefix('chairperson')
         Route::get('/grades', [ChairpersonController::class, 'viewGrades'])->name('viewGrades');
         Route::get('/students-by-year', [ChairpersonController::class, 'viewStudentsPerYear'])->name('studentsByYear');
 
-        // Account Approvals
         Route::get('/approvals', [AccountApprovalController::class, 'index'])->name('accounts.index');
         Route::post('/approvals/{id}/approve', [AccountApprovalController::class, 'approve'])->name('accounts.approve');
         Route::post('/approvals/{id}/reject', [AccountApprovalController::class, 'reject'])->name('accounts.reject');
     });
 
-// Curriculum Routes (Admin & Chair)
+// Curriculum Routes
 Route::middleware(['auth', 'academic.period.set'])->group(function () {
     Route::get('/curriculum/select-subjects', [CurriculumController::class, 'selectSubjects'])->name('curriculum.selectSubjects');
     Route::post('/curriculum/confirm-subjects', [CurriculumController::class, 'confirmSubjects'])->name('curriculum.confirmSubjects');
@@ -88,19 +88,28 @@ Route::prefix('instructor')
     ->group(function () {
         Route::get('/dashboard', [InstructorController::class, 'dashboard'])->name('dashboard');
 
+        // Student Management
         Route::get('/students', [StudentController::class, 'index'])->name('students.index');
         Route::get('/students/enroll', [StudentController::class, 'create'])->name('students.create');
         Route::post('/students', [StudentController::class, 'store'])->name('students.store');
         Route::delete('/students/{student}/drop', [StudentController::class, 'drop'])->name('students.drop');
 
+        // ✅ Student Import Routes
+        Route::get('/students/import', [StudentImportController::class, 'showUploadForm'])->name('students.import');
+        Route::post('/students/import', [StudentImportController::class, 'upload'])->name('students.import.upload');
+        Route::post('/students/import/confirm', [StudentImportController::class, 'confirmImport'])->name('students.import.confirm');
+
+        // Grades
         Route::get('/grades', [GradeController::class, 'index'])->name('grades.index');
         Route::get('/grades/partial', [GradeController::class, 'partial'])->name('grades.partial');
         Route::post('/grades/save', [GradeController::class, 'store'])->name('grades.store');
         Route::post('/grades/ajax-save-score', [GradeController::class, 'ajaxSaveScore'])->name('grades.ajaxSaveScore');
 
+        // Final Grades
         Route::get('/final-grades', [FinalGradeController::class, 'index'])->name('final-grades.index');
         Route::post('/final-grades/generate', [FinalGradeController::class, 'generate'])->name('final-grades.generate');
 
+        // Activities
         Route::get('/activities', [ActivityController::class, 'index'])->name('activities.index');
         Route::get('/activities/create', [ActivityController::class, 'create'])->name('activities.create');
         Route::post('/activities/store', [ActivityController::class, 'store'])->name('activities.store');
@@ -135,5 +144,5 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
     Route::post('/academic-periods/generate', [AcademicPeriodController::class, 'generate'])->name('academicPeriods.generate');
 });
 
-// Auth Routes (Breeze/Fortify)
+// Auth Routes
 require __DIR__.'/auth.php';
