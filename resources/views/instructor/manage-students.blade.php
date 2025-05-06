@@ -7,7 +7,7 @@
     {{-- Subject Selection --}}
     <form method="GET" action="{{ route('instructor.students.index') }}" class="mb-4">
         <label class="form-label fw-medium mb-1">Select Subject</label>
-        <select name="subject_id" class="form-select" onchange="this.form.submit()">
+        <select name="subject_id" class="form-select" onchange="handleSubjectChange(this)">
             <option value="">-- Select Subject --</option>
             @foreach($subjects as $subject)
                 <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
@@ -25,7 +25,7 @@
     </div>
 
     {{-- Students Table --}}
-    @if($students)
+    @if($students && $students->count())
         <div class="card shadow-sm">
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle mb-0">
@@ -36,7 +36,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($students as $student)
+                        @foreach ($students as $student)
                             <tr>
                                 <td class="fw-semibold">
                                     {{ $student->first_name }} {{ $student->last_name }}
@@ -52,15 +52,15 @@
                                     </button>
                                 </td>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="2" class="text-center text-muted">No students found for this subject.</td>
-                            </tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
         </div>
+    @elseif(request('subject_id'))
+        <div class="alert alert-warning bg-warning-subtle text-dark border-0 text-center">
+            No students found for the selected subject.
+        </div> 
     @endif
 </div>
 
@@ -167,6 +167,14 @@
 
 @push('scripts')
 <script>
+function handleSubjectChange(select) {
+    if (select.value === "") {
+        window.location.href = "{{ route('instructor.students.index') }}";
+    } else {
+        select.form.submit();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const dropModal = document.getElementById('confirmDropModal');
     dropModal.addEventListener('show.bs.modal', function (event) {

@@ -23,6 +23,7 @@ class ActivityController extends Controller
     
         $academicPeriodId = session('active_academic_period_id');
     
+        // Fetch instructor's subjects for current academic period
         $subjects = Subject::where('instructor_id', Auth::id())
             ->where('is_deleted', false)
             ->when($academicPeriodId, fn($q) => $q->where('academic_period_id', $academicPeriodId))
@@ -33,10 +34,15 @@ class ActivityController extends Controller
         if ($request->filled('subject_id')) {
             $subject = Subject::findOrFail($request->subject_id);
     
+            if ($subject->instructor_id !== Auth::id()) {
+                abort(403, 'Unauthorized access to subject.');
+            }
+    
             if ($academicPeriodId && $subject->academic_period_id !== (int) $academicPeriodId) {
                 abort(403, 'This subject does not belong to the current academic period.');
             }
     
+            // Auto-generate activities if none exist
             $existing = Activity::where('subject_id', $subject->id)
                 ->where('is_deleted', false)
                 ->count();
@@ -61,8 +67,10 @@ class ActivityController extends Controller
                 }
             }
     
+            // Filter activities by subject (and term if present)
             $activities = Activity::where('subject_id', $subject->id)
                 ->where('is_deleted', false)
+                ->when($request->filled('term'), fn($q) => $q->where('term', $request->term))
                 ->orderBy('term')
                 ->orderBy('type')
                 ->orderBy('created_at')
@@ -70,7 +78,7 @@ class ActivityController extends Controller
         }
     
         return view('instructor.activities.index', compact('subjects', 'activities'));
-    }    
+    }       
     
     // ➕ Full Create Activity Form
     public function create()

@@ -4,27 +4,46 @@
 <div class="container-fluid px-0">
     <div id="grade-section">
         @if (!$subject)
-            {{-- SUBJECT SELECTION --}}
-            <div class="row g-4 px-4" id="subject-selection">
+            <div class="row g-4 px-4 py-4" id="subject-selection">
                 @foreach($subjects as $subjectItem)
                     <div class="col-md-4">
                         <div
-                            class="subject-card card h-100 bg-white border-0 shadow-lg rounded-4 transform transition hover:scale-105 hover:shadow-xl"
+                            class="subject-card card h-100 border-0 shadow-lg rounded-4 overflow-hidden transform transition hover:scale-105 hover:shadow-xl"
                             data-url="{{ route('instructor.grades.index') }}?subject_id={{ $subjectItem->id }}&term=prelim"
-                            style="cursor: pointer;"
+                            style="cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;"
                         >
-                            <div class="card-body d-flex flex-column justify-content-between p-4 rounded-4">
-                                <div class="text-center mb-3">
-                                    <div class="rounded-circle mx-auto d-flex align-items-center justify-content-center text-white shadow"
-                                        style="width: 80px; height: 80px; background: linear-gradient(135deg, #4da674, #023336); transition: background 0.3s ease;">
-                                        <h5 class="mb-0 fw-bold">{{ $subjectItem->subject_code }}</h5>
-                                    </div>
-                                    <h6 class="fw-semibold mt-3 text-truncate text-dark" title="{{ $subjectItem->subject_description }}">
-                                        {{ $subjectItem->subject_description }}
-                                    </h6>
+                            {{-- Top header --}}
+                            <div class="position-relative" style="height: 80px; background-color: #4ecd85;">
+                                <div class="subject-circle position-absolute start-50 translate-middle"
+                                    style="top: 100%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: linear-gradient(135deg, #4da674, #023336); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                    <h5 class="mb-0 text-white fw-bold">{{ $subjectItem->subject_code }}</h5>
                                 </div>
-                                <div class="text-muted text-center small">
-                                    Instructor: <strong>{{ $subjectItem->instructor->name ?? 'N/A' }}</strong>
+                            </div>
+
+                            {{-- Card body --}}
+                            <div class="card-body pt-5 text-center">
+                                <h6 class="fw-semibold mt-4 text-dark text-truncate" title="{{ $subjectItem->subject_description }}">
+                                    {{ $subjectItem->subject_description }}
+                                </h6>
+
+                                {{-- Footer badges --}}
+                                <div class="d-flex justify-content-between align-items-center mt-4 px-2">
+                                    <span class="badge bg-light border text-secondary px-3 py-2 rounded-pill">
+                                        👥 {{ $subjectItem->students_count }} Students
+                                    </span>
+                                    <span class="badge px-3 py-2 fw-semibold text-uppercase rounded-pill
+                                        @if($subjectItem->grade_status === 'completed') bg-success
+                                        @elseif($subjectItem->grade_status === 'pending') bg-warning text-dark
+                                        @else bg-secondary
+                                        @endif">
+                                        @if($subjectItem->grade_status === 'completed')
+                                            ✔ Completed
+                                        @elseif($subjectItem->grade_status === 'pending')
+                                            ⏳ Pending
+                                        @else
+                                            ⭕ Not Started
+                                        @endif
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -32,13 +51,8 @@
                 @endforeach
             </div>
         @else
-            {{-- TERM NAVIGATION STEPPER --}}
             @include('instructor.partials.term-stepper')
-
-            {{-- ADD ACTIVITY HEADER & MODAL --}}
             @include('instructor.partials.activity-header', ['subject' => $subject, 'term' => $term])
-
-            {{-- GRADES TABLE --}}
             <form method="POST" action="{{ route('instructor.grades.store') }}">
                 @csrf
                 <input type="hidden" name="subject_id" value="{{ $subject->id }}">
@@ -46,7 +60,6 @@
                 @include('instructor.partials.grade-table')
             </form>
 
-            {{-- SUCCESS TOAST --}}
             @if(session('success'))
                 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
                     <div class="toast show align-items-center text-bg-success border-0 shadow" role="alert">
@@ -60,7 +73,6 @@
         @endif
     </div>
 
-    <!-- Fade Overlay Spinner -->
     <div id="fadeOverlay" class="fade-overlay d-none">
         <div class="spinner"></div>
     </div>
@@ -96,10 +108,18 @@
     to { transform: rotate(360deg); }
 }
 .subject-card {
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .subject-card:hover {
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transform: scale(1.05);
+    box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+}
+.subject-circle {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.subject-card:hover .subject-circle {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    transform: translate(-50%, -55%) scale(1.05);
 }
 </style>
 @endpush
@@ -109,10 +129,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('✅ manage-grades script loaded and DOM ready');
     const overlay = document.getElementById('fadeOverlay');
 
-    // SUBJECT CARD CLICK → full section replacement
     document.querySelectorAll('.subject-card[data-url]').forEach(card => {
         card.addEventListener('click', function () {
             const url = this.dataset.url;
@@ -127,11 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const doc = parser.parseFromString(html, 'text/html');
                 const newGradeSection = doc.querySelector('#grade-section');
                 document.getElementById('grade-section')?.replaceWith(newGradeSection);
-
-                if (typeof bindGradeInputEvents === 'function') {
-                    bindGradeInputEvents();
-                }
-
+                if (typeof bindGradeInputEvents === 'function') bindGradeInputEvents();
                 overlay.classList.add('d-none');
             })
             .catch(() => {
@@ -141,37 +155,30 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // TERM STEPPER CLICK → partial section update
     document.addEventListener('click', function (e) {
         const button = e.target.closest('.term-step');
-        if (button) {
-            const term = button.dataset.term;
-            const subjectId = document.querySelector('input[name="subject_id"]')?.value;
-            if (!subjectId) return;
+        if (!button) return;
+        const term = button.dataset.term;
+        const subjectId = document.querySelector('input[name="subject_id"]')?.value;
+        if (!subjectId) return;
+        overlay.classList.remove('d-none');
 
-            overlay.classList.remove('d-none');
-
-            fetch(`/instructor/grades/partial?subject_id=${subjectId}&term=${term}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.text())
-            .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newGradeSection = doc.querySelector('#grade-section');
-                document.getElementById('grade-section')?.replaceWith(newGradeSection);
-
-                if (typeof bindGradeInputEvents === 'function') {
-                    bindGradeInputEvents();
-                }
-
-                overlay.classList.add('d-none');
-            })
-            .catch(() => {
-                overlay.classList.add('d-none');
-                alert('Failed to load term data.');
-            });
-        }
+        fetch(`/instructor/grades/partial?subject_id=${subjectId}&term=${term}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newGradeSection = doc.querySelector('#grade-section');
+            document.getElementById('grade-section')?.replaceWith(newGradeSection);
+            if (typeof bindGradeInputEvents === 'function') bindGradeInputEvents();
+            overlay.classList.add('d-none');
+        })
+        .catch(() => {
+            overlay.classList.add('d-none');
+            alert('Failed to load term data.');
+        });
     });
 });
 </script>

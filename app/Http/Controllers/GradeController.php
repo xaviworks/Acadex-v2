@@ -23,34 +23,50 @@ class GradeController extends Controller
     public function index(Request $request)
     {
         Gate::authorize('instructor');
-
-        $academicPeriodId = session('active_academic_period_id'); // You can change to request()->input('academic_period_id') if passed in URL
-
+    
+        $academicPeriodId = session('active_academic_period_id');
+        $term = $request->term ?? 'prelim';
+    
         $subjects = Subject::where('instructor_id', Auth::id())
             ->when($academicPeriodId, fn($q) => $q->where('academic_period_id', $academicPeriodId))
+            ->withCount('students')
             ->get();
-                $term = $request->term ?? 'prelim';
+    
+        foreach ($subjects as $subject) {
+            $totalStudents = $subject->students_count;
+    
+            $graded = TermGrade::where('subject_id', $subject->id)
+                ->where('term_id', $this->getTermId($term))
+                ->distinct('student_id')
+                ->count('student_id');
+    
+            $subject->grade_status = match (true) {
+                $graded === 0 => 'not_started',
+                $graded < $totalStudents => 'pending',
+                default => 'completed'
+            };
+        }
+    
         $students = $activities = $scores = $termGrades = [];
         $subject = null;
-
+    
         if ($request->filled('subject_id')) {
             $subject = Subject::where('id', $request->subject_id)
                 ->when($academicPeriodId, fn($q) => $q->where('academic_period_id', $academicPeriodId))
                 ->firstOrFail();
-
-
+    
             if ($academicPeriodId && $subject->academic_period_id !== (int) $academicPeriodId) {
                 abort(403, 'Subject does not belong to the current academic period.');
             }
-            
-
+    
             $students = Student::whereHas('subjects', fn($q) => $q->where('subject_id', $subject->id))
                 ->where('is_deleted', false)->get();
-
+    
             $activities = Activity::where('subject_id', $subject->id)
-                ->where('term', $term)->where('is_deleted', false)
+                ->where('term', $term)
+                ->where('is_deleted', false)
                 ->orderBy('type')->orderBy('created_at')->get();
-
+    
             if ($activities->isEmpty()) {
                 $defaultActivities = [];
                 foreach (['quiz' => 3, 'ocr' => 3, 'exam' => 1] as $type => $count) {
@@ -68,19 +84,20 @@ class GradeController extends Controller
                 }
                 Activity::insert($defaultActivities);
                 $activities = Activity::where('subject_id', $subject->id)
-                    ->where('term', $term)->where('is_deleted', false)
+                    ->where('term', $term)
+                    ->where('is_deleted', false)
                     ->orderBy('type')->orderBy('created_at')->get();
             }
-
+    
             foreach ($students as $student) {
                 $totalEarned = 0;
                 $totalPossible = 0;
                 $allScored = true;
-
+    
                 foreach ($activities as $activity) {
                     $score = $student->scores()->where('activity_id', $activity->id)->first()->score ?? null;
                     $scores[$student->id][$activity->id] = $score;
-
+    
                     if ($score !== null) {
                         $totalEarned += $score;
                         $totalPossible += $activity->number_of_items;
@@ -88,24 +105,24 @@ class GradeController extends Controller
                         $allScored = false;
                     }
                 }
-
+    
                 $termGrades[$student->id] = ($allScored && $totalPossible > 0)
                     ? number_format(($totalEarned / $totalPossible) * 100, 2)
                     : null;
             }
         }
-
-if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-    return view('instructor.partials.grade-body', compact(
-        'subject', 'term', 'students', 'activities', 'scores', 'termGrades'
-    ));
-}
-
-
+    
+        if ($request->ajax() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+            return view('instructor.partials.grade-body', compact(
+                'subject', 'term', 'students', 'activities', 'scores', 'termGrades'
+            ));
+        }
+    
         return view('instructor.manage-grades', compact(
             'subjects', 'subject', 'term', 'students', 'activities', 'scores', 'termGrades'
         ));
     }
+    
 
     public function store(Request $request)
     {
