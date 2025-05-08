@@ -20,6 +20,20 @@ class LoginRequest extends FormRequest
     }
 
     /**
+     * Modify input before validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $username = $this->input('email');
+
+        if (!str_contains($username, '@')) {
+            $this->merge([
+                'email' => $username . '@brokenshire.edu.ph',
+            ]);
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -80,6 +94,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('email')) . '|' . $this->ip());
     }
 }

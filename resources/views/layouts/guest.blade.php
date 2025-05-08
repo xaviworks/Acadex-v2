@@ -22,9 +22,21 @@
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
+            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg" x-data="{ showPassword: false }">
                 {{ $slot }}
             </div>
         </div>
+
+        <!-- Alpine.js Script for Show/Hide Password (Optional) -->
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('passwordToggle', () => ({
+                    showPassword: false,
+                    togglePassword() {
+                        this.showPassword = !this.showPassword;
+                    }
+                }));
+            });
+        </script>
     </body>
 </html>

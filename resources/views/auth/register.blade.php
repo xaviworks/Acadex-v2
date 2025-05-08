@@ -117,72 +117,80 @@
         </form>
     </div>
 
-    {{-- JavaScript --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // Email @ symbol warning
-            const emailInput = document.getElementById('email');
-            const emailWarning = document.getElementById('email-warning');
+{{-- JavaScript --}}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Email @ symbol warning
+        const emailInput = document.getElementById('email');
+        const emailWarning = document.getElementById('email-warning');
 
-            emailInput.addEventListener('input', () => {
-                const hasAtSymbol = emailInput.value.includes('@');
+        emailInput.addEventListener('input', () => {
+            const hasAtSymbol = emailInput.value.includes('@');
 
-                if (hasAtSymbol) {
-                    emailWarning.classList.remove('hidden');
-                    emailInput.setCustomValidity("Please enter only your username, not the full email.");
-                } else {
-                    emailWarning.classList.add('hidden');
-                    emailInput.setCustomValidity("");
-                }
-            });
+            if (hasAtSymbol) {
+                emailWarning.classList.remove('hidden');
+                emailInput.setCustomValidity("Please enter only your username, not the full email.");
+            } else {
+                emailWarning.classList.add('hidden');
+                emailInput.setCustomValidity("");
+            }
+        });
 
-            // Department -> Course cascade
-            const deptSelect = document.getElementById('department_id');
-            const courseSelect = document.getElementById('course_id');
-            const courseWrapper = document.getElementById('course-wrapper');
+        // Department -> Course cascade with auto-select if only 1 course
+        const deptSelect = document.getElementById('department_id');
+        const courseSelect = document.getElementById('course_id');
+        const courseWrapper = document.getElementById('course-wrapper');
 
-            deptSelect.addEventListener('change', function () {
-                const deptId = this.value;
-                if (!deptId) {
-                    courseWrapper.classList.add('hidden');
-                    courseSelect.innerHTML = '<option value="">-- Choose Course --</option>';
-                    return;
-                }
-                courseWrapper.classList.remove('hidden');
-                courseSelect.innerHTML = '<option value="">Loading...</option>';
-                fetch(`/api/department/${deptId}/courses`)
-                    .then(response => response.json())
-                    .then(data => {
+        deptSelect.addEventListener('change', function () {
+            const deptId = this.value;
+            if (!deptId) {
+                courseWrapper.classList.add('hidden');
+                courseSelect.innerHTML = '<option value="">-- Choose Course --</option>';
+                return;
+            }
+
+            courseSelect.innerHTML = '<option value="">Loading...</option>';
+            fetch(`/api/department/${deptId}/courses`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 1) {
+                        // Auto-select and hide course selection
+                        courseSelect.innerHTML = `<option value="${data[0].id}" selected>${data[0].name}</option>`;
+                        courseWrapper.classList.add('hidden');
+                    } else {
+                        // Show dropdown with options
                         courseSelect.innerHTML = '<option value="">-- Choose Course --</option>';
                         data.forEach(course => {
                             courseSelect.innerHTML += `<option value="${course.id}">${course.name}</option>`;
                         });
-                    });
-            });
+                        courseWrapper.classList.remove('hidden');
+                    }
+                });
         });
+    });
 
-        function checkPassword(password) {
-            const checks = {
-                length: password.length >= 8,
-                number: /[0-9]/.test(password),
-                case: /[a-z]/.test(password) && /[A-Z]/.test(password),
-                special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
-            };
+    function checkPassword(password) {
+        const checks = {
+            length: password.length >= 8,
+            number: /[0-9]/.test(password),
+            case: /[a-z]/.test(password) && /[A-Z]/.test(password),
+            special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        };
 
-            const update = (id, valid) => {
-                const el = document.getElementById(`circle-${id}`);
-                el.classList.remove('bg-red-400', 'bg-green-500', 'bg-gray-300');
-                el.classList.add(valid ? 'bg-green-500' : 'bg-red-400');
-            };
+        const update = (id, valid) => {
+            const el = document.getElementById(`circle-${id}`);
+            el.classList.remove('bg-red-400', 'bg-green-500', 'bg-gray-300');
+            el.classList.add(valid ? 'bg-green-500' : 'bg-red-400');
+        };
 
-            update('length', checks.length);
-            update('number', checks.number);
-            update('case', checks.case);
-            update('special', checks.special);
+        update('length', checks.length);
+        update('number', checks.number);
+        update('case', checks.case);
+        update('special', checks.special);
 
-            const requirementsBox = document.getElementById('password-requirements');
-            const allValid = Object.values(checks).every(Boolean);
-            requirementsBox.classList.toggle('hidden', allValid);
-        }
-    </script>
+        const requirementsBox = document.getElementById('password-requirements');
+        const allValid = Object.values(checks).every(Boolean);
+        requirementsBox.classList.toggle('hidden', allValid);
+    }
+</script>
 </x-guest-layout>

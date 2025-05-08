@@ -15,23 +15,38 @@
     <form action="{{ route('instructor.students.store') }}" method="POST" class="space-y-6">
         @csrf
 
-        {{-- First Name --}}
-        <div>
-            <label class="block text-gray-700 font-medium mb-1">First Name <span class="text-red-500">*</span></label>
-            <input type="text" name="first_name" class="w-full border px-3 py-2 rounded" value="{{ old('first_name') }}" required>
-            @error('first_name')
-                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-            @enderror
-        </div>
+    {{-- First Name --}}
+    <div>
+        <label class="block text-gray-700 font-medium mb-1">
+            First Name <span class="text-red-500">*</span>
+        </label>
+        <input type="text" name="first_name" class="w-full border px-3 py-2 rounded" value="{{ old('first_name') }}" required>
+        @error('first_name')
+            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+        @enderror
+    </div>
 
-        {{-- Last Name --}}
-        <div>
-            <label class="block text-gray-700 font-medium mb-1">Last Name <span class="text-red-500">*</span></label>
-            <input type="text" name="last_name" class="w-full border px-3 py-2 rounded" value="{{ old('last_name') }}" required>
-            @error('last_name')
-                <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
-            @enderror
-        </div>
+    {{-- Middle Name --}}
+    <div>
+        <label class="block text-gray-700 font-medium mb-1">
+            Middle Name
+        </label>
+        <input type="text" name="middle_name" class="w-full border px-3 py-2 rounded" value="{{ old('middle_name') }}">
+        @error('middle_name')
+            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+        @enderror
+    </div>
+
+    {{-- Last Name --}}
+    <div>
+        <label class="block text-gray-700 font-medium mb-1">
+            Last Name <span class="text-red-500">*</span>
+        </label>
+        <input type="text" name="last_name" class="w-full border px-3 py-2 rounded" value="{{ old('last_name') }}" required>
+        @error('last_name')
+            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+        @enderror
+    </div>
 
         {{-- Year Level --}}
         <div>

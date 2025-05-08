@@ -13,10 +13,6 @@
 
     <!-- Right: Profile & Notifications -->
     <div class="flex items-center gap-4">
-        <div class="relative">
-            <i class="bi bi-bell-fill text-lg"></i>
-            <span class="absolute -top-1 -right-1 bg-red-500 text-xs px-1.5 py-0.5 rounded-full">3</span>
-        </div>
 
         <div class="flex items-center gap-2">
             <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}"

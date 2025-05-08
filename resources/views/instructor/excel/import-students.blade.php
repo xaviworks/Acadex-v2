@@ -9,8 +9,18 @@
         </div>
     @endif
 
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            @foreach($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+
     {{-- Upload Form --}}
     <form method="POST" action="{{ route('instructor.students.import.upload') }}" enctype="multipart/form-data" id="uploadForm" class="mb-3">
+
         @csrf
         <div class="row g-3 align-items-end">
             <div class="col-md-6">
@@ -187,6 +197,11 @@ document.getElementById('compareSubjectSelect')?.addEventListener('change', func
 document.addEventListener('DOMContentLoaded', function () {
     const selectAll = document.getElementById('selectAll');
     const checkboxes = document.querySelectorAll('.student-checkbox');
+
+    // Initially hide all checkboxes
+    checkboxes.forEach(cb => cb.style.display = 'none');
+    if (selectAll) selectAll.style.display = 'none';
+
     if (selectAll) {
         selectAll.addEventListener('change', function () {
             checkboxes.forEach(cb => {
@@ -221,8 +236,14 @@ function runCrossCheck() {
         row.classList.remove('bg-danger', 'bg-success', 'bg-opacity-10');
         row.querySelectorAll('td').forEach(cell => cell.classList.remove('text-danger', 'text-success'));
         const checkbox = row.querySelector('.student-checkbox');
-        if (checkbox) checkbox.disabled = false;
+        if (checkbox) {
+            checkbox.disabled = false;
+            checkbox.style.display = '';
+        }
     });
+
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) selectAll.style.display = '';
 
     uploadedRows.forEach(row => {
         const nameKey = extractNameParts(row.dataset.fullName || '');

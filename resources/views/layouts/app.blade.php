@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,11 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Bootstrap CSS (latest version only) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
-    <!-- Scripts -->
+    <!-- App CSS & JS -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
@@ -24,32 +23,32 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 h-full text-gray-900 dark:text-white">
+<body class="bg-light text-dark">
 
-    <div class="flex h-screen">
+    <div class="d-flex min-vh-100">
         <!-- Sidebar -->
-        <aside class="w-64 bg-white dark:bg-gray-800 shadow-md flex flex-col border-r border-gray-200">
+        <aside class="bg-white shadow-sm border-end d-flex flex-column" style="width: 16rem;">
             @include('layouts.sidebar')
         </aside>
 
         <!-- Main Content -->
-        <div class="flex flex-col flex-1 overflow-hidden">
+        <div class="flex-grow-1 d-flex flex-column overflow-hidden">
             <!-- Top Navigation -->
             @include('layouts.navigation')
 
             <!-- Page Content -->
-            <main class="flex-1 overflow-y-auto p-6" style="background-color: #EAF8E7;">
+            <main class="flex-grow-1 overflow-auto p-4" style="background-color: #EAF8E7;">
                 @yield('content')
             </main>
         </div>
     </div>
 
-    <!-- Bootstrap Bundle (includes Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap JS Bundle (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Optional: Alpine.js (if used) -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Required: Bootstrap JS + Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>    
+
     @stack('scripts')
 </body>
 </html>

@@ -54,12 +54,18 @@ class StudentController extends Controller
     public function create()
     {
         Gate::authorize('instructor');
-
+    
+        $academicPeriodId = session('active_academic_period_id');
+    
         $courses = Course::where('department_id', Auth::user()->department_id)->get();
-        $subjects = Subject::where('instructor_id', Auth::id())->get();
-
+    
+        $subjects = Subject::where('instructor_id', Auth::id())
+            ->where('academic_period_id', $academicPeriodId)
+            ->get();
+    
         return view('instructor.add-student', compact('subjects', 'courses'));
     }
+    
 
     public function store(Request $request)
     {
@@ -74,7 +80,11 @@ class StudentController extends Controller
             'course_id' => 'required|exists:courses,id',
         ]);
     
-        $subject = Subject::findOrFail($request->subject_id);
+        $academicPeriodId = session('active_academic_period_id');
+    
+        $subject = Subject::where('id', $request->subject_id)
+            ->where('academic_period_id', $academicPeriodId)
+            ->firstOrFail();
     
         $student = Student::create([
             'first_name' => $request->first_name,
@@ -123,8 +133,7 @@ class StudentController extends Controller
         }
     
         return redirect()->route('instructor.students.index')->with('success', 'Student enrolled successfully with default activities.');
-    }
-    
+    }    
     
 
     // 🗑 Drop Student from a Subject
