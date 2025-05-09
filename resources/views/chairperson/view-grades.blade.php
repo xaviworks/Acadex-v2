@@ -66,16 +66,16 @@
                             $final = $termGrades[4]->term_grade ?? null;
 
                             $hasAll = !is_null($prelim) && !is_null($midterm) && !is_null($prefinal) && !is_null($final);
-                            $average = $hasAll ? number_format(($prelim + $midterm + $prefinal + $final) / 4, 2) : null;
+                            $average = $hasAll ? round(($prelim + $midterm + $prefinal + $final) / 4) : null;
 
                             $remarks = $average !== null ? ($average >= 75 ? 'Passed' : 'Failed') : null;
                         @endphp
                         <tr class="hover:bg-light">
                             <td>{{ $student->first_name }} {{ $student->last_name }}</td>
-                            <td class="text-center">{{ $prelim !== null ? number_format($prelim, 2) : '-' }}</td>
-                            <td class="text-center">{{ $midterm !== null ? number_format($midterm, 2) : '-' }}</td>
-                            <td class="text-center">{{ $prefinal !== null ? number_format($prefinal, 2) : '-' }}</td>
-                            <td class="text-center">{{ $final !== null ? number_format($final, 2) : '-' }}</td>
+                            <td class="text-center">{{ $prelim !== null ? round($prelim) : '-' }}</td>
+                            <td class="text-center">{{ $midterm !== null ? round($midterm) : '-' }}</td>
+                            <td class="text-center">{{ $prefinal !== null ? round($prefinal) : '-' }}</td>
+                            <td class="text-center">{{ $final !== null ? round($final) : '-' }}</td>
                             <td class="text-center fw-semibold text-success">
                                 {{ $average !== null ? $average : '-' }}
                             </td>

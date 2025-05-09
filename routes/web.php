@@ -65,6 +65,9 @@ Route::prefix('chairperson')
 
         Route::get('/assign-subjects', [ChairpersonController::class, 'assignSubjects'])->name('assignSubjects');
         Route::post('/assign-subjects/store', [ChairpersonController::class, 'storeAssignedSubject'])->name('storeAssignedSubject');
+        
+        // Add this route for toggling assigned subjects
+        Route::post('/assign-subjects/toggle', [ChairpersonController::class, 'toggleAssignedSubject'])->name('toggleAssignedSubject');
 
         Route::get('/grades', [ChairpersonController::class, 'viewGrades'])->name('viewGrades');
         Route::get('/students-by-year', [ChairpersonController::class, 'viewStudentsPerYear'])->name('studentsByYear');

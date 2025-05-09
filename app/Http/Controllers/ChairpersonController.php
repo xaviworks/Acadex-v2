@@ -142,7 +142,57 @@ class ChairpersonController extends Controller
 
         return redirect()->route('chairperson.assignSubjects')->with('success', 'Subject assigned successfully.');
     }
-
+    public function toggleAssignedSubject(Request $request)
+    {
+        Gate::authorize('chairperson');
+        
+        $academicPeriodId = session('active_academic_period_id');
+        
+        $request->validate([
+            'subject_id' => 'required|exists:subjects,id',
+            'instructor_id' => 'nullable|exists:users,id', // instructor_id is nullable for unassign
+        ]);
+    
+        $subject = Subject::where('id', $request->subject_id)
+            ->where('department_id', Auth::user()->department_id)
+            ->where('academic_period_id', $academicPeriodId)
+            ->firstOrFail();
+    
+        // Check if there are any enrolled students in the subject
+        $enrolledStudents = $subject->students()->count(); // Assuming the 'students' relationship is defined
+    
+        // If there are enrolled students and we are trying to unassign the subject, prevent the action
+        if ($enrolledStudents > 0 && !$request->instructor_id) {
+            return redirect()->route('chairperson.assignSubjects')->with('error', 'Cannot unassign subject as it has enrolled students.');
+        }
+    
+        // If an instructor is selected, assign them, otherwise unassign the instructor
+        if ($request->instructor_id) {
+            $instructor = User::where('id', $request->instructor_id)
+                ->where('role', 0) // Ensure the user is an instructor
+                ->where('department_id', Auth::user()->department_id)
+                ->where('is_active', true)
+                ->firstOrFail();
+    
+            $subject->update([
+                'instructor_id' => $instructor->id,
+                'updated_by' => Auth::id(),
+            ]);
+    
+            return redirect()->route('chairperson.assignSubjects')->with('success', 'Instructor assigned successfully.');
+        } else {
+            // Unassign the instructor only if no students are enrolled
+            $subject->update([
+                'instructor_id' => null,
+                'updated_by' => Auth::id(),
+            ]);
+    
+            return redirect()->route('chairperson.assignSubjects')->with('success', 'Instructor unassigned successfully.');
+        }
+    }
+    
+    
+    
     // ============================
     // View Grades
     // ============================

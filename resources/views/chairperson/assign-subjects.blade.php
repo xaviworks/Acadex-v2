@@ -7,6 +7,18 @@
         Assign Subjects to Instructors
     </h1>
 
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
     @if ($subjects->count())
         <div class="bg-white shadow rounded-4 overflow-x-auto">
             <table class="table table-bordered mb-0 align-middle">
@@ -26,11 +38,14 @@
                             <td>{{ $subject->instructor ? $subject->instructor->name : '—' }}</td>
                             <td class="text-center">
                                 @if ($subject->instructor)
-                                <button type="button" class="btn btn-outline-secondary btn-sm shadow-sm" disabled>
-                                    <i class="bi bi-check-circle me-1"></i> Assigned
-                                </button>                                                                @else
                                     <button
-                                        onclick="openAssignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
+                                        onclick="openConfirmUnassignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
+                                        class="btn btn-danger btn-sm">
+                                        <i class="bi bi-x-circle me-1"></i> Unassign
+                                    </button>
+                                @else
+                                    <button
+                                        onclick="openConfirmAssignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
                                         class="btn btn-success shadow-sm">
                                         <i class="bi bi-person-plus me-1"></i> Assign
                                     </button>
@@ -48,28 +63,50 @@
     @endif
 </div>
 
-{{-- Assign Modal --}}
-<div id="assignModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+{{-- Confirm Unassign Modal --}}
+<div id="confirmUnassignModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
     <div class="bg-white w-full max-w-lg rounded-4 shadow-lg overflow-hidden flex flex-col">
-        <!-- Green Header -->
-        <div class="bg-success text-white px-4 py-3 d-flex justify-content-between align-items-center">
+        <div class="bg-danger text-white px-4 py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0 fw-semibold">
-                <i class="bi bi-person-check-fill me-2"></i> Assign Instructor
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Unassign
             </h5>
-            <button onclick="closeAssignModal()" class="btn-close btn-close-white" aria-label="Close"></button>
+            <button onclick="closeConfirmUnassignModal()" class="btn-close btn-close-white" aria-label="Close"></button>
         </div>
 
-        <!-- Modal Body -->
         <div class="p-4">
-            <form method="POST" action="{{ route('chairperson.storeAssignedSubject') }}" class="vstack gap-3">
+            <p>Are you sure you want to unassign this subject? This action cannot be undone.</p>
+            <form id="unassignForm" action="{{ route('chairperson.toggleAssignedSubject') }}" method="POST">
                 @csrf
-                <input type="hidden" name="subject_id" id="modal_subject_id">
-
-                <div>
-                    <label class="form-label">Subject</label>
-                    <input type="text" id="modal_subject_name" class="form-control bg-light" disabled>
+                <input type="hidden" name="subject_id" id="unassign_subject_id">
+                <input type="hidden" name="instructor_id" value="">
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-1"></i> Unassign
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeConfirmUnassignModal()">
+                        Cancel
+                    </button>
                 </div>
+            </form>
+        </div>
+    </div>
+</div>
 
+{{-- Confirm Assign Modal --}}
+<div id="confirmAssignModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white w-full max-w-lg rounded-4 shadow-lg overflow-hidden flex flex-col">
+        <div class="bg-success text-white px-4 py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-semibold">
+                <i class="bi bi-check-circle-fill me-2"></i> Confirm Assign
+            </h5>
+            <button onclick="closeConfirmAssignModal()" class="btn-close btn-close-white" aria-label="Close"></button>
+        </div>
+
+        <div class="p-4">
+            <p>Are you sure you want to assign this subject to an instructor?</p>
+            <form id="assignForm" method="POST" action="{{ route('chairperson.storeAssignedSubject') }}" class="vstack gap-3">
+                @csrf
+                <input type="hidden" name="subject_id" id="assign_subject_id">
                 <div>
                     <label class="form-label">Select Instructor</label>
                     <select name="instructor_id" class="form-select" required>
@@ -79,10 +116,12 @@
                         @endforeach
                     </select>
                 </div>
-
                 <div class="text-end mt-3">
                     <button type="submit" class="btn btn-success">
                         <i class="bi bi-check-circle me-1"></i> Assign
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeConfirmAssignModal()">
+                        Cancel
                     </button>
                 </div>
             </form>
@@ -92,16 +131,32 @@
 
 @push('scripts')
 <script>
-    function openAssignModal(subjectId, subjectName) {
-        document.getElementById('modal_subject_id').value = subjectId;
-        document.getElementById('modal_subject_name').value = subjectName;
-        const modal = document.getElementById('assignModal');
+    // Open confirm unassign modal and populate fields
+    function openConfirmUnassignModal(subjectId, subjectName) {
+        document.getElementById('unassign_subject_id').value = subjectId;
+        const modal = document.getElementById('confirmUnassignModal');
         modal.classList.remove('hidden');
         modal.classList.add('d-flex');
     }
 
-    function closeAssignModal() {
-        const modal = document.getElementById('assignModal');
+    // Close confirm unassign modal
+    function closeConfirmUnassignModal() {
+        const modal = document.getElementById('confirmUnassignModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('d-flex');
+    }
+
+    // Open confirm assign modal and populate fields
+    function openConfirmAssignModal(subjectId, subjectName) {
+        document.getElementById('assign_subject_id').value = subjectId;
+        const modal = document.getElementById('confirmAssignModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('d-flex');
+    }
+
+    // Close confirm assign modal
+    function closeConfirmAssignModal() {
+        const modal = document.getElementById('confirmAssignModal');
         modal.classList.add('hidden');
         modal.classList.remove('d-flex');
     }

@@ -171,9 +171,9 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.users') }}" class="nav-link text-white {{ request()->routeIs('admin.users') ? 'active bg-success' : '' }}">
+                <a href="{{ route('admin.academicPeriods') }}" class="nav-link text-white {{ request()->routeIs('admin.users') ? 'active bg-success' : '' }}">
                     <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">👤</span> Users
+                        <span class="me-2" style="width: 20px;">📅</span> Academic Period
                     </div>
                 </a>
             </li>
