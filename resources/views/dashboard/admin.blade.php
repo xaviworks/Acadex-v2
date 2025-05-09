@@ -3,5 +3,33 @@
 @section('content')
 <div class="container">
     <h1>Admin Dashboard</h1>
+
+    <div class="container py-5">
+    <h2 class="mb-4 fw-bold text-dark">📊 Admin Dashboard Overview</h2>
+
+    {{-- Summary Cards --}}
+    <div class="row g-4">
+        @php
+            $cards = [
+                ['label' => 'Total Users', 'icon' => '👥', 'value' => $totalUsers, 'color' => 'text-primary'],
+                ['label' => 'Successful Logins Today', 'icon' => '✅', 'value' => $loginCount, 'color' => 'text-success'],
+                ['label' => 'Login Attemps Today', 'icon' => '❌', 'value' => $failedLoginCount, 'color' => 'text-danger'],
+            ];
+        @endphp
+
+        @foreach ($cards as $card)
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 rounded-4 p-3 h-100 bg-white animate__animated animate__fadeInUp">
+                    <div class="d-flex align-items-center">
+                        <span class="me-2 fs-4">{{ $card['icon'] }}</span>
+                        <div>
+                            <h6 class="text-muted mb-0">{{ $card['label'] }}</h6>
+                            <h3 class="fw-bold {{ $card['color'] }} mt-1">{{ $card['value'] }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
 </div>
 @endsection

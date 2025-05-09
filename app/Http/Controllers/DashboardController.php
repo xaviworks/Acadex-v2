@@ -2,10 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use App\Models\{Student, Subject, TermGrade, FinalGrade};
+use App\Models\{
+    Student, 
+    Subject, 
+    TermGrade, 
+    FinalGrade,
+    User,
+    UserLog,
+};
 
 class DashboardController extends Controller
 {
@@ -114,7 +122,22 @@ class DashboardController extends Controller
         }
 
         if (Gate::allows('admin')) {
-            return view('dashboard.admin');
+
+            $totalUsers = User::count();
+
+            $loginCount = UserLog::where('event_type', 'login')
+                ->whereDate('created_at', Carbon::today())
+                ->count();
+
+            $failedLoginCount = UserLog::where('event_type', 'failed_login')
+                ->whereDate('created_at', Carbon::today())
+                ->count();
+                
+            return view('dashboard.admin', compact(
+                'totalUsers',
+                'loginCount',
+                'failedLoginCount'
+            ));
         }
 
         if (Gate::allows('dean')) {

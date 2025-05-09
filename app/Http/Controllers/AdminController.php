@@ -6,9 +6,13 @@ use App\Models\AcademicPeriod;
 use App\Models\Course;
 use App\Models\Department;
 use App\Models\Subject;
+use App\Models\UserLog;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rules\Password;
 
 class AdminController extends Controller
 {
@@ -171,4 +175,102 @@ class AdminController extends Controller
         $periods = AcademicPeriod::orderBy('academic_year', 'desc')->orderBy('semester')->get();
         return view('admin.academic-periods', compact('periods'));
     }
+
+    public function viewUserLogs(Request $request)
+    {
+        Gate::authorize('admin');
+
+        $dateToday = now()->timezone(config('app.timezone'))->format('Y-m-d');
+
+        // Check if a date was selected in the filter
+        $selectedDate = $request->input('date', $dateToday);
+
+        // Filter the logs by the selected date
+        $userLogs = UserLog::whereDate('created_at', $selectedDate)->get();
+
+        return view('admin.user-logs', compact('userLogs', 'dateToday'));
+    }
+
+
+    public function filterUserLogs(Request $request)
+    {
+        Gate::authorize('admin');
+
+        $date = $request->input('date');
+        $userLogs = UserLog::whereDate('created_at', $date)->get();
+
+        return response()->view('admin.partials.user-log-rows', compact('userLogs'));
+    }
+
+    public function viewUsers()
+    {
+        Gate::authorize('admin');
+
+        $users = User::whereIn('role', [1, 2, 3])
+            ->orderBy('role', 'asc')
+            ->get();
+
+        $departments = Department::all();
+        $courses = Course::all();
+
+        return view('admin.users', compact('users', 'departments', 'courses'));
+    }
+
+    public function adminConfirmUserCreationWithPassword(Request $request)
+    {
+        Gate::authorize('admin');
+
+        $request->validate([
+            'confirm_password' => 'required|string',
+        ]);
+
+        // Get the currently authenticated user
+        $user = Auth::user();
+
+        // Check if the entered password matches the stored password
+        if (Hash::check($request->confirm_password, $user->password)) {
+            // If password matches, proceed with the action (e.g., store the new user or perform other actions)
+            // Return a success response for AJAX
+            return response()->json(['success' => true, 'message' => 'Password confirmed successfully']);
+        }
+
+        // If password is incorrect, return an error message
+        return response()->json(['success' => false, 'message' => 'The password you entered is incorrect.']);
+    }
+
+    
+    public function storeUser(Request $request)
+    {
+        $request->validate([
+            'first_name'    => ['required', 'string', 'max:255'],
+            'middle_name'   => ['nullable', 'string', 'max:255'],
+            'last_name'     => ['required', 'string', 'max:255'],
+            'email'         => ['required', 'string', 'regex:/^[^@]+$/', 'max:255', 'unique:unverified_users,email'],
+            'department_id' => ['required', 'exists:departments,id'],
+            'course_id'     => ['required', 'exists:courses,id'],
+            'password'      => [
+                'required',
+                'confirmed',
+                Password::min(8)->mixedCase()->letters()->numbers()->symbols(),
+            ],
+        ]);
+
+        $fullEmail = $request->email . '@brokenshire.edu.ph';
+
+        User::create([
+            'first_name'    => $request->first_name,
+            'middle_name'   => $request->middle_name,
+            'last_name'     => $request->last_name,
+            'email'         => $fullEmail,
+            'password'      => Hash::make($request->password),
+            'department_id' => $request->department_id,
+            'course_id'     => $request->course_id,
+            'role'          => $request->role,
+            'is_active'     => true,
+        ]);
+
+        return redirect()->route('admin.users')->with('success', 'User created successfully.');
+    }
+
+
 }

@@ -145,6 +145,12 @@ Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
 
     Route::get('/academic-periods', [AcademicPeriodController::class, 'index'])->name('academicPeriods');
     Route::post('/academic-periods/generate', [AcademicPeriodController::class, 'generate'])->name('academicPeriods.generate');
+    Route::get('/user-logs', [AdminController::class, 'viewUserLogs'])->name('userLogs');
+    Route::get('/admin/user-logs/filter', [AdminController::class, 'filterUserLogs'])->name('user_logs.filter');
+
+    Route::get('/users', [AdminController::class, 'viewUsers'])->name('users');
+    Route::post('/users/confirm-password', [AdminController::class, 'adminConfirmUserCreationWithPassword'])->name('confirmUserCreationWithPassword');
+    Route::post('/users/store-verified-user', [AdminController::class, 'storeUser'])->name('storeVerifiedUser');
 });
 
 // Auth Routes

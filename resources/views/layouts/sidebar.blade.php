@@ -150,6 +150,14 @@
         <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Admin</h6>
         <ul class="nav nav-pills flex-column mb-4">
             <li>
+                <a href="{{ route('admin.userLogs')}}"
+                class="nav-link text-white {{ request()->routeIs('admin.userLogs') ? 'active bg-success' : '' }}">
+                    <div class="d-flex align-items-center">
+                        <span class="me-2" style="width: 20px;">📋</span> Check/Manage User Logs
+                    </div>
+                </a>
+            </li>
+            <li>
                 <a href="{{ route('admin.departments') }}" class="nav-link text-white {{ request()->routeIs('admin.departments') ? 'active bg-success' : '' }}">
                     <div class="d-flex align-items-center">
                         <span class="me-2" style="width: 20px;">🏢</span> Departments
@@ -171,7 +179,14 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('admin.academicPeriods') }}" class="nav-link text-white {{ request()->routeIs('admin.users') ? 'active bg-success' : '' }}">
+                <a href="{{ route('admin.users') }}" class="nav-link text-white {{ request()->routeIs('admin.users') ? 'active bg-success' : '' }}">
+                    <div class="d-flex align-items-center">
+                        <span class="me-2" style="width: 20px;">👤</span> Users
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('admin.academicPeriods') }}" class="nav-link text-white {{ request()->routeIs('admin.academicPeriods') ? 'active bg-success' : '' }}">
                     <div class="d-flex align-items-center">
                         <span class="me-2" style="width: 20px;">📅</span> Academic Period
                     </div>
