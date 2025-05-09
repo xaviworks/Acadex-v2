@@ -33,17 +33,26 @@ class GradeController extends Controller
             ->get();
     
         foreach ($subjects as $subject) {
-            $totalStudents = $subject->students_count;
+            $total = $subject->students_count;
+            $terms = ['prelim', 'midterm', 'prefinal', 'final'];
+            $gradedCount = 0;
     
-            $graded = TermGrade::where('subject_id', $subject->id)
-                ->where('term_id', $this->getTermId($term))
-                ->distinct('student_id')
-                ->count('student_id');
+            foreach ($terms as $t) {
+                $gradedTerms = TermGrade::where('subject_id', $subject->id)
+                    ->where('term_id', $this->getTermId($t))
+                    ->distinct('student_id')
+                    ->count('student_id');
+    
+                if ($gradedTerms === $total && $total > 0) {
+                    $gradedCount++;
+                }
+            }
     
             $subject->grade_status = match (true) {
-                $graded === 0 => 'not_started',
-                $graded < $totalStudents => 'pending',
-                default => 'completed'
+                $total === 0 => 'not_started',
+                $gradedCount === 0 => 'pending',
+                $gradedCount < count($terms) => 'pending',
+                default => 'completed',
             };
         }
     
@@ -123,25 +132,26 @@ class GradeController extends Controller
         ));
     }
     
+    
 
     public function store(Request $request)
     {
         Gate::authorize('instructor');
-
+    
         $request->validate([
             'subject_id' => 'required|exists:subjects,id',
             'term' => 'required|in:prelim,midterm,prefinal,final',
             'scores' => 'required|array',
         ]);
-
+    
         $subject = Subject::findOrFail($request->subject_id);
         $termId = $this->getTermId($request->term);
-
+    
         foreach ($request->scores as $studentId => $activityScores) {
             $totalEarned = 0;
             $totalPossible = 0;
             $allScored = true;
-
+    
             foreach ($activityScores as $activityId => $score) {
                 if ($score !== null && $score !== '') {
                     Score::updateOrCreate(
@@ -149,18 +159,19 @@ class GradeController extends Controller
                         ['score' => $score, 'updated_by' => Auth::id()]
                     );
                 } else {
+                    // If a score is null or empty, mark as not scored
                     $allScored = false;
                 }
             }
-
+    
             if ($allScored) {
                 $activities = Activity::where('subject_id', $subject->id)
                     ->where('term', $request->term)
                     ->where('is_deleted', false)->get();
-
+    
                 foreach ($activities as $activity) {
                     $score = Score::where('student_id', $studentId)->where('activity_id', $activity->id)->first();
-
+    
                     if ($score && $score->score !== null) {
                         $totalEarned += $score->score;
                         $totalPossible += $activity->number_of_items;
@@ -169,30 +180,43 @@ class GradeController extends Controller
                         break;
                     }
                 }
-
+    
                 if ($allScored && $totalPossible > 0) {
                     $termGrade = round(($totalEarned / $totalPossible) * 100, 2);
-
+    
                     TermGrade::updateOrCreate(
                         ['student_id' => $studentId, 'subject_id' => $subject->id, 'term_id' => $termId],
                         ['term_grade' => $termGrade, 'academic_period_id' => $subject->academic_period_id, 'created_by' => Auth::id(), 'updated_by' => Auth::id()]
                     );
+                } else {
+                    // If any score is missing, delete the term grade
+                    TermGrade::where('student_id', $studentId)
+                        ->where('subject_id', $subject->id)
+                        ->where('term_id', $termId)
+                        ->delete();
                 }
+            } else {
+                // If all scores are not provided, remove the term grade
+                TermGrade::where('student_id', $studentId)
+                    ->where('subject_id', $subject->id)
+                    ->where('term_id', $termId)
+                    ->delete();
             }
-
+    
             $this->tryUpdateFinalGrade($studentId, $subject);
         }
-
+    
         return redirect()->route('instructor.grades.index', [
             'subject_id' => $request->subject_id,
             'term' => $request->term
         ])->with('success', 'Scores saved and grades updated successfully.');
     }
+    
 
     public function ajaxSaveScore(Request $request)
     {
         Gate::authorize('instructor');
-
+    
         $request->validate([
             'student_id' => 'required|exists:students,id',
             'activity_id' => 'required|exists:activities,id',
@@ -200,28 +224,28 @@ class GradeController extends Controller
             'subject_id' => 'required|exists:subjects,id',
             'term' => 'required|in:prelim,midterm,prefinal,final',
         ]);
-
+    
         $studentId = $request->student_id;
         $subject = Subject::findOrFail($request->subject_id);
         $termId = $this->getTermId($request->term);
-
+    
         Score::updateOrCreate(
             ['student_id' => $studentId, 'activity_id' => $request->activity_id],
             ['score' => $request->score, 'updated_by' => Auth::id()]
         );
-
+    
         $activities = Activity::where('subject_id', $subject->id)
             ->where('term', $request->term)
             ->where('is_deleted', false)->get();
-
+    
         $totalEarned = 0;
         $totalPossible = 0;
         $allScored = true;
-
+    
         foreach ($activities as $activity) {
             $score = Score::where('student_id', $studentId)
                 ->where('activity_id', $activity->id)->first();
-
+    
             if ($score && $score->score !== null) {
                 $totalEarned += $score->score;
                 $totalPossible += $activity->number_of_items;
@@ -230,20 +254,27 @@ class GradeController extends Controller
                 break;
             }
         }
-
+    
         if ($allScored && $totalPossible > 0) {
             $termGrade = round(($totalEarned / $totalPossible) * 100, 2);
-
+    
             TermGrade::updateOrCreate(
                 ['student_id' => $studentId, 'subject_id' => $subject->id, 'term_id' => $termId],
                 ['term_grade' => $termGrade, 'academic_period_id' => $subject->academic_period_id, 'created_by' => Auth::id(), 'updated_by' => Auth::id()]
             );
+        } else {
+            // Delete term grade if scores are incomplete
+            TermGrade::where('student_id', $studentId)
+                ->where('subject_id', $subject->id)
+                ->where('term_id', $termId)
+                ->delete();
         }
-
+    
         $this->tryUpdateFinalGrade($studentId, $subject);
-
+    
         return response()->json(['status' => 'success']);
     }
+    
 
     private function getTermId($term)
     {

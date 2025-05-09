@@ -12,14 +12,20 @@
     </h1>
 
     <!-- Right: Profile Dropdown -->
+    @php
+        $nameParts = explode(' ', Auth::user()->name);
+        $firstName = $nameParts[0] ?? '';
+        $lastName = $nameParts[count($nameParts) - 1] ?? '';
+        $displayName = $firstName . ' ' . $lastName;
+    @endphp
     <div class="dropdown">
         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}"
+            <img src="https://ui-avatars.com/api/?name={{ urlencode($displayName) }}"
                  alt="avatar"
                  class="rounded-circle me-2"
                  width="32"
                  height="32">
-            <span class="fw-medium">{{ Auth::user()->name }}</span>
+            <span class="fw-medium">{{ $displayName }}</span>
         </a>
         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
             <li>
