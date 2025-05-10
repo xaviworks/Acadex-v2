@@ -72,7 +72,7 @@
                 <div class="space-y-3">
                     <div class="flex items-center gap-3">
                         <div id="circle-length" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
-                        <span>Minimum 8 characters</span>
+                        <span>Minimum 8 chars</span>
                     </div>
                     <div class="flex items-center gap-3">
                         <div id="circle-case" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>

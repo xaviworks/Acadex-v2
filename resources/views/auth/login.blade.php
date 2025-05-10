@@ -59,14 +59,6 @@
             <x-input-error :messages="$errors->get('password')" class="text-red-400 mt-1" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mb-4">
-            <label for="remember_me" class="inline-flex items-center text-sm text-white">
-                <input id="remember_me" type="checkbox" class="mr-2" name="remember">
-                {{ __('Remember me') }}
-            </label>
-        </div>
-
         <!-- Forgot Password and Submit Button -->
         <div class="flex items-center justify-between">
             @if (Route::has('password.request'))

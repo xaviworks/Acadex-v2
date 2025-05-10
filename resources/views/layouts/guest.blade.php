@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'ACADEX') }}</title>
 
+    <!-- Preload Background Image -->
+    <link rel="preload" as="image" href="/images/bg.jpg">
+
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -19,6 +22,7 @@
 
     <style>
         body {
+            background-color: #023336; /* Fallback color */
             background: url('/images/bg.jpg') no-repeat center center fixed;
             background-size: cover;
         }
@@ -72,6 +76,17 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 1rem;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Smooth scroll */
+        .glass-card::-webkit-scrollbar {
+            width: 6px;
+        }
+        .glass-card::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
         }
     </style>
 </head>

@@ -2,8 +2,6 @@
 
 @section('content')
 <div class="container">
-    <h1>Chairperson Dashboard</h1>
-
     <div class="container py-5">
     <h2 class="mb-4 fw-bold text-dark">📊 Chairperson Dashboard Overview</h2>
 
