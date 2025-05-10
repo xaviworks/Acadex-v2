@@ -6,13 +6,15 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use App\Models\{
+use App\Models\
+{
     Student, 
     Subject, 
     TermGrade, 
     FinalGrade,
     User,
     UserLog,
+    Course,
 };
 
 class DashboardController extends Controller
@@ -118,7 +120,20 @@ class DashboardController extends Controller
             if (!session()->has('active_academic_period_id')) {
                 return redirect()->route('select.academicPeriod');
             }
-            return view('dashboard.chairperson');
+            
+            $countInstructors = User::where("is_active", 1)
+                                ->where("role", 0)
+                                ->count();
+                            
+            $countStudents = Student::count();
+            $countCourses = Course::count();
+
+            return view('dashboard.chairperson', 
+            compact(
+                "countInstructors", 
+                "countStudents",
+                "countCourses",
+            ));
         }
 
         if (Gate::allows('admin')) {
