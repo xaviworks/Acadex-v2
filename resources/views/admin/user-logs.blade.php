@@ -73,9 +73,12 @@
         });
     });
 
-        $(document).ready(function() {
-            // Initialize DataTable globally if any table needs DataTable
-            $('#userLogsTable').DataTable();
+    $(document).ready(function() {
+        // Initialize DataTable without sorting
+        $('#userLogsTable').DataTable({
+            ordering: false,  // Disable sorting functionality
+            paging: true,     // Enable pagination
         });
+    });
 </script>
 @endpush

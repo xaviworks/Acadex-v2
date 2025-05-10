@@ -19,7 +19,7 @@ use App\Models\
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         if (Gate::allows('instructor')) {
             if (!session()->has('active_academic_period_id')) {
@@ -138,21 +138,54 @@ class DashboardController extends Controller
 
         if (Gate::allows('admin')) {
 
-            $totalUsers = User::count();
+            // Get the selected date or default to today
+            $selectedDate = $request->query('date', Carbon::today()->toDateString());
 
-            $loginCount = UserLog::where('event_type', 'login')
-                ->whereDate('created_at', Carbon::today())
-                ->count();
+        $totalUsers = User::count();
+        $hours = range(0, 23);
 
-            $failedLoginCount = UserLog::where('event_type', 'failed_login')
-                ->whereDate('created_at', Carbon::today())
-                ->count();
-                
-            return view('dashboard.admin', compact(
-                'totalUsers',
-                'loginCount',
-                'failedLoginCount'
-            ));
+        // Get the login count for today or the selected date
+        $loginCount = UserLog::where('event_type', 'login')
+            ->whereDate('created_at', $selectedDate)
+            ->count();
+
+        // Get successful logins for the selected date, grouped by hour
+        $successfulLogins = UserLog::selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
+            ->where('event_type', 'login')
+            ->whereDate('created_at', $selectedDate)
+            ->groupByRaw('HOUR(created_at)')
+            ->pluck('total', 'hour');
+
+        // Get failed logins for the selected date, grouped by hour
+        $failedLogins = UserLog::selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
+            ->where('event_type', 'failed_login')
+            ->whereDate('created_at', $selectedDate)
+            ->groupByRaw('HOUR(created_at)')
+            ->pluck('total', 'hour');
+
+        // Get the count of failed logins for today or the selected date
+        $failedLoginCount = UserLog::where('event_type', 'failed_login')
+            ->whereDate('created_at', $selectedDate)
+            ->count();
+
+        $successfulData = [];
+        $failedData = [];
+
+        // Populate the data arrays with hourly counts, defaulting to 0 if no data is available
+        foreach ($hours as $hour) {
+            $successfulData[] = $successfulLogins[$hour] ?? 0;
+            $failedData[] = $failedLogins[$hour] ?? 0;
+        }
+
+        // Pass data to the view
+        return view('dashboard.admin', compact(
+            'totalUsers',
+            'loginCount',
+            'failedLoginCount',
+            'successfulData',
+            'failedData',
+            'selectedDate' // Pass selected date to the view for the form
+        ));
         }
 
         if (Gate::allows('dean')) {

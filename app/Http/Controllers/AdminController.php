@@ -278,5 +278,8 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'User created successfully.');
     }
 
-
+    public function getDashboardData()
+    {
+        
+    }
 }
