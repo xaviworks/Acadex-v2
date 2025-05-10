@@ -9,10 +9,11 @@
     <div class="row g-4">
         @php
             $cards = [
-                ['label' => 'Number of Instructors', 'icon' => '👥', 'value' => $countInstructors, 'color' => 'text-primary'],
-                ['label' => 'Number of Students', 'icon' => '✅', 'value' => $countStudents, 'color' => 'text-success'],
-                ['label' => 'Number of Courses', 'icon' => '❌', 'value' => $countCourses, 'color' => 'text-danger'],
-            ];
+    ['label' => 'Number of Instructors', 'icon' => '🧑‍🏫', 'value' => $countInstructors, 'color' => 'text-primary'], // teacher icon
+    ['label' => 'Number of Students', 'icon' => '🎓', 'value' => $countStudents, 'color' => 'text-success'], // graduation cap
+    ['label' => 'Number of Courses', 'icon' => '📚', 'value' => $countCourses, 'color' => 'text-danger'], // books
+]
+
         @endphp
 
         @foreach ($cards as $card)
