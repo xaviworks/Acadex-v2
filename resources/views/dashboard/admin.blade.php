@@ -30,7 +30,7 @@
             @endforeach
         </div>
 
-        {{-- Mock Chart Section --}}
+        {{-- Hourly Chart --}}
         <div class="mt-5">
             <h4 class="mb-3">📈 Login Trend ({{ $selectedDate }})</h4>
             <div class="card p-4 shadow-sm border-0 rounded-4">
@@ -43,12 +43,34 @@
             <form action="{{ url()->current() }}" method="GET" class="d-flex justify-content-center">
                 <div class="input-group" style="max-width: 300px;">
                     <span class="input-group-text">📅</span>
-                    <input type="date" class="form-control" name="date" value="{{ $selectedDate }}">
-                    <button type="submit" class="btn btn-primary">Filter</button>
+                    <input type="date" class="form-control" name="date" value="{{ $selectedDate ?? now()->toDateString() }}" onchange="this.form.submit()">
                 </div>
             </form>
         </div>
-        
+
+        {{-- Monthly Chart --}}
+        <div class="mt-5">
+            <h4 class="mb-3">📆 Monthly Login Overview ({{ $selectedYear }})</h4>
+            <div class="card p-4 shadow-sm border-0 rounded-4">
+                <canvas id="MonthlyLoginChart" height="100"></canvas>
+            </div>
+        </div>
+
+        {{-- Year Input Form (for Monthly Overview) --}}
+        <div class="mt-4 mb-5">
+            <form action="{{ url()->current() }}" method="GET" class="d-flex justify-content-center">
+                <div class="input-group" style="max-width: 300px;">
+                    <span class="input-group-text">📅</span>
+                    <select name="year" class="form-control" onchange="this.form.submit()">
+                        @foreach ($yearRange as $year)
+                            <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
+                                {{ $year }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection
@@ -58,12 +80,19 @@
     const successfulData = @json($successfulData);
     const failedData = @json($failedData);
 
-    const ctx = document.getElementById('LoginChart').getContext('2d');
+    const monthlySuccessfulData = @json($monthlySuccessfulData);
+    const monthlyFailedData = @json($monthlyFailedData);
 
-    new Chart(ctx, {
+    const hourlyLabels = ['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM',
+                          '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'];
+
+    const monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const ctx1 = document.getElementById('LoginChart').getContext('2d');
+    new Chart(ctx1, {
         type: 'line',
         data: {
-            labels: ['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM'],
+            labels: hourlyLabels,
             datasets: [
                 {
                     label: 'Successful Logins',
@@ -78,6 +107,45 @@
                     data: failedData,
                     borderColor: 'rgba(255, 99, 132, 1)',
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    const ctx2 = document.getElementById('MonthlyLoginChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [
+                {
+                    label: 'Successful Logins (Monthly)',
+                    data: monthlySuccessfulData,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Failed Logins (Monthly)',
+                    data: monthlyFailedData,
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
                     fill: true,
                     tension: 0.4
                 }
