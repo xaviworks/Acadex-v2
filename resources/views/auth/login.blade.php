@@ -1,17 +1,22 @@
-<x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@extends('layouts.guest')
 
-    <form method="POST" action="{{ route('login') }}">
+@section('contents')
+    <!-- Session Status -->
+    <x-auth-session-status class="mb-4 text-white" :status="session('status')" />
+
+    <form method="POST" action="{{ route('login') }}" class="w-full max-w-sm mx-auto text-white">
         @csrf
 
         <!-- Email Username -->
-        <div>
-            <x-input-label for="email" :value="__('Email Username')" />
-            <div class="flex rounded-md shadow-sm">
+        <div class="mb-4">
+            <x-input-label for="email" :value="__('Email Username')" class="text-white" />
+            <div class="relative flex rounded-md shadow-sm">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white">
+                    <i class="fas fa-user"></i>
+                </span>
                 <x-text-input 
                     id="email" 
-                    class="block mt-1 w-full rounded-r-none" 
+                    class="pl-10 mt-1 w-full rounded-r-none border border-gray-300 shadow-sm bg-transparent text-white placeholder-white focus:ring-green-500 focus:border-green-500"
                     type="text" 
                     name="email" 
                     :value="old('email')" 
@@ -21,45 +26,70 @@
                     pattern="^[^@]+$" 
                     title="Do not include '@' or domain — just the username."
                 />
-                <span class="inline-flex items-center px-3 rounded-r-md bg-gray-200 border border-l-0 border-gray-300 mt-1 text-sm text-gray-600">
+                <span class="inline-flex items-center px-3 rounded-r-md bg-white/20 border border-l-0 border-gray-300 mt-1 text-sm text-white">
                     @brokenshire.edu.ph
                 </span>
             </div>
 
             <!-- Live warning -->
-            <p id="email-warning" class="text-sm text-red-600 mt-1 hidden">
+            <p id="email-warning" class="text-sm text-red-400 mt-1 hidden">
                 Please enter only your username — do not include '@' or email domain.
             </p>
 
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-error :messages="$errors->get('email')" class="text-red-400 mt-1" />
         </div>
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input 
-                id="password" 
-                class="block mt-1 w-full" 
-                type="password" 
-                name="password" 
-                required 
-                autocomplete="current-password" 
-            />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="mb-4">
+            <x-input-label for="password" :value="__('Password')" class="text-white" />
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-white">
+                    <i class="fas fa-lock"></i>
+                </span>
+                <x-text-input
+                    id="password"
+                    class="pl-10 mt-1 w-full border border-gray-300 rounded-md shadow-sm bg-transparent text-white placeholder-white focus:ring-green-500 focus:border-green-500"
+                    type="password"
+                    name="password"
+                    required
+                    autocomplete="current-password"
+                    placeholder="Enter your password"
+                />
+            </div>
+            <x-input-error :messages="$errors->get('password')" class="text-red-400 mt-1" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <!-- Remember Me -->
+        <div class="block mb-4">
+            <label for="remember_me" class="inline-flex items-center text-sm text-white">
+                <input id="remember_me" type="checkbox" class="mr-2" name="remember">
+                {{ __('Remember me') }}
+            </label>
+        </div>
+
+        <!-- Forgot Password and Submit Button -->
+        <div class="flex items-center justify-between">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
+                <a class="text-sm text-green-300 hover:underline" href="{{ route('password.request') }}">
                     {{ __('Forgot your password?') }}
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
+            <x-primary-button class="bg-green-700 hover:bg-green-800 text-white">
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
     </form>
+
+    <!-- Don't have an account? Register Link -->
+    <div class="text-center mt-4">
+        <p class="text-sm text-white">
+            {{ __("Don't have an account?") }}
+            <a href="{{ route('register') }}" class="text-green-300 hover:underline">
+                <br>{{ __('Register') }}
+            </a>
+        </p>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -75,4 +105,4 @@
             });
         });
     </script>
-</x-guest-layout>
+@endsection
