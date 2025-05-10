@@ -189,7 +189,7 @@
 
     <!-- Table -->
     <div class="mt-6 overflow-x-auto">
-        <table class="min-w-full bg-white border-collapse border border-gray-300 rounded shadow">
+        <table id="usersTable" class="min-w-full bg-white border-collapse border border-gray-300 rounded shadow">
             <thead class="bg-gray-100">
                 <tr>
                     <th class="text-left py-2 px-4 border border-gray-300">Username</th>
@@ -218,6 +218,8 @@
 </div>
 
 <!-- Modal JS -->
+@push('scripts')
+
 <script>
     function openModal() {
         const modal = document.getElementById('courseModal');
@@ -375,6 +377,12 @@
             addButton.disabled = !passwordValid;
         }
     });
+
+        $(document).ready(function() {
+            // Initialize DataTable globally if any table needs DataTable
+            $('#usersTable').DataTable();
+        });
 </script>
+@endpush
 
 @endsection

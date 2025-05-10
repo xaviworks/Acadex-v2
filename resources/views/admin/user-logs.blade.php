@@ -72,5 +72,10 @@
             });
         });
     });
+
+        $(document).ready(function() {
+            // Initialize DataTable globally if any table needs DataTable
+            $('#userLogsTable').DataTable();
+        });
 </script>
 @endpush
