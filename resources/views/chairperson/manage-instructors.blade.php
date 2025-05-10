@@ -1,6 +1,20 @@
 @extends('layouts.app')
 
 @section('content')
+
+<style>
+    /* Change Active Tab Color */
+    .nav-tabs .nav-link.inactive {
+        color: #4da674 !important;  /* Green color */
+        border-color: #4da674 !important;  /* Green border for active tab */
+    }
+
+    /* Optionally, change the hover color for non-active tabs */
+    .nav-tabs .nav-link:hover {
+        color: #4da674 !important;  /* Green color for hover state */
+    }
+</style>
+
 <div class="max-w-6xl mx-auto py-10 px-4" style="background-color: #EAF8E7; border-radius: 1rem;">
     <h1 class="text-3xl font-bold mb-8 text-gray-800 flex items-center">
         <i class="bi bi-person-lines-fill text-success me-3 fs-2"></i>
@@ -13,16 +27,31 @@
         </div>
     @endif
 
-    {{-- Active Instructors --}}
-    <section class="mb-5">
-        <h2 class="text-xl font-semibold mb-3 text-gray-700 flex items-center">
-            <i class="bi bi-people-fill text-primary me-2 fs-5"></i>
-            Currently Active Instructors
-        </h2>
+    {{-- Bootstrap Tabs --}}
+    <ul class="nav nav-tabs" id="instructorTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="active-instructors-tab" data-bs-toggle="tab" href="#active-instructors" role="tab" aria-controls="active-instructors" aria-selected="true">
+                Active Instructors
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="inactive-instructors-tab" data-bs-toggle="tab" href="#inactive-instructors" role="tab" aria-controls="inactive-instructors" aria-selected="false">
+                Inactive Instructors
+            </a>
+        </li>
+    </ul>
 
-        @if($instructors->isEmpty())
-            <div class="alert alert-warning shadow-sm rounded">No active instructors.</div>
-        @else
+    <div class="tab-content mt-3" id="instructorTabsContent">
+        {{-- Active Instructors Tab --}}
+        <div class="tab-pane fade show active" id="active-instructors" role="tabpanel" aria-labelledby="active-instructors-tab">
+            <h2 class="text-xl font-semibold mb-3 text-gray-700 flex items-center">
+                <i class="bi bi-people-fill text-primary me-2 fs-5"></i>
+                Currently Active Instructors
+            </h2>
+
+            @if($instructors->isEmpty())
+                <div class="alert alert-warning shadow-sm rounded">No active instructors.</div>
+            @else
             <div class="table-responsive bg-white shadow-sm rounded-4 p-3">
                 <table class="table table-bordered align-middle mb-0">
                     <thead class="table-light">
@@ -35,31 +64,85 @@
                     </thead>
                     <tbody>
                         @foreach($instructors as $instructor)
-                            <tr>
-                                <td>{{ $instructor->last_name }}, {{ $instructor->first_name }} {{ $instructor->middle_name }}</td>
-                                <td>{{ $instructor->email }}</td>
-                                <td class="text-center">
-                                    <span class="badge border border-success text-success px-3 py-2 rounded-pill">
-                                        Active
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <button type="button"
-                                        class="btn btn-danger btn-sm d-inline-flex align-items-center gap-1"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#confirmDeactivateModal"
-                                        data-instructor-id="{{ $instructor->id }}"
-                                        data-instructor-name="{{ $instructor->last_name }}, {{ $instructor->first_name }}">
-                                        <i class="bi bi-person-x-fill"></i> Deactivate
-                                    </button>
-                                </td>
-                            </tr>
+                            @if($instructor->is_active)
+                                <tr>
+                                    <td>{{ $instructor->last_name }}, {{ $instructor->first_name }} {{ $instructor->middle_name }}</td>
+                                    <td>{{ $instructor->email }}</td>
+                                    <td class="text-center">
+                                        <span class="badge border border-success text-success px-3 py-2 rounded-pill">
+                                            Active
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button"
+                                            class="btn btn-danger btn-sm d-inline-flex align-items-center gap-1"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeactivateModal"
+                                            data-instructor-id="{{ $instructor->id }}"
+                                            data-instructor-name="{{ $instructor->last_name }}, {{ $instructor->first_name }}">
+                                            <i class="bi bi-person-x-fill"></i> Deactivate
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>
-            </div>
-        @endif
-    </section>
+            </div>        
+            @endif
+        </div>
+
+        {{-- Inactive Instructors Tab --}}
+        <div class="tab-pane fade" id="inactive-instructors" role="tabpanel" aria-labelledby="inactive-instructors-tab">
+            <h2 class="text-xl font-semibold mb-3 text-gray-700 flex items-center">
+                <i class="bi bi-person-x-fill text-secondary me-2 fs-5"></i>
+                Currently Inactive Instructors
+            </h2>
+
+            @if($instructors->isEmpty())
+                <div class="alert alert-warning shadow-sm rounded">No inactive instructors.</div>
+            @else
+            <div class="table-responsive bg-white shadow-sm rounded-4 p-3">
+                <table class="table table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Instructor Name</th>
+                            <th>Email Address</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($instructors as $instructor)
+                            @if(!$instructor->is_active)
+                                <tr>
+                                    <td>{{ $instructor->last_name }}, {{ $instructor->first_name }} {{ $instructor->middle_name }}</td>
+                                    <td>{{ $instructor->email }}</td>
+                                    <td class="text-center">
+                                        <span class="badge border border-secondary text-secondary px-3 py-2 rounded-pill">
+                                            Inactive
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button"
+                                            class="btn btn-success btn-sm d-inline-flex align-items-center gap-1"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmActivateModal"
+                                            data-id="{{ $instructor->id }}"
+                                            data-name="{{ $instructor->last_name }}, {{ $instructor->first_name }}">
+                                            <i class="bi bi-person-check-fill"></i>
+                                            Activate
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>        
+            @endif
+        </div>
+    </div>
 
     {{-- Pending Account Approvals --}}
     <section class="mt-4">
@@ -116,6 +199,8 @@
         @endif
     </section>
 </div>
+
+
 
 {{-- Modals --}}
 <div class="modal fade" id="confirmDeactivateModal" tabindex="-1" aria-labelledby="confirmDeactivateModalLabel" aria-hidden="true">
@@ -181,12 +266,36 @@
     </div>
 </div>
 
+<div class="modal fade" id="confirmActivateModal" tabindex="-1" aria-labelledby="confirmActivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="POST" id="activateForm">
+            @csrf
+            <div class="modal-content rounded-4 shadow">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="confirmActivateModalLabel">Confirm Activation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to activate <strong id="activateName"></strong>'s account?
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Activate</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
 @push('scripts')
 <script>
     const approveModal = document.getElementById('confirmApproveModal');
     const rejectModal = document.getElementById('confirmRejectModal');
     const deactivateModal = document.getElementById('confirmDeactivateModal');
+    const activateModal = document.getElementById('confirmActivateModal'); // New activate modal
 
+    // Handling the approve modal
     if (approveModal) {
         approveModal.addEventListener('show.bs.modal', event => {
             const button = event.relatedTarget;
@@ -195,6 +304,7 @@
         });
     }
 
+    // Handling the reject modal
     if (rejectModal) {
         rejectModal.addEventListener('show.bs.modal', event => {
             const button = event.relatedTarget;
@@ -203,11 +313,21 @@
         });
     }
 
+    // Handling the deactivate modal
     if (deactivateModal) {
         deactivateModal.addEventListener('show.bs.modal', event => {
             const button = event.relatedTarget;
             document.getElementById('deactivateForm').action = `/chairperson/instructors/${button.getAttribute('data-instructor-id')}/deactivate`;
             document.getElementById('instructorName').textContent = button.getAttribute('data-instructor-name');
+        });
+    }
+
+    // Handling the activate modal (new modal)
+    if (activateModal) {
+        activateModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            document.getElementById('activateForm').action = `/chairperson/instructors/${button.getAttribute('data-id')}/activate`;
+            document.getElementById('activateName').textContent = button.getAttribute('data-name');
         });
     }
 </script>

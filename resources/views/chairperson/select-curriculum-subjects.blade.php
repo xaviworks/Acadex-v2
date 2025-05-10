@@ -141,13 +141,15 @@ document.addEventListener('DOMContentLoaded', function () {
             let tabIndex = 0;
             for (const [key, semesters] of Object.entries(grouped)) {
                 const year = key.replace('year', '');
+                const yearLabels = { '1': '1st Year', '2': '2nd Year', '3': '3rd Year', '4': '4th Year' };
                 const isActive = tabIndex === 0 ? 'active' : '';
 
                 yearTabs.insertAdjacentHTML('beforeend', `
                     <li class="nav-item">
-                        <button class="nav-link ${isActive}" style="color: #198754; font-weight: 500;" data-bs-toggle="tab" data-bs-target="#tab-${key}" type="button" role="tab">Year ${year}</button>
+                        <button class="nav-link ${isActive}" style="color: #198754; font-weight: 500;" data-bs-toggle="tab" data-bs-target="#tab-${key}" type="button" role="tab">${yearLabels[year]}</button>
                     </li>
                 `);
+
 
                 const semesterTables = Object.entries(semesters).map(([semester, subjects]) => {
                     if (!subjects.length) return '';

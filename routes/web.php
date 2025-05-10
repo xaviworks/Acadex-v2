@@ -62,7 +62,8 @@ Route::prefix('chairperson')
         Route::get('/instructors/create', [ChairpersonController::class, 'createInstructor'])->name('createInstructor');
         Route::post('/instructors/store', [ChairpersonController::class, 'storeInstructor'])->name('storeInstructor');
         Route::post('/instructors/{id}/deactivate', [ChairpersonController::class, 'deactivateInstructor'])->name('deactivateInstructor');
-
+        Route::post('/instructors/{id}/activate', [ChairpersonController::class, 'activateInstructor'])->name('activateInstructor');
+        
         Route::get('/assign-subjects', [ChairpersonController::class, 'assignSubjects'])->name('assignSubjects');
         Route::post('/assign-subjects/store', [ChairpersonController::class, 'storeAssignedSubject'])->name('storeAssignedSubject');
         

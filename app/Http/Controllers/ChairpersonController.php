@@ -88,6 +88,20 @@ class ChairpersonController extends Controller
         return redirect()->back()->with('success', 'Instructor deactivated successfully.');
     }
 
+    public function activateInstructor($id)
+    {
+        Gate::authorize('chairperson');
+
+        $instructor = User::where('id', $id)
+            ->where('role', 0)
+            ->where('department_id', Auth::user()->department_id)
+            ->firstOrFail();
+
+        $instructor->update(['is_active' => true]);
+
+        return redirect()->back()->with('success', 'Instructor activated successfully.');
+    }
+
     // ============================
     // Subject Assignment
     // ============================
