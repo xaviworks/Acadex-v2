@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
     {
         // Fetch Department and Course dynamically
         $department = Department::where('department_code', 'ASBM')->first();
-        $course = Course::where('course_code', 'BSBA')->first();
+        $course = Course::where('course_code', 'BSIT')->first();
 
         $users = [
             [

@@ -69,13 +69,19 @@ class AdminController extends Controller
     public function courses()
     {
         Gate::authorize('admin');
-
+    
         $courses = Course::where('is_deleted', false)
             ->orderBy('course_code')
             ->get();
-
-        return view('admin.courses', compact('courses'));
+    
+        // Pass departments for the modal
+        $departments = Department::where('is_deleted', false)
+            ->orderBy('department_code')
+            ->get();
+    
+        return view('admin.courses', compact('courses', 'departments'));
     }
+    
 
     public function createCourse()
     {

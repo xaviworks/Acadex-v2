@@ -16,7 +16,6 @@ class DatabaseSeeder extends Seeder
             CoursesTableSeeder::class,
             AcademicPeriodsTableSeeder::class,
             TermsTableSeeder::class,
-            SubjectsTableSeeder::class,
             UserSeeder::class,
             CurriculumSeeder::class,
         ]);

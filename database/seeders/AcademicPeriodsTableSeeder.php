@@ -20,7 +20,7 @@ class AcademicPeriodsTableSeeder extends Seeder
         ]);
 
         AcademicPeriod::create([
-            'academic_year' => '2025-2026',
+            'academic_year' => '2025',
             'semester' => 'Summer',
         ]);
     }
