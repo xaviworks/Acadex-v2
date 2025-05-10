@@ -19,7 +19,7 @@ use App\Http\Controllers\StudentImportController;
 use App\Http\Middleware\EnsureAcademicPeriodSet;
 
 // Welcome Page
-Route::get('/', fn () => view('welcome'));
+Route::get('/', fn () => view('auth.login'));
 
 // Profile Management
 Route::middleware('auth')->group(function () {
