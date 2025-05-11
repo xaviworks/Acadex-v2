@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 use App\Models\
 {
     Student, 
@@ -224,9 +225,29 @@ class DashboardController extends Controller
     }
 
 
-        if (Gate::allows('dean')) {
-            return view('dashboard.dean');
-        }
+    if (Gate::allows('dean')) {
+        // Total number of students per department (with department names)
+        $studentsPerDepartment = Student::join('departments', 'students.department_id', '=', 'departments.id')
+                                        ->select('departments.department_description as department_name', DB::raw('count(*) as total'))
+                                        ->groupBy('students.department_id', 'departments.department_description')
+                                        ->pluck('total', 'department_name');
+        
+        // Total number of instructors
+        $totalInstructors = User::where('role', 'instructor')->count();
+        
+        // Number of students per course (with course names)
+        $studentsPerCourse = Student::join('courses', 'students.course_id', '=', 'courses.id')
+                                    ->select('courses.course_code', 'courses.course_description', DB::raw('count(*) as total'))
+                                    ->groupBy('students.course_id', 'courses.course_code', 'courses.course_description')
+                                    ->pluck('total', 'courses.course_code'); // Plucking by course code
+        
+        return view('dashboard.dean', compact(
+            'studentsPerDepartment',
+            'totalInstructors',
+            'studentsPerCourse'  // Pass the updated variable
+        ));
+    }
+      
 
         abort(403, 'Unauthorized access.');
     }
