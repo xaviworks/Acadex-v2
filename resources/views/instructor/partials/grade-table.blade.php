@@ -17,7 +17,7 @@
                                     <div class="text-muted small">{{ $activity->title }} ({{ $activity->number_of_items }} pts)</div>
                                 </th>
                             @endforeach
-                            <th class="text-center px-3 py-2" style="min-width: 120px;">Term Grade</th>
+                            <th class="text-center px-3 py-2" style="min-width: 120px;">{{ ucfirst($term) }} Grade</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm" id="studentTableBody">

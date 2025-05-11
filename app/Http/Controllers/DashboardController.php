@@ -138,90 +138,90 @@ class DashboardController extends Controller
 
         if (Gate::allows('admin')) {
 
-    // Get the selected date from the query parameters, default to today
-    $selectedDate = $request->query('date', Carbon::today()->toDateString());
+        // Get the selected date from the query parameters, default to today
+        $selectedDate = $request->query('date', Carbon::today()->toDateString());
 
-    // Get the selected year from the query parameters, default to the current year
-    $selectedYear = $request->query('year', now()->year);
+        // Get the selected year from the query parameters, default to the current year
+        $selectedYear = $request->query('year', now()->year);
 
-    // Generate a range for the last 10 years
-    $yearRange = range(now()->year, now()->year - 10); // Last 10 years
+        // Generate a range for the last 10 years
+        $yearRange = range(now()->year, now()->year - 10); // Last 10 years
 
-    // Get the total number of users
-    $totalUsers = User::count();
+        // Get the total number of users
+        $totalUsers = User::count();
 
-    // Define the hours range for the hourly chart (0-23)
-    $hours = range(0, 23);
+        // Define the hours range for the hourly chart (0-23)
+        $hours = range(0, 23);
 
-    // Get the total login count for the selected date
-    $loginCount = UserLog::where('event_type', 'login')
-        ->whereDate('created_at', $selectedDate)
-        ->count();
+        // Get the total login count for the selected date
+        $loginCount = UserLog::where('event_type', 'login')
+            ->whereDate('created_at', $selectedDate)
+            ->count();
 
-    // Get the count of successful logins by hour for the selected date
-    $successfulLogins = UserLog::selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
-        ->where('event_type', 'login')
-        ->whereDate('created_at', $selectedDate)
-        ->groupByRaw('HOUR(created_at)')
-        ->pluck('total', 'hour');
+        // Get the count of successful logins by hour for the selected date
+        $successfulLogins = UserLog::selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
+            ->where('event_type', 'login')
+            ->whereDate('created_at', $selectedDate)
+            ->groupByRaw('HOUR(created_at)')
+            ->pluck('total', 'hour');
 
-    // Get the count of failed logins by hour for the selected date
-    $failedLogins = UserLog::selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
-        ->where('event_type', 'failed_login')
-        ->whereDate('created_at', $selectedDate)
-        ->groupByRaw('HOUR(created_at)')
-        ->pluck('total', 'hour');
+        // Get the count of failed logins by hour for the selected date
+        $failedLogins = UserLog::selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
+            ->where('event_type', 'failed_login')
+            ->whereDate('created_at', $selectedDate)
+            ->groupByRaw('HOUR(created_at)')
+            ->pluck('total', 'hour');
 
-    // Get the total count of failed logins for the selected date
-    $failedLoginCount = UserLog::where('event_type', 'failed_login')
-        ->whereDate('created_at', $selectedDate)
-        ->count();
+        // Get the total count of failed logins for the selected date
+        $failedLoginCount = UserLog::where('event_type', 'failed_login')
+            ->whereDate('created_at', $selectedDate)
+            ->count();
 
-    // Prepare data for the hourly charts (successful and failed logins)
-    $successfulData = [];
-    $failedData = [];
+        // Prepare data for the hourly charts (successful and failed logins)
+        $successfulData = [];
+        $failedData = [];
 
-    foreach ($hours as $hour) {
-        $successfulData[] = $successfulLogins[$hour] ?? 0;
-        $failedData[] = $failedLogins[$hour] ?? 0;
-    }
+        foreach ($hours as $hour) {
+            $successfulData[] = $successfulLogins[$hour] ?? 0;
+            $failedData[] = $failedLogins[$hour] ?? 0;
+        }
 
-    // Get monthly login data for the selected year
-    $monthlySuccessfulLogins = UserLog::selectRaw('MONTH(created_at) as month, COUNT(*) as total')
-        ->where('event_type', 'login')
-        ->whereYear('created_at', $selectedYear)
-        ->groupByRaw('MONTH(created_at)')
-        ->pluck('total', 'month');
+        // Get monthly login data for the selected year
+        $monthlySuccessfulLogins = UserLog::selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+            ->where('event_type', 'login')
+            ->whereYear('created_at', $selectedYear)
+            ->groupByRaw('MONTH(created_at)')
+            ->pluck('total', 'month');
 
-    $monthlyFailedLogins = UserLog::selectRaw('MONTH(created_at) as month, COUNT(*) as total')
-        ->where('event_type', 'failed_login')
-        ->whereYear('created_at', $selectedYear)
-        ->groupByRaw('MONTH(created_at)')
-        ->pluck('total', 'month');
+        $monthlyFailedLogins = UserLog::selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+            ->where('event_type', 'failed_login')
+            ->whereYear('created_at', $selectedYear)
+            ->groupByRaw('MONTH(created_at)')
+            ->pluck('total', 'month');
 
-    // Prepare data for the monthly charts (successful and failed logins)
-    $monthlySuccessfulData = [];
-    $monthlyFailedData = [];
+        // Prepare data for the monthly charts (successful and failed logins)
+        $monthlySuccessfulData = [];
+        $monthlyFailedData = [];
 
-    for ($i = 1; $i <= 12; $i++) {
-        $monthlySuccessfulData[] = $monthlySuccessfulLogins[$i] ?? 0;
-        $monthlyFailedData[] = $monthlyFailedLogins[$i] ?? 0;
-    }
+        for ($i = 1; $i <= 12; $i++) {
+            $monthlySuccessfulData[] = $monthlySuccessfulLogins[$i] ?? 0;
+            $monthlyFailedData[] = $monthlyFailedLogins[$i] ?? 0;
+        }
 
     // Return the data to the view
-    return view('dashboard.admin', compact(
-        'totalUsers',
-        'loginCount',
-        'failedLoginCount',
-        'successfulData',
-        'failedData',
-        'selectedDate',
-        'monthlySuccessfulData',
-        'monthlyFailedData',
-        'selectedYear',
-        'yearRange'
-    ));
-        }
+        return view('dashboard.admin', compact(
+            'totalUsers',
+            'loginCount',
+            'failedLoginCount',
+            'successfulData',
+            'failedData',
+            'selectedDate',
+            'monthlySuccessfulData',
+            'monthlyFailedData',
+            'selectedYear',
+            'yearRange'
+        ));
+    }
 
 
         if (Gate::allows('dean')) {
