@@ -214,30 +214,62 @@ class ChairpersonController extends Controller
     public function viewGrades(Request $request)
     {
         Gate::authorize('chairperson');
-
-        $selectedYear = $request->input('year_level');
-        $selectedPeriodId = $request->input('academic_period_id');
-
-        $students = Student::with(['subjects', 'termGrades', 'course'])
-            ->where('department_id', Auth::user()->department_id)
-            ->when(Auth::user()->course_id, fn($q) => $q->where('course_id', Auth::user()->course_id))
-            ->when($selectedYear, fn($q) => $q->where('year_level', $selectedYear))
-            ->when($selectedPeriodId, fn($q) => $q->where('academic_period_id', $selectedPeriodId))
-            ->where('is_deleted', false)
-            ->orderBy('last_name')
+        
+        $selectedInstructorId = $request->input('instructor_id');
+        $selectedSubjectId = $request->input('subject_id');
+        
+        $academicPeriodId = session('active_academic_period_id');
+        $departmentId = Auth::user()->department_id;
+        
+        // Fetch instructors in department (role: 0 = instructor)
+        $instructors = User::where([
+            ['role', 0],
+            ['department_id', $departmentId],
+            ['is_active', true],
+        ])
+        ->orderBy('last_name')
+        ->get();
+    
+        // Subjects are loaded only when an instructor is selected
+        $subjects = [];
+        if ($selectedInstructorId) {
+            $subjects = Subject::where([
+                ['instructor_id', $selectedInstructorId],
+                ['department_id', $departmentId],
+                ['academic_period_id', $academicPeriodId],
+                ['is_deleted', false],
+            ])
+            ->orderBy('subject_code')
             ->get();
-
-        $academicPeriods = \App\Models\AcademicPeriod::where('is_deleted', false)
-            ->orderByDesc('academic_year')
-            ->orderByRaw("FIELD(semester, '1st', '2nd', 'Summer')")
-            ->get();
-
+        }
+    
+        // Students and grades are only loaded when a subject is selected
+        $students = [];
+        if ($selectedSubjectId) {
+            // Get the subject and the students enrolled in it
+            $subject = Subject::where([
+                ['id', $selectedSubjectId],
+                ['department_id', $departmentId],
+            ])
+            ->firstOrFail();
+    
+            $students = $subject->students()
+                ->with(['termGrades' => function ($q) use ($selectedSubjectId) {
+                    $q->where('subject_id', $selectedSubjectId);
+                }])
+                ->get();
+        }
+    
         return view('chairperson.view-grades', [
+            'instructors' => $instructors,
+            'subjects' => $subjects,
             'students' => $students,
-            'selectedYear' => $selectedYear,
-            'academicPeriods' => $academicPeriods,
+            'selectedInstructorId' => $selectedInstructorId,
+            'selectedSubjectId' => $selectedSubjectId,
         ]);
     }
+    
+      
 
     // ============================
     // Students by Year Level

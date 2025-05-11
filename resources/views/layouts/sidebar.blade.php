@@ -88,16 +88,16 @@
                 </a>
             </li>
             <li>
-                <a href="{{ route('chairperson.viewGrades') }}" class="nav-link text-white {{ request()->routeIs('chairperson.viewGrades') ? 'active bg-success' : '' }}">
+                <a href="{{ route('chairperson.studentsByYear') }}" class="nav-link text-white {{ request()->routeIs('chairperson.studentsByYear') ? 'active bg-success' : '' }}">
                     <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📈</span> View Grades
+                        <span class="me-2" style="width: 20px;">👨‍🎓</span> Students by Year
                     </div>
                 </a>
             </li>
             <li>
-                <a href="{{ route('chairperson.studentsByYear') }}" class="nav-link text-white {{ request()->routeIs('chairperson.studentsByYear') ? 'active bg-success' : '' }}">
+                <a href="{{ route('chairperson.viewGrades') }}" class="nav-link text-white {{ request()->routeIs('chairperson.viewGrades') ? 'active bg-success' : '' }}">
                     <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">👨‍🎓</span> Students by Year
+                        <span class="me-2" style="width: 20px;">📈</span> View Grades
                     </div>
                 </a>
             </li>
