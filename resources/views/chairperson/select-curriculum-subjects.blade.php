@@ -87,6 +87,14 @@
 </div>
 @endsection
 
+@php
+    $activePeriod = \App\Models\AcademicPeriod::find(session('active_academic_period_id'));
+@endphp
+
+<script>
+    const currentSemester = @json($activePeriod?->semester ?? '');
+</script>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -131,15 +139,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const grouped = {};
             data.forEach(subj => {
+                // Only include subjects for the current semester
+                if (subj.semester !== currentSemester) return;
+
                 const key = `year${subj.year_level}`;
-                if (!grouped[key]) grouped[key] = { '1st': [], '2nd': [] };
-                if (grouped[key][subj.semester]) {
-                    grouped[key][subj.semester].push(subj);
-                }
+                if (!grouped[key]) grouped[key] = [];
+                grouped[key].push(subj);
             });
 
             let tabIndex = 0;
-            for (const [key, semesters] of Object.entries(grouped)) {
+            for (const [key, subjects] of Object.entries(grouped)) {
                 const year = key.replace('year', '');
                 const yearLabels = { '1': '1st Year', '2': '2nd Year', '3': '3rd Year', '4': '4th Year' };
                 const isActive = tabIndex === 0 ? 'active' : '';
@@ -150,42 +159,37 @@ document.addEventListener('DOMContentLoaded', function () {
                     </li>
                 `);
 
+                const rows = subjects.map(s => `
+                    <tr>
+                        <td><input type="checkbox" class="form-check-input subject-checkbox" name="subject_ids[]" value="${s.id}" data-year="${s.year_level}" data-semester="${s.semester}"></td>
+                        <td>${s.subject_code}</td>
+                        <td>${s.subject_description}</td>
+                        <td>${s.year_level}</td>
+                        <td>${s.semester}</td>
+                    </tr>
+                `).join('');
 
-                const semesterTables = Object.entries(semesters).map(([semester, subjects]) => {
-                    if (!subjects.length) return '';
-
-                    const rows = subjects.map(s => `
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input subject-checkbox" name="subject_ids[]" value="${s.id}" data-year="${s.year_level}" data-semester="${s.semester}"></td>
-                            <td>${s.subject_code}</td>
-                            <td>${s.subject_description}</td>
-                            <td>${s.year_level}</td>
-                            <td>${s.semester}</td>
-                        </tr>
-                    `).join('');
-
-                    return `
-                        <h5 class="mt-4 text-success">${semester} Semester</h5>
-                        <table class="table table-bordered table-striped align-middle">
-                            <thead class="table-success">
-                                <tr>
-                                    <th></th>
-                                    <th>Subject Code</th>
-                                    <th>Description</th>
-                                    <th>Year</th>
-                                    <th>Semester</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${rows}
-                            </tbody>
-                        </table>
-                    `;
-                }).join('');
+                const table = `
+                    <h5 class="mt-4 text-success">${currentSemester} Semester</h5>
+                    <table class="table table-bordered table-striped align-middle">
+                        <thead class="table-success">
+                            <tr>
+                                <th></th>
+                                <th>Subject Code</th>
+                                <th>Description</th>
+                                <th>Year</th>
+                                <th>Semester</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>
+                `;
 
                 subjectsTableBody.insertAdjacentHTML('beforeend', `
                     <div class="tab-pane fade ${isActive ? 'show active' : ''}" id="tab-${key}" role="tabpanel">
-                        ${semesterTables}
+                        ${table}
                     </div>
                 `);
 
@@ -227,3 +231,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
+
