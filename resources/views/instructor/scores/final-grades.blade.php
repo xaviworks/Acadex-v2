@@ -4,18 +4,26 @@
 <div class="container-fluid px-4 py-4">
     <h1 class="h4 fw-bold mb-4">📈 Final Grades</h1>
 
-    {{-- Subject Selection --}}
-    <form method="GET" action="{{ route('instructor.final-grades.index') }}" class="mb-4">
-        <label class="form-label fw-medium">Select Subject:</label>
-        <select name="subject_id" class="form-select w-auto d-inline-block" onchange="this.form.submit()">
-            <option value="">-- Choose Subject --</option>
-            @foreach($subjects as $subject)
-                <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
-                    {{ $subject->subject_code }} - {{ $subject->subject_description }}
-                </option>
-            @endforeach
-        </select>
-    </form>
+    {{-- Subject Selection + Print Button --}}
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <form method="GET" action="{{ route('instructor.final-grades.index') }}" class="d-flex align-items-center gap-2 flex-wrap">
+            <label class="form-label fw-medium mb-0">Select Subject:</label>
+            <select name="subject_id" class="form-select w-auto" onchange="this.form.submit()">
+                <option value="">-- Choose Subject --</option>
+                @foreach($subjects as $subject)
+                    <option value="{{ $subject->id }}" {{ request('subject_id') == $subject->id ? 'selected' : '' }}>
+                        {{ $subject->subject_code }} - {{ $subject->subject_description }}
+                    </option>
+                @endforeach
+            </select>
+        </form>
+
+        @if(!empty($finalData) && count($finalData) > 0)
+            <button onclick="printTable()" class="btn btn-success">
+                🖨️ Print Table
+            </button>
+        @endif
+    </div>
 
     {{-- Generate Final Grades --}}
     @if(request('subject_id') && empty($finalData))
@@ -30,7 +38,7 @@
 
     {{-- Final Grades Table --}}
     @if(!empty($finalData) && count($finalData) > 0)
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0" id="print-area">
             <div class="table-responsive">
                 <table class="table table-bordered align-middle mb-0">
                     <thead class="table-light text-center">
@@ -85,3 +93,74 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    function printTable() {
+        const content = document.getElementById('print-area').innerHTML;
+        const subject = document.querySelector("select[name='subject_id']").selectedOptions[0].text;
+        const bannerUrl = "{{ asset('images/banner-header.png') }}";
+    
+        const printWindow = window.open('', '', 'width=900,height=650');
+        printWindow.document.write(`
+            <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', sans-serif;
+                            margin: 40px;
+                            color: #000;
+                            -webkit-print-color-adjust: exact !important;
+                            print-color-adjust: exact !important;
+                        }
+                        .banner {
+                            width: 100%;
+                            height: auto;
+                            margin-bottom: 20px;
+                        }
+                        .header-content {
+                            text-align: center;
+                            margin-bottom: 20px;
+                        }
+                        h2 {
+                            margin: 0 0 10px 0;
+                        }
+                        p {
+                            margin: 0 0 15px 0;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 10px;
+                        }
+                        th, td {
+                            border: 1px solid #000;
+                            padding: 8px 12px;
+                            text-align: center;
+                            font-size: 14px;
+                        }
+                        th {
+                            background-color: #f0f0f0;
+                        }
+                        .text-start {
+                            text-align: left;
+                        }
+                        .text-success {
+                            color: green;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <img src="${bannerUrl}" alt="Banner Header" class="banner" onload="window.print(); window.close();">
+                    <div class="header-content">
+                    <h2>Final Grades Report</h2>
+                    <p><strong>Subject:</strong> ${subject}</p>
+                    </div>
+                    ${content}
+                </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+</script>
+@endpush
