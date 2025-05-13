@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('subject_code')->unique();
             $table->string('subject_description');
             $table->boolean('is_universal')->default(false); // GE Subjects shared across multiple courses
+            $table->unsignedTinyInteger('year_level')->nullable();
             $table->foreignId('department_id')->nullable()->constrained('departments')->nullOnDelete();
             $table->foreignId('course_id')->nullable()->constrained('courses')->nullOnDelete();
             $table->foreignId('academic_period_id')->nullable()->constrained('academic_periods')->nullOnDelete();

@@ -141,6 +141,7 @@ class CurriculumController extends Controller
                 'subject_code' => $curriculumSubject->subject_code
             ], [
                 'subject_description' => $curriculumSubject->subject_description,
+                'year_level' => $curriculumSubject->year_level,
                 'department_id' => Auth::user()->department_id,
                 'course_id' => $curriculumSubject->curriculum->course_id,
                 'academic_period_id' => session('active_academic_period_id'),

@@ -12,7 +12,7 @@ class Subject extends Model
     protected $fillable = [
         'subject_code', 'subject_description', 'is_universal', 
         'academic_period_id', 'department_id', 'course_id', 'instructor_id',
-        'is_deleted', 'created_by', 'updated_by'
+        'is_deleted', 'created_by', 'updated_by', 'year_level'
     ];
 
     public function academicPeriod()

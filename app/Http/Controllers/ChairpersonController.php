@@ -109,23 +109,30 @@ class ChairpersonController extends Controller
     public function assignSubjects()
     {
         Gate::authorize('chairperson');
-
+    
         $academicPeriodId = session('active_academic_period_id');
-
+    
+        // Fetch subjects filtered by department, academic period, and not deleted
         $subjects = Subject::where('department_id', Auth::user()->department_id)
             ->where('is_deleted', false)
             ->where('academic_period_id', $academicPeriodId)
             ->orderBy('subject_code')
             ->get();
-
+    
+        // Group subjects by year_level
+        $yearLevels = $subjects->groupBy('year_level');
+    
+        // Fetch active instructors in the department
         $instructors = User::where('role', 0)
             ->where('department_id', Auth::user()->department_id)
             ->where('is_active', true)
             ->orderBy('last_name')
             ->get();
-
-        return view('chairperson.assign-subjects', compact('subjects', 'instructors'));
+    
+        // Return view with grouped subjects by year level and instructors
+        return view('chairperson.assign-subjects', compact('yearLevels', 'instructors'));
     }
+    
 
     public function storeAssignedSubject(Request $request)
     {
@@ -204,8 +211,7 @@ class ChairpersonController extends Controller
             return redirect()->route('chairperson.assignSubjects')->with('success', 'Instructor unassigned successfully.');
         }
     }
-    
-    
+        
     
     // ============================
     // View Grades
