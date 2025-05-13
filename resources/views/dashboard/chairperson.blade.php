@@ -12,6 +12,9 @@
                     ['label' => 'Number of Instructors', 'icon' => '🧑‍🏫', 'value' => $countInstructors, 'color' => 'text-primary'], // teacher icon
                     ['label' => 'Number of Students', 'icon' => '🎓', 'value' => $countStudents, 'color' => 'text-success'], // graduation cap
                     ['label' => 'Number of Courses', 'icon' => '📚', 'value' => $countCourses, 'color' => 'text-success'], // books
+                    ['label' => 'Number of Actived Instructors', 'icon' => '🧑‍🏫', 'value' => $countActiveInstructors, 'color' => 'text-success'],
+                    ['label' => 'Number of Deactivated Instructors', 'icon' => '❌', 'value' => $countInactiveInstructors, 'color' => 'text-danger'],
+                    ['label' => 'Number of Unverified Instructors', 'icon' => '🕵️‍♂️', 'value' => $countUnverifiedInstructors, 'color' => 'text-warning'],                   
                 ];
             @endphp
 

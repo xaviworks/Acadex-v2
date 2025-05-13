@@ -14,6 +14,7 @@ use App\Models\
     TermGrade, 
     FinalGrade,
     User,
+    UnverifiedUser,
     UserLog,
     Course,
 };
@@ -122,18 +123,30 @@ class DashboardController extends Controller
                 return redirect()->route('select.academicPeriod');
             }
             
-            $countInstructors = User::where("is_active", 1)
-                                ->where("role", 0)
+            $countInstructors = User::where("role", 0)
                                 ->count();
                             
             $countStudents = Student::count();
             $countCourses = Course::count();
+
+            $countActiveInstructors = User::where("is_active", 1)
+                                ->where("role", 0)
+                                ->count();
+
+            $countInactiveInstructors = User::where("is_active", 0)
+                                ->where("role", 0)
+                                ->count();
+
+            $countUnverifiedInstructors = UnverifiedUser::count();
 
             return view('dashboard.chairperson', 
             compact(
                 "countInstructors", 
                 "countStudents",
                 "countCourses",
+                "countActiveInstructors",
+                "countInactiveInstructors",
+                "countUnverifiedInstructors",
             ));
         }
 

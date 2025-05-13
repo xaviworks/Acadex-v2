@@ -187,26 +187,13 @@ class AdminController extends Controller
         Gate::authorize('admin');
 
         $dateToday = now()->timezone(config('app.timezone'))->format('Y-m-d');
-
-        // Check if a date was selected in the filter
         $selectedDate = $request->input('date', $dateToday);
 
-        // Filter the logs by the selected date
         $userLogs = UserLog::whereDate('created_at', $selectedDate)->get();
 
-        return view('admin.user-logs', compact('userLogs', 'dateToday'));
+        return view('admin.user-logs', compact('userLogs', 'dateToday', 'selectedDate'));
     }
 
-
-    public function filterUserLogs(Request $request)
-    {
-        Gate::authorize('admin');
-
-        $date = $request->input('date');
-        $userLogs = UserLog::whereDate('created_at', $date)->get();
-
-        return response()->view('admin.partials.user-log-rows', compact('userLogs'));
-    }
 
     public function viewUsers()
     {
