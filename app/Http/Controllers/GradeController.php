@@ -12,6 +12,8 @@ use App\Models\FinalGrade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
+
 
 class GradeController extends Controller
 {
@@ -99,25 +101,46 @@ class GradeController extends Controller
             }
     
             foreach ($students as $student) {
-                $totalEarned = 0;
-                $totalPossible = 0;
+                $scoresByType = [
+                    'quiz' => ['total' => 0, 'count' => 0],
+                    'ocr' => ['total' => 0, 'count' => 0],
+                    'exam' => ['total' => 0, 'count' => 0],
+                ];
+    
                 $allScored = true;
     
                 foreach ($activities as $activity) {
-                    $score = $student->scores()->where('activity_id', $activity->id)->first()->score ?? null;
+                    $scoreRecord = $student->scores()->where('activity_id', $activity->id)->first();
+                    $score = $scoreRecord?->score;
                     $scores[$student->id][$activity->id] = $score;
     
                     if ($score !== null) {
-                        $totalEarned += $score;
-                        $totalPossible += $activity->number_of_items;
+                        $scaledScore = ($score / $activity->number_of_items) * 50 + 50;
+                        $scoresByType[$activity->type]['total'] += $scaledScore;
+                        $scoresByType[$activity->type]['count']++;
                     } else {
                         $allScored = false;
                     }
                 }
     
-                $termGrades[$student->id] = ($allScored && $totalPossible > 0)
-                    ? number_format(($totalEarned / $totalPossible) * 100, 2)
-                    : null;
+                if ($allScored) {
+                    $quizAvg = $scoresByType['quiz']['count'] > 0
+                        ? $scoresByType['quiz']['total'] / $scoresByType['quiz']['count']
+                        : 0;
+    
+                    $ocrAvg = $scoresByType['ocr']['count'] > 0
+                        ? $scoresByType['ocr']['total'] / $scoresByType['ocr']['count']
+                        : 0;
+    
+                    $examAvg = $scoresByType['exam']['count'] > 0
+                        ? $scoresByType['exam']['total'] / $scoresByType['exam']['count']
+                        : 0;
+    
+                    $termGrade = ($quizAvg * 0.4) + ($ocrAvg * 0.2) + ($examAvg * 0.4);
+                    $termGrades[$student->id] = number_format($termGrade, 2);
+                } else {
+                    $termGrades[$student->id] = null;
+                }
             }
         }
     
@@ -131,6 +154,8 @@ class GradeController extends Controller
             'subjects', 'subject', 'term', 'students', 'activities', 'scores', 'termGrades'
         ));
     }
+    
+    
     
     
 
@@ -148,8 +173,6 @@ class GradeController extends Controller
         $termId = $this->getTermId($request->term);
     
         foreach ($request->scores as $studentId => $activityScores) {
-            $totalEarned = 0;
-            $totalPossible = 0;
             $allScored = true;
     
             foreach ($activityScores as $activityId => $score) {
@@ -159,7 +182,6 @@ class GradeController extends Controller
                         ['score' => $score, 'updated_by' => Auth::id()]
                     );
                 } else {
-                    // If a score is null or empty, mark as not scored
                     $allScored = false;
                 }
             }
@@ -167,36 +189,68 @@ class GradeController extends Controller
             if ($allScored) {
                 $activities = Activity::where('subject_id', $subject->id)
                     ->where('term', $request->term)
-                    ->where('is_deleted', false)->get();
+                    ->where('is_deleted', false)
+                    ->get();
+    
+                $scoresByType = [
+                    'quiz' => ['total' => 0, 'count' => 0],
+                    'ocr' => ['total' => 0, 'count' => 0],
+                    'exam' => ['total' => 0, 'count' => 0],
+                ];
     
                 foreach ($activities as $activity) {
-                    $score = Score::where('student_id', $studentId)->where('activity_id', $activity->id)->first();
+                    $score = Score::where('student_id', $studentId)
+                        ->where('activity_id', $activity->id)
+                        ->first();
     
                     if ($score && $score->score !== null) {
-                        $totalEarned += $score->score;
-                        $totalPossible += $activity->number_of_items;
+                        $scaledScore = ($score->score / $activity->number_of_items) * 50 + 50;
+                        $scoresByType[$activity->type]['total'] += $scaledScore;
+                        $scoresByType[$activity->type]['count']++;
                     } else {
                         $allScored = false;
                         break;
                     }
                 }
     
-                if ($allScored && $totalPossible > 0) {
-                    $termGrade = round(($totalEarned / $totalPossible) * 100, 2);
+                if ($allScored) {
+                    $quizAvg = $scoresByType['quiz']['count'] > 0
+                        ? $scoresByType['quiz']['total'] / $scoresByType['quiz']['count']
+                        : 0;
+    
+                    $ocrAvg = $scoresByType['ocr']['count'] > 0
+                        ? $scoresByType['ocr']['total'] / $scoresByType['ocr']['count']
+                        : 0;
+    
+                    $examAvg = $scoresByType['exam']['count'] > 0
+                        ? $scoresByType['exam']['total'] / $scoresByType['exam']['count']
+                        : 0;
+    
+                    $termGrade = round(
+                        ($quizAvg * 0.4) + ($ocrAvg * 0.2) + ($examAvg * 0.4),
+                        2
+                    );
     
                     TermGrade::updateOrCreate(
-                        ['student_id' => $studentId, 'subject_id' => $subject->id, 'term_id' => $termId],
-                        ['term_grade' => $termGrade, 'academic_period_id' => $subject->academic_period_id, 'created_by' => Auth::id(), 'updated_by' => Auth::id()]
+                        [
+                            'student_id' => $studentId,
+                            'subject_id' => $subject->id,
+                            'term_id' => $termId
+                        ],
+                        [
+                            'term_grade' => $termGrade,
+                            'academic_period_id' => $subject->academic_period_id,
+                            'created_by' => Auth::id(),
+                            'updated_by' => Auth::id()
+                        ]
                     );
                 } else {
-                    // If any score is missing, delete the term grade
                     TermGrade::where('student_id', $studentId)
                         ->where('subject_id', $subject->id)
                         ->where('term_id', $termId)
                         ->delete();
                 }
             } else {
-                // If all scores are not provided, remove the term grade
                 TermGrade::where('student_id', $studentId)
                     ->where('subject_id', $subject->id)
                     ->where('term_id', $termId)
@@ -211,6 +265,8 @@ class GradeController extends Controller
             'term' => $request->term
         ])->with('success', 'Scores saved and grades updated successfully.');
     }
+    
+    
     
 
     public function ajaxSaveScore(Request $request)
@@ -229,6 +285,7 @@ class GradeController extends Controller
         $subject = Subject::findOrFail($request->subject_id);
         $termId = $this->getTermId($request->term);
     
+        // Save the individual score
         Score::updateOrCreate(
             ['student_id' => $studentId, 'activity_id' => $request->activity_id],
             ['score' => $request->score, 'updated_by' => Auth::id()]
@@ -236,34 +293,55 @@ class GradeController extends Controller
     
         $activities = Activity::where('subject_id', $subject->id)
             ->where('term', $request->term)
-            ->where('is_deleted', false)->get();
+            ->where('is_deleted', false)
+            ->get();
     
-        $totalEarned = 0;
-        $totalPossible = 0;
+        $scoresByType = [
+            'quiz' => ['total' => 0, 'count' => 0],
+            'ocr' => ['total' => 0, 'count' => 0],
+            'exam' => ['total' => 0, 'count' => 0],
+        ];
+    
         $allScored = true;
     
         foreach ($activities as $activity) {
             $score = Score::where('student_id', $studentId)
-                ->where('activity_id', $activity->id)->first();
+                ->where('activity_id', $activity->id)
+                ->first();
     
             if ($score && $score->score !== null) {
-                $totalEarned += $score->score;
-                $totalPossible += $activity->number_of_items;
+                $scaledScore = ($score->score / $activity->number_of_items) * 50 + 50;
+                $scoresByType[$activity->type]['total'] += $scaledScore;
+                $scoresByType[$activity->type]['count']++;
             } else {
                 $allScored = false;
                 break;
             }
         }
     
-        if ($allScored && $totalPossible > 0) {
-            $termGrade = round(($totalEarned / $totalPossible) * 100, 2);
+        if ($allScored) {
+            $quizAvg = $scoresByType['quiz']['count'] > 0
+                ? $scoresByType['quiz']['total'] / $scoresByType['quiz']['count']
+                : 0;
+    
+            $ocrAvg = $scoresByType['ocr']['count'] > 0
+                ? $scoresByType['ocr']['total'] / $scoresByType['ocr']['count']
+                : 0;
+    
+            $examAvg = $scoresByType['exam']['count'] > 0
+                ? $scoresByType['exam']['total'] / $scoresByType['exam']['count']
+                : 0;
+    
+            $termGrade = round(
+                ($quizAvg * 0.4) + ($ocrAvg * 0.2) + ($examAvg * 0.4),
+                2
+            );
     
             TermGrade::updateOrCreate(
                 ['student_id' => $studentId, 'subject_id' => $subject->id, 'term_id' => $termId],
                 ['term_grade' => $termGrade, 'academic_period_id' => $subject->academic_period_id, 'created_by' => Auth::id(), 'updated_by' => Auth::id()]
             );
         } else {
-            // Delete term grade if scores are incomplete
             TermGrade::where('student_id', $studentId)
                 ->where('subject_id', $subject->id)
                 ->where('term_id', $termId)
@@ -274,6 +352,8 @@ class GradeController extends Controller
     
         return response()->json(['status' => 'success']);
     }
+    
+    
     
 
     private function getTermId($term)
@@ -288,75 +368,160 @@ class GradeController extends Controller
 
     private function tryUpdateFinalGrade($studentId, $subject)
     {
+        // Define the terms to check
         $terms = ['prelim', 'midterm', 'prefinal', 'final'];
-        $total = 0;
-        $hasAll = true;
-
+        $totalEarned = 0;
+        $totalPossible = 0;
+        $validTermGrades = 0;
+    
+        // Loop through each term to check if all term grades are available
         foreach ($terms as $term) {
             $grade = TermGrade::where('student_id', $studentId)
                 ->where('subject_id', $subject->id)
                 ->where('term_id', $this->getTermId($term))
                 ->first();
-
+    
+            // Check if the grade is missing or null
             if (!$grade || $grade->term_grade === null) {
-                $hasAll = false;
-                break;
+                // Log the missing term grade
+                Log::warning("Missing or null term grade for student {$studentId} in subject {$subject->id}, term {$term}.");
+                continue;  // Skip this term if grade is missing
             }
-
-            $total += $grade->term_grade;
+    
+            // If the grade is valid, add it to the total and count the valid grades
+            $totalEarned += $grade->term_grade;
+            $totalPossible += 100;  // Since each term grade is scaled to 100
+            $validTermGrades++;
         }
-
-        if ($hasAll) {
-            $average = round($total / 4, 2);
-            $remarks = $average >= 75 ? 'Passed' : 'Failed';
-
-            FinalGrade::updateOrCreate(
-                ['student_id' => $studentId, 'subject_id' => $subject->id],
-                ['academic_period_id' => $subject->academic_period_id, 'final_grade' => $average, 'remarks' => $remarks, 'is_deleted' => false, 'created_by' => Auth::id(), 'updated_by' => Auth::id()]
+    
+        // If we have valid grades from at least one term
+        if ($validTermGrades > 0) {
+            // Calculate the weighted average (similar to the individual term grade calculation)
+            $quizAvg = $this->calculateWeightedAverage($studentId, $subject, 'quiz');
+            $ocrAvg = $this->calculateWeightedAverage($studentId, $subject, 'ocr');
+            $examAvg = $this->calculateWeightedAverage($studentId, $subject, 'exam');
+    
+            // Calculate the final grade using the weighted formula
+            $finalGrade = round(
+                ($quizAvg * 0.4) + ($ocrAvg * 0.2) + ($examAvg * 0.4),
+                2
             );
+    
+            // Determine the remarks based on the average grade
+            $remarks = $finalGrade >= 75 ? 'Passed' : 'Failed';
+    
+            try {
+                // Update or create the final grade record
+                FinalGrade::updateOrCreate(
+                    ['student_id' => $studentId, 'subject_id' => $subject->id],
+                    [
+                        'academic_period_id' => $subject->academic_period_id,
+                        'final_grade' => $finalGrade,
+                        'remarks' => $remarks,
+                        'is_deleted' => false,
+                        'created_by' => Auth::id(),
+                        'updated_by' => Auth::id()
+                    ]
+                );
+    
+                // Log the successful update of the final grade
+                Log::info("Final grade updated for student {$studentId} in subject {$subject->id}: {$finalGrade} ({$remarks})");
+    
+            } catch (\Exception $e) {
+                // Log any error that happens during the final grade creation or update
+                Log::error("Error updating final grade for student {$studentId} in subject {$subject->id}: {$e->getMessage()}");
+            }
+        } else {
+            // Log if no valid grades are found for the student in any term
+            Log::info("Final grade not updated for student {$studentId} in subject {$subject->id} due to missing term grades.");
         }
     }
-
-    public function partial(Request $request)
-{
-    $subject = Subject::findOrFail($request->subject_id);
-    $term = $request->term;
-
-    $students = Student::whereHas('subjects', fn($q) => $q->where('subject_id', $subject->id))
-        ->where('is_deleted', false)->get();
-
-    $activities = Activity::where('subject_id', $subject->id)
-        ->where('term', $term)
-        ->where('is_deleted', false)
-        ->orderBy('type')
-        ->orderBy('created_at')->get();
-
-    $scores = [];
-    $termGrades = [];
-
-    foreach ($students as $student) {
+    
+    // Helper method to calculate weighted average for a specific activity type (quiz, ocr, exam)
+    private function calculateWeightedAverage($studentId, $subject, $type)
+    {
+        // Get activities for the subject and type
+        $activities = Activity::where('subject_id', $subject->id)
+            ->where('type', $type)
+            ->where('is_deleted', false)
+            ->get();
+    
         $totalEarned = 0;
         $totalPossible = 0;
-        $allScored = true;
-
+    
         foreach ($activities as $activity) {
-            $score = $student->scores()->where('activity_id', $activity->id)->first()->score ?? null;
-            $scores[$student->id][$activity->id] = $score;
-
-            if ($score !== null) {
-                $totalEarned += $score;
-                $totalPossible += $activity->number_of_items;
-            } else {
-                $allScored = false;
+            $score = Score::where('student_id', $studentId)
+                ->where('activity_id', $activity->id)
+                ->first();
+    
+            if ($score && $score->score !== null) {
+                // Apply the scoring formula
+                $scaledScore = ($score->score / $activity->number_of_items) * 50 + 50;
+                $totalEarned += $scaledScore;
+                $totalPossible += 100;  // Since each activity is scaled to 100
             }
         }
-
-        $termGrades[$student->id] = ($allScored && $totalPossible > 0)
-            ? number_format(($totalEarned / $totalPossible) * 100, 2)
-            : null;
+    
+        // Return the average score or 0 if no scores are found
+        return $totalPossible > 0 ? ($totalEarned / $totalPossible) * 100 : 0;
     }
+    
+    
+    
 
-    return view('instructor.partials.grade-body', compact('subject', 'term', 'students', 'activities', 'scores', 'termGrades'));
-}
+    public function partial(Request $request)
+    {
+        $subject = Subject::findOrFail($request->subject_id);
+        $term = $request->term;
+    
+        // Fetch students enrolled in the subject
+        $students = Student::whereHas('subjects', fn($q) => $q->where('subject_id', $subject->id))
+            ->where('is_deleted', false)->get();
+    
+        // Fetch activities for the subject and term
+        $activities = Activity::where('subject_id', $subject->id)
+            ->where('term', $term)
+            ->where('is_deleted', false)
+            ->orderBy('type')
+            ->orderBy('created_at')->get();
+    
+        $scores = [];
+        $termGrades = [];
+    
+        // Loop through each student to calculate their scores
+        foreach ($students as $student) {
+            $totalEarned = 0;
+            $totalPossible = 0;
+            $allScored = true;
+    
+            // Loop through each activity to calculate the individual score
+            foreach ($activities as $activity) {
+                $score = $student->scores()->where('activity_id', $activity->id)->first()->score ?? null;
+                $scores[$student->id][$activity->id] = $score;
+    
+                if ($score !== null) {
+                    // Apply the new formula: (RS / N) * 50 + 50
+                    $scaledScore = ($score / $activity->number_of_items) * 50 + 50;
+    
+                    // Add to the total earned and possible scores
+                    $totalEarned += $scaledScore;
+                    $totalPossible += 100; // Each activity's scaled score is out of 100
+                } else {
+                    // If any score is missing, mark as not scored
+                    $allScored = false;
+                }
+            }
+    
+            // Calculate the term grade only if all activities have scores
+            $termGrades[$student->id] = ($allScored && $totalPossible > 0)
+                ? number_format(($totalEarned / $totalPossible) * 100, 2)
+                : null;
+        }
+    
+        // Return the partial view with the necessary data
+        return view('instructor.partials.grade-body', compact('subject', 'term', 'students', 'activities', 'scores', 'termGrades'));
+    }
+    
+    
 
 }

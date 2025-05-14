@@ -3,7 +3,7 @@
 @section('content')
 <div class="container">
     <div class="container py-5">
-        <h2 class="mb-4 fw-bold text-dark">📊 Chairperson Dashboard Overview</h2>
+        <h2 class="mb-4 fw-bold text-dark">📊 Dean Dashboard Overview</h2>
 
     {{-- Summary Cards --}}
     <div class="row justify-content-center g-4">

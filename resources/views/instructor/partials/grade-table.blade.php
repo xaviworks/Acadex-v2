@@ -54,8 +54,8 @@
 
                                 @php
                                     $grade = $termGrades[$student->id] ?? null;
-                                    // Ensure the grade is an integer and rounded
-                                    $grade = $grade !== null ? round($grade) : null;
+                                    // Round grade to two decimal places
+                                    $grade = $grade !== null ? number_format($grade, 2) : null;
                                     $gradeClass = is_numeric($grade)
                                         ? ($grade >= 75 ? 'text-success' : 'text-danger')
                                         : 'text-muted';
