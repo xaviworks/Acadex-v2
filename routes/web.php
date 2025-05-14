@@ -19,7 +19,15 @@ use App\Http\Controllers\StudentImportController;
 use App\Http\Middleware\EnsureAcademicPeriodSet;
 
 // Welcome Page
-Route::get('/', fn () => view('auth.login'));
+use Illuminate\Support\Facades\Auth;
+
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+
+    return view('auth.login');
+});
 
 // Profile Management
 Route::middleware('auth')->group(function () {
