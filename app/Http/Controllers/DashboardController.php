@@ -24,183 +24,209 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         if (Gate::allows('instructor')) {
-            if (!session()->has('active_academic_period_id')) {
-                return redirect()->route('select.academicPeriod');
-            }
-
-            $academicPeriodId = session('active_academic_period_id');
-            $instructorId = Auth::id();
-
-            $subjects = Subject::where('instructor_id', $instructorId)
-                ->where('academic_period_id', $academicPeriodId)
-                ->with('students')
-                ->get();
-
-            $instructorStudents = $subjects->flatMap->students
-                ->where('is_deleted', false)
-                ->unique('id')
-                ->count();
-
-            $enrolledSubjectsCount = $subjects->count();
-
-            $subjectIds = $subjects->pluck('id');
-            $finalGrades = FinalGrade::whereIn('subject_id', $subjectIds)
-                ->where('academic_period_id', $academicPeriodId)
-                ->get();
-
-            $totalPassedStudents = $finalGrades->where('remarks', 'Passed')->count();
-            $totalFailedStudents = $finalGrades->where('remarks', 'Failed')->count();
-
-            $terms = ['prelim', 'midterm', 'prefinal', 'final'];
-            $termCompletions = [];
-
-            foreach ($terms as $term) {
-                $termId = $this->getTermId($term);
-                $total = 0;
-                $graded = 0;
-
-                foreach ($subjects as $subject) {
-                    $studentCount = $subject->students->where('is_deleted', false)->count();
-                    $gradedCount = TermGrade::where('subject_id', $subject->id)
-                        ->where('term_id', $termId)
-                        ->distinct('student_id')
-                        ->count('student_id');
-
-                    $total += $studentCount;
-                    $graded += $gradedCount;
-                }
-
-                $termCompletions[$term] = [
-                    'graded' => $graded,
-                    'total' => $total,
-                ];
-            }
-
-            $subjectCharts = [];
-            foreach ($subjects as $subject) {
-                $termsData = [];
-                $termPercentages = [];
-
-                foreach ($terms as $term) {
-                    $termId = $this->getTermId($term);
-                    $studentCount = $subject->students->where('is_deleted', false)->count();
-                    $gradedCount = TermGrade::where('subject_id', $subject->id)
-                        ->where('term_id', $termId)
-                        ->distinct('student_id')
-                        ->count('student_id');
-
-                    $percentage = $studentCount > 0 ? round(($gradedCount / $studentCount) * 100, 2) : 0;
-
-                    $termsData[$term] = [
-                        'graded' => $gradedCount,
-                        'total' => $studentCount,
-                        'percentage' => $percentage,
-                    ];
-
-                    $termPercentages[] = $percentage;
-                }
-
-                $subjectCharts[] = [
-                    'code' => $subject->subject_code,
-                    'description' => $subject->subject_description,
-                    'terms' => $termsData,
-                    'termPercentages' => $termPercentages,
-                ];
-            }
-
-            return view('dashboard.instructor', compact(
-                'instructorStudents',
-                'enrolledSubjectsCount',
-                'totalPassedStudents',
-                'totalFailedStudents',
-                'termCompletions',
-                'subjectCharts'
-            ));
+            return $this->instructorDashboard();
         }
 
         if (Gate::allows('chairperson')) {
-            if (!session()->has('active_academic_period_id')) {
-                return redirect()->route('select.academicPeriod');
-            }
-            
-            $countInstructors = User::where("role", 0)
-                                ->count();
-                            
-            $countStudents = Student::count();
-            $countCourses = Course::count();
-
-            $countActiveInstructors = User::where("is_active", 1)
-                                ->where("role", 0)
-                                ->count();
-
-            $countInactiveInstructors = User::where("is_active", 0)
-                                ->where("role", 0)
-                                ->count();
-
-            $countUnverifiedInstructors = UnverifiedUser::count();
-
-            return view('dashboard.chairperson', 
-            compact(
-                "countInstructors", 
-                "countStudents",
-                "countCourses",
-                "countActiveInstructors",
-                "countInactiveInstructors",
-                "countUnverifiedInstructors",
-            ));
+            return $this->chairpersonDashboard();
         }
 
         if (Gate::allows('admin')) {
+            return $this->adminDashboard($request);
+        }
 
-        // Get the selected date from the query parameters, default to today
-        $selectedDate = $request->query('date', Carbon::today()->toDateString());
+        if (Gate::allows('dean')) {
+            return $this->deanDashboard();
+        }
 
-        // Get the selected year from the query parameters, default to the current year
-        $selectedYear = $request->query('year', now()->year);
+        abort(403, 'Unauthorized access.');
+    }
 
-        // Generate a range for the last 10 years
-        $yearRange = range(now()->year, now()->year - 10); // Last 10 years
+    private function instructorDashboard()
+    {
+        if (!session()->has('active_academic_period_id')) {
+            return redirect()->route('select.academicPeriod');
+        }
 
-        // Get the total number of users
-        $totalUsers = User::count();
+        $academicPeriodId = session('active_academic_period_id');
+        $instructorId = Auth::id();
 
-        // Define the hours range for the hourly chart (0-23)
-        $hours = range(0, 23);
+        $subjects = $this->getInstructorSubjects($instructorId, $academicPeriodId);
+        $dashboardData = $this->getInstructorDashboardData($subjects, $academicPeriodId);
+        $subjectCharts = $this->generateSubjectCharts($subjects);
 
-        // Get the total login count for the selected date
-        $loginCount = UserLog::where('event_type', 'login')
-            ->whereDate('created_at', $selectedDate)
+        return view('dashboard.instructor', $dashboardData + ['subjectCharts' => $subjectCharts]);
+    }
+
+    private function getInstructorSubjects($instructorId, $academicPeriodId)
+    {
+        return Subject::where('instructor_id', $instructorId)
+            ->where('academic_period_id', $academicPeriodId)
+            ->with('students')
+            ->get();
+    }
+
+    private function getInstructorDashboardData($subjects, $academicPeriodId)
+    {
+        $instructorStudents = $subjects->flatMap->students
+            ->where('is_deleted', false)
+            ->unique('id')
             ->count();
 
-        // Get the count of successful logins by hour for the selected date
+        $enrolledSubjectsCount = $subjects->count();
+
+        $subjectIds = $subjects->pluck('id');
+        $finalGrades = FinalGrade::whereIn('subject_id', $subjectIds)
+            ->where('academic_period_id', $academicPeriodId)
+            ->get();
+
+        $totalPassedStudents = $finalGrades->where('remarks', 'Passed')->count();
+        $totalFailedStudents = $finalGrades->where('remarks', 'Failed')->count();
+
+        $termCompletions = $this->calculateTermCompletions($subjects);
+
+        return compact(
+            'instructorStudents',
+            'enrolledSubjectsCount',
+            'totalPassedStudents',
+            'totalFailedStudents',
+            'termCompletions'
+        );
+    }
+
+    private function calculateTermCompletions($subjects)
+    {
+        $terms = ['prelim', 'midterm', 'prefinal', 'final'];
+        $termCompletions = [];
+
+        foreach ($terms as $term) {
+            $termId = $this->getTermId($term);
+            $total = 0;
+            $graded = 0;
+
+            foreach ($subjects as $subject) {
+                $studentCount = $subject->students->where('is_deleted', false)->count();
+                $gradedCount = TermGrade::where('subject_id', $subject->id)
+                    ->where('term_id', $termId)
+                    ->distinct('student_id')
+                    ->count('student_id');
+
+                $total += $studentCount;
+                $graded += $gradedCount;
+            }
+
+            $termCompletions[$term] = [
+                'graded' => $graded,
+                'total' => $total,
+            ];
+        }
+
+        return $termCompletions;
+    }
+
+    private function generateSubjectCharts($subjects)
+    {
+        $terms = ['prelim', 'midterm', 'prefinal', 'final'];
+        $subjectCharts = [];
+
+        foreach ($subjects as $subject) {
+            $termsData = [];
+            $termPercentages = [];
+
+            foreach ($terms as $term) {
+                $termId = $this->getTermId($term);
+                $studentCount = $subject->students->where('is_deleted', false)->count();
+                $gradedCount = TermGrade::where('subject_id', $subject->id)
+                    ->where('term_id', $termId)
+                    ->distinct('student_id')
+                    ->count('student_id');
+
+                $percentage = $studentCount > 0 ? round(($gradedCount / $studentCount) * 100, 2) : 0;
+
+                $termsData[$term] = [
+                    'graded' => $gradedCount,
+                    'total' => $studentCount,
+                    'percentage' => $percentage,
+                ];
+
+                $termPercentages[] = $percentage;
+            }
+
+            $subjectCharts[] = [
+                'code' => $subject->subject_code,
+                'description' => $subject->subject_description,
+                'terms' => $termsData,
+                'termPercentages' => $termPercentages,
+            ];
+        }
+
+        return $subjectCharts;
+    }
+
+    private function chairpersonDashboard()
+    {
+        if (!session()->has('active_academic_period_id')) {
+            return redirect()->route('select.academicPeriod');
+        }
+
+        $data = [
+            "countInstructors" => User::where("role", 0)->count(),
+            "countStudents" => Student::count(),
+            "countCourses" => Course::count(),
+            "countActiveInstructors" => User::where("is_active", 1)->where("role", 0)->count(),
+            "countInactiveInstructors" => User::where("is_active", 0)->where("role", 0)->count(),
+            "countUnverifiedInstructors" => UnverifiedUser::count(),
+        ];
+
+        return view('dashboard.chairperson', $data);
+    }
+
+    private function adminDashboard(Request $request)
+    {
+        $selectedDate = $request->query('date', Carbon::today()->toDateString());
+        $selectedYear = $request->query('year', now()->year);
+        $yearRange = range(now()->year, now()->year - 10);
+
+        $loginStats = $this->getLoginStats($selectedDate);
+        $monthlyStats = $this->getMonthlyLoginStats($selectedYear);
+
+        return view('dashboard.admin', array_merge([
+            'totalUsers' => User::count(),
+            'selectedDate' => $selectedDate,
+            'selectedYear' => $selectedYear,
+            'yearRange' => $yearRange,
+        ], $loginStats, $monthlyStats));
+    }
+
+    private function getLoginStats($selectedDate)
+    {
+        $hours = range(0, 23);
+        
         $successfulLogins = UserLog::selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
             ->where('event_type', 'login')
             ->whereDate('created_at', $selectedDate)
             ->groupByRaw('HOUR(created_at)')
             ->pluck('total', 'hour');
 
-        // Get the count of failed logins by hour for the selected date
         $failedLogins = UserLog::selectRaw('HOUR(created_at) as hour, COUNT(*) as total')
             ->where('event_type', 'failed_login')
             ->whereDate('created_at', $selectedDate)
             ->groupByRaw('HOUR(created_at)')
             ->pluck('total', 'hour');
 
-        // Get the total count of failed logins for the selected date
-        $failedLoginCount = UserLog::where('event_type', 'failed_login')
-            ->whereDate('created_at', $selectedDate)
-            ->count();
+        $successfulData = array_map(fn($hour) => $successfulLogins[$hour] ?? 0, $hours);
+        $failedData = array_map(fn($hour) => $failedLogins[$hour] ?? 0, $hours);
 
-        // Prepare data for the hourly charts (successful and failed logins)
-        $successfulData = [];
-        $failedData = [];
+        return [
+            'loginCount' => array_sum($successfulData),
+            'failedLoginCount' => array_sum($failedData),
+            'successfulData' => $successfulData,
+            'failedData' => $failedData,
+        ];
+    }
 
-        foreach ($hours as $hour) {
-            $successfulData[] = $successfulLogins[$hour] ?? 0;
-            $failedData[] = $failedLogins[$hour] ?? 0;
-        }
-
-        // Get monthly login data for the selected year
+    private function getMonthlyLoginStats($selectedYear)
+    {
         $monthlySuccessfulLogins = UserLog::selectRaw('MONTH(created_at) as month, COUNT(*) as total')
             ->where('event_type', 'login')
             ->whereYear('created_at', $selectedYear)
@@ -213,56 +239,32 @@ class DashboardController extends Controller
             ->groupByRaw('MONTH(created_at)')
             ->pluck('total', 'month');
 
-        // Prepare data for the monthly charts (successful and failed logins)
-        $monthlySuccessfulData = [];
-        $monthlyFailedData = [];
+        $monthlySuccessfulData = array_map(fn($month) => $monthlySuccessfulLogins[$month] ?? 0, range(1, 12));
+        $monthlyFailedData = array_map(fn($month) => $monthlyFailedLogins[$month] ?? 0, range(1, 12));
 
-        for ($i = 1; $i <= 12; $i++) {
-            $monthlySuccessfulData[] = $monthlySuccessfulLogins[$i] ?? 0;
-            $monthlyFailedData[] = $monthlyFailedLogins[$i] ?? 0;
-        }
-
-    // Return the data to the view
-        return view('dashboard.admin', compact(
-            'totalUsers',
-            'loginCount',
-            'failedLoginCount',
-            'successfulData',
-            'failedData',
-            'selectedDate',
-            'monthlySuccessfulData',
-            'monthlyFailedData',
-            'selectedYear',
-            'yearRange'
-        ));
+        return [
+            'monthlySuccessfulData' => $monthlySuccessfulData,
+            'monthlyFailedData' => $monthlyFailedData,
+        ];
     }
 
-
-    if (Gate::allows('dean')) {
-        // Total number of students per department (with department names)
+    private function deanDashboard()
+    {
         $studentsPerDepartment = Student::join('departments', 'students.department_id', '=', 'departments.id')
-                                        ->select('departments.department_description as department_name', DB::raw('count(*) as total'))
-                                        ->groupBy('students.department_id', 'departments.department_description')
-                                        ->pluck('total', 'department_name');
-        
-        // Total number of instructors
-        $totalInstructors = User::where('role', 'instructor')->count();
-        
-        // Number of students per course (with course names)
-        $studentsPerCourse = Student::join('courses', 'students.course_id', '=', 'courses.id')
-                                    ->select('courses.course_code', 'courses.course_description', DB::raw('count(*) as total'))
-                                    ->groupBy('students.course_id', 'courses.course_code', 'courses.course_description')
-                                    ->pluck('total', 'courses.course_code'); // Plucking by course code
-        
-        return view('dashboard.dean', compact(
-            'studentsPerDepartment',
-            'totalInstructors',
-            'studentsPerCourse'  // Pass the updated variable
-        ));
-    }
-      
+            ->select('departments.department_description as department_name', DB::raw('count(*) as total'))
+            ->groupBy('students.department_id', 'departments.department_description')
+            ->pluck('total', 'department_name');
 
-        abort(403, 'Unauthorized access.');
+        $studentsPerCourse = Student::join('courses', 'students.course_id', '=', 'courses.id')
+            ->select('courses.course_code', 'courses.course_description', DB::raw('count(*) as total'))
+            ->groupBy('students.course_id', 'courses.course_code', 'courses.course_description')
+            ->pluck('total', 'courses.course_code');
+
+        return view('dashboard.dean', [
+            'studentsPerDepartment' => $studentsPerDepartment,
+            'totalInstructors' => User::where('role', 'instructor')->count(),
+            'studentsPerCourse' => $studentsPerCourse
+        ]);
     }
 
     private function getTermId($term)
