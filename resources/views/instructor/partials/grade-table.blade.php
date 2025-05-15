@@ -51,19 +51,27 @@
                                         >
                                     </td>
                                 @endforeach
-
                                 @php
-                                    $grade = $termGrades[$student->id] ?? null;
-                                    // Round grade to two decimal places
-                                    $grade = $grade !== null ? number_format($grade, 2) : null;
-                                    $gradeClass = is_numeric($grade)
-                                        ? ($grade >= 75 ? 'text-success' : 'text-danger')
-                                        : 'text-muted';
-                                @endphp
+                                $grade = $termGrades[$student->id] ?? null;
                                 
-                                <td class="px-3 py-2 text-center fw-semibold {{ $gradeClass }}" style="min-width: 120px;">
-                                    {{ $grade !== null ? $grade : '-' }}
-                                </td>
+                                // Check if grade is not null and numeric
+                                if ($grade !== null && is_numeric($grade)) {
+                                    // Cast grade to an integer to ensure it has no decimal points
+                                    $grade = (int) round($grade); // Round before casting to int to avoid decimals
+                                } else {
+                                    $grade = null; // If grade is not numeric, set it to null
+                                }
+                            
+                                // Set the grade class based on passing or failing
+                                $gradeClass = is_numeric($grade)
+                                    ? ($grade >= 75 ? 'text-success' : 'text-danger')
+                                    : 'text-muted';
+                            @endphp
+                            
+                            <td class="px-3 py-2 text-center fw-semibold {{ $gradeClass }}" style="min-width: 120px;">
+                                {{ $grade !== null ? $grade : '-' }}
+                            </td>
+                            
                                 
                             </tr>
                         @endforeach

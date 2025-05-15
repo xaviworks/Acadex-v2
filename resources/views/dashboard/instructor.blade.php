@@ -9,7 +9,7 @@
         @php
             $cards = [
                 ['label' => 'Total Students', 'icon' => '👥', 'value' => $instructorStudents, 'color' => 'text-primary'],
-                ['label' => 'Enrolled Subjects', 'icon' => '📚', 'value' => $enrolledSubjectsCount, 'color' => 'text-dark'],
+                ['label' => 'Subjects Load', 'icon' => '📚', 'value' => $enrolledSubjectsCount, 'color' => 'text-dark'],
                 ['label' => 'Students Passed', 'icon' => '✅', 'value' => $totalPassedStudents, 'color' => 'text-success'],
                 ['label' => 'Students Failed', 'icon' => '❌', 'value' => $totalFailedStudents, 'color' => 'text-danger'],
             ];

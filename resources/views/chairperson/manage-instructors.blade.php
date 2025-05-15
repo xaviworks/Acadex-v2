@@ -46,7 +46,7 @@
         <div class="tab-pane fade show active" id="active-instructors" role="tabpanel" aria-labelledby="active-instructors-tab">
             <h2 class="text-xl font-semibold mb-3 text-gray-700 flex items-center">
                 <i class="bi bi-people-fill text-primary me-2 fs-5"></i>
-                Currently Active Instructors
+                 Active Instructors
             </h2>
 
             @if($instructors->isEmpty())
@@ -96,7 +96,7 @@
         <div class="tab-pane fade" id="inactive-instructors" role="tabpanel" aria-labelledby="inactive-instructors-tab">
             <h2 class="text-xl font-semibold mb-3 text-gray-700 flex items-center">
                 <i class="bi bi-person-x-fill text-secondary me-2 fs-5"></i>
-                Currently Inactive Instructors
+                 Inactive Instructors
             </h2>
 
             @if($instructors->isEmpty())
@@ -148,7 +148,7 @@
     <section class="mt-4">
         <h2 class="text-xl font-semibold mb-3 text-gray-700 flex items-center">
             <i class="bi bi-person-check-fill text-warning me-2 fs-5"></i>
-            Pending Account Approvals
+            Pending For Approvals
         </h2>
 
         @if($pendingAccounts->isEmpty())

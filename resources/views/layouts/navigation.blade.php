@@ -5,11 +5,41 @@
             $activePeriod = \App\Models\AcademicPeriod::find(session('active_academic_period_id'));
         @endphp
         @if($activePeriod)
-            AY {{ $activePeriod->academic_year }} {{ $activePeriod->semester }} Semester
+            @php
+                $semesterLabel = '';
+                $academicYear = $activePeriod->academic_year;
+    
+                switch ($activePeriod->semester) {
+                    case '1st':
+                        $semesterLabel = 'First Semester';
+                        break;
+                    case '2nd':
+                        $semesterLabel = 'Second Semester';
+                        break;
+                    case 'Summer':
+                        $semesterLabel = 'Summer';
+                        break;
+                    default:
+                        $semesterLabel = 'Unknown Semester';
+                        break;
+                }
+    
+                // Only split the academic year if it's not Summer
+                if ($activePeriod->semester != 'Summer') {
+                    list($startYear, $endYear) = explode('-', $academicYear);
+                }
+            @endphp
+            
+            @if($activePeriod->semester != 'Summer')
+                {{ $semesterLabel }} - AY {{ $startYear }} - {{ $endYear }}
+            @else
+                {{ $semesterLabel }} - AY {{ $academicYear }}
+            @endif
+    
         @else
             Dashboard
         @endif
-    </h1>
+    </h1>    
 
     <!-- Right: Profile Dropdown -->
     @php
