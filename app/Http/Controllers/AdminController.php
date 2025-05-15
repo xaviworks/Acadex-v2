@@ -124,11 +124,24 @@ class AdminController extends Controller
     {
         Gate::authorize('admin');
 
-        $subjects = Subject::where('is_deleted', false)
+        $subjects = Subject::with(['department', 'course', 'academicPeriod'])
+            ->where('is_deleted', false)
             ->orderBy('subject_code')
             ->get();
 
-        return view('admin.subjects', compact('subjects'));
+        $departments = Department::where('is_deleted', false)
+            ->orderBy('department_code')
+            ->get();
+
+        $courses = Course::where('is_deleted', false)
+            ->orderBy('course_code')
+            ->get();
+
+        $academicPeriods = AcademicPeriod::orderBy('academic_year', 'desc')
+            ->orderBy('semester')
+            ->get();
+
+        return view('admin.subjects', compact('subjects', 'departments', 'courses', 'academicPeriods'));
     }
 
     public function createSubject()
@@ -150,6 +163,7 @@ class AdminController extends Controller
             'subject_code' => 'required|string|max:255|unique:subjects,subject_code',
             'subject_description' => 'required|string|max:255',
             'units' => 'required|integer|min:1|max:6',
+            'year_level' => 'required|integer|min:1|max:5',
             'academic_period_id' => 'required|exists:academic_periods,id',
             'department_id' => 'required|exists:departments,id',
             'course_id' => 'required|exists:courses,id',
@@ -159,6 +173,7 @@ class AdminController extends Controller
             'subject_code' => $request->subject_code,
             'subject_description' => $request->subject_description,
             'units' => $request->units,
+            'year_level' => $request->year_level,
             'academic_period_id' => $request->academic_period_id,
             'department_id' => $request->department_id,
             'course_id' => $request->course_id,

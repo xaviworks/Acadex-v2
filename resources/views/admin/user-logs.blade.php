@@ -1,78 +1,65 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto p-6">
-    <h1 class="text-3xl font-semibold text-gray-900 mb-6">User Logs</h1>
-    <p class="mb-6 text-gray-600">A record of user login, logout, or login attempts.</p>
-
-    <!-- Filter Form -->
-    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
-        <form id="dateFilterForm" action="{{ route('admin.userLogs') }}" method="GET" class="flex items-center space-x-4">
-            <div>
-                <label for="date" class="block text-sm font-medium text-gray-700">Select Date</label>
+<div class="container py-4">
+    {{-- Header --}}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h4 text-dark fw-bold mb-0">📊 User Logs</h1>
+        <div class="d-flex align-items-center">
+            <form id="dateFilterForm" action="{{ route('admin.userLogs') }}" method="GET" class="d-flex align-items-center">
+                <label for="date" class="me-2">Select Date:</label>
                 <input type="date" name="date" id="date" value="{{ old('date', $selectedDate ?? $dateToday) }}" 
-                       class="mt-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64" />
-            </div>
-        </form>
+                       class="form-control" style="width: 200px;" />
+            </form>
+        </div>
     </div>
 
-    <!-- Data Table -->
-    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-        <table id="userLogsTable" class="min-w-full text-sm">
-            <thead class="bg-indigo-600 text-white">
-                <tr>
-                    <th class="px-4 py-3 text-left">User</th>
-                    <th class="px-4 py-3 text-left">Event Type</th>
-                    <th class="px-4 py-3 text-left">Browser</th>
-                    <th class="px-4 py-3 text-left">Device</th>
-                    <th class="px-4 py-3 text-left">Platform</th>
-                    <th class="px-4 py-3 text-left">Date</th>
-                    <th class="px-4 py-3 text-left">Time</th>
-                </tr>
-            </thead>
-            <tbody class="text-gray-700" id="logTableBody">
-                @forelse ($userLogs as $log)
-                    <tr class="border-b hover:bg-gray-50">
-                        <td class="px-4 py-3">
-                            @if ($log->user)
-                                {{ $log->user->first_name }} {{ $log->user->last_name }}
-                            @else
-                                <em class="text-gray-400 italic">Unknown</em>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3">{{ ucfirst($log->event_type) }}</td>
-                        <td class="px-4 py-3">{{ $log->browser ?? 'N/A' }}</td>
-                        <td class="px-4 py-3">{{ $log->device ?? 'N/A' }}</td>
-                        <td class="px-4 py-3">{{ $log->platform ?? 'N/A' }}</td>
-                        <td class="px-4 py-3">{{ $log->created_at ? $log->created_at->format('F j, Y') : 'N/A' }}</td>
-                        <td class="px-4 py-3">{{ $log->created_at ? $log->created_at->format('g:i A') : 'N/A' }}</td>
-                    </tr>
-                @empty
+    {{-- Logs Table --}}
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <table class="table table-bordered mb-0">
+                <thead class="table-success">
                     <tr>
-                        <td class="px-4 py-3">Empty</td>
-                        <td class="px-4 py-3">Empty</td>
-                        <td class="px-4 py-3">Empty</td>
-                        <td class="px-4 py-3">Empty</td>
-                        <td class="px-4 py-3">Empty</td>
-                        <td class="px-4 py-3">Empty</td>
-                        <td class="px-4 py-3">Empty</td>
+                        <th>User</th>
+                        <th>Event Type</th>
+                        <th>Browser</th>
+                        <th>Device</th>
+                        <th>Platform</th>
+                        <th>Date</th>
+                        <th>Time</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse ($userLogs as $log)
+                        <tr>
+                            <td>
+                                @if ($log->user)
+                                    {{ $log->user->first_name }} {{ $log->user->last_name }}
+                                @else
+                                    <em class="text-muted">Unknown</em>
+                                @endif
+                            </td>
+                            <td>{{ ucfirst($log->event_type) }}</td>
+                            <td>{{ $log->browser ?? 'N/A' }}</td>
+                            <td>{{ $log->device ?? 'N/A' }}</td>
+                            <td>{{ $log->platform ?? 'N/A' }}</td>
+                            <td>{{ $log->created_at ? $log->created_at->format('F j, Y') : 'N/A' }}</td>
+                            <td>{{ $log->created_at ? $log->created_at->format('g:i A') : 'N/A' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center text-muted fst-italic py-3">No logs found for the selected date.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-@endsection
 
 @push('scripts')
 <script>
     $(document).ready(function () {
-        $('#userLogsTable').DataTable({
-            ordering: false,
-            paging: true,
-            responsive: true, // Optional, improves display on small screens
-        });
-
         // Submit form when date changes
         $('#date').on('change', function () {
             $('#dateFilterForm').submit();
@@ -80,6 +67,7 @@
     });
 </script>
 @endpush
+@endsection
 
 
 
