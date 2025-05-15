@@ -8,6 +8,7 @@ use App\Models\TermGrade;
 use App\Models\FinalGrade;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 trait GradeCalculationTrait
 {
@@ -72,8 +73,8 @@ trait GradeCalculationTrait
             [
                 'term_grade' => $termGrade,
                 'academic_period_id' => $academicPeriodId,
-                'created_by' => auth()->id(),
-                'updated_by' => auth()->id()
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id()
             ]
         );
     }
@@ -99,8 +100,8 @@ trait GradeCalculationTrait
                     'final_grade' => $finalGrade,
                     'remarks' => $remarks,
                     'is_deleted' => false,
-                    'created_by' => auth()->id(),
-                    'updated_by' => auth()->id()
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id()
                 ]
             );
             
