@@ -162,36 +162,67 @@ class ActivityController extends Controller
     {
         Gate::authorize('instructor');
 
-        $request->validate([
-            'type' => 'required|in:quiz,ocr,exam',
-            'title' => 'required|string|max:255',
-            'number_of_items' => 'required|integer|min:1',
-        ]);
+        try {
+            $validated = $request->validate([
+                'type' => 'required|in:quiz,ocr,exam',
+                'title' => 'required|string|max:255',
+                'number_of_items' => 'required|integer|min:1',
+            ]);
 
-        $subject = $activity->subject;
+            $subject = $activity->subject;
 
-        // Authorization check
-        if ($subject->instructor_id !== Auth::id()) {
-            abort(403, 'You are not authorized to update this activity.');
+            // Authorization check
+            if ($subject->instructor_id !== Auth::id()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You are not authorized to update this activity.'
+                ], 403);
+            }
+
+            // Academic period check
+            $academicPeriodId = session('active_academic_period_id');
+            if ($academicPeriodId && $subject->academic_period_id !== (int) $academicPeriodId) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'This subject does not belong to the current academic period.'
+                ], 403);
+            }
+
+            $activity->update([
+                'type' => $validated['type'],
+                'title' => $validated['title'],
+                'number_of_items' => $validated['number_of_items'],
+                'updated_by' => Auth::id(),
+            ]);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Activity updated successfully',
+                    'data' => [
+                        'activity' => $activity->fresh()
+                    ]
+                ]);
+            }
+
+            return redirect()->route('instructor.activities.index', [
+                'subject_id' => $activity->subject_id,
+                'term' => $activity->term,
+            ])->with('success', 'Activity updated successfully.');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred while updating the activity',
+                'debug' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
         }
-
-        // Academic period check
-        $academicPeriodId = session('active_academic_period_id');
-        if ($academicPeriodId && $subject->academic_period_id !== (int) $academicPeriodId) {
-            abort(403, 'This subject does not belong to the current academic period.');
-        }
-
-        $activity->update([
-            'type' => $request->type,
-            'title' => $request->title,
-            'number_of_items' => $request->number_of_items,
-            'updated_by' => Auth::id(),
-        ]);
-
-        return redirect()->route('instructor.activities.index', [
-            'subject_id' => $activity->subject_id,
-            'term' => $activity->term,
-        ])->with('success', 'Activity updated successfully.');
     }
 
     // 🗑 Soft Delete Activity

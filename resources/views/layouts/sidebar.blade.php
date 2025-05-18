@@ -1,197 +1,207 @@
-<div class="d-flex flex-column flex-shrink-0 p-3 text-white" style="width: 250px; background-color: #259c59; min-height: 100vh;">
-    <!-- Logo -->
-    <a href="{{ route('dashboard') }}" class="d-flex align-items-center mb-3 text-white text-decoration-none">
-        <img src="{{ asset('logo.jpg') }}" alt="Logo" style="width: 28px; height: 28px;" class="me-2">
-        <span class="fs-4 fw-bold">ACADEX</span>
-    </a>
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white h-100 sidebar-wrapper">
+    <!-- Logo Section -->
+    <div class="logo-section">
+        <a href="{{ route('dashboard') }}" class="logo-wrapper text-white text-decoration-none">
+            <img src="{{ asset('logo.jpg') }}" alt="Logo" class="rounded">
+            <span>ACADEX</span>
+        </a>
+    </div>
 
-    <hr class="border-white-50">
+    <div class="sidebar-content flex-grow-1 overflow-auto custom-scrollbar">
+        <!-- Dashboard Section -->
+        <div class="sidebar-section">
+            <ul class="nav nav-pills flex-column">
+                <li class="nav-item">
+                    <a href="{{ route('dashboard') }}" 
+                       class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                        <i class="bi bi-house-door me-3"></i> 
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
 
-    <!-- Always visible Dashboard link -->
-    <ul class="nav nav-pills flex-column mb-4">
-        <li>
-            <a href="{{ route('dashboard') }}" class="nav-link text-white {{ request()->routeIs('dashboard') ? 'active bg-success' : '' }}">
-                <div class="d-flex align-items-center">
-                    <span class="me-2" style="width: 20px;">🏠</span> Dashboard
-                </div>
-            </a>
-        </li>
-    </ul>
+        @php $role = Auth::user()->role; @endphp
 
-    @php $role = Auth::user()->role; @endphp
+        {{-- Instructor --}}
+        @if ($role === 0)
+            <div class="sidebar-section">
+                <h6 class="px-3 mb-2">INSTRUCTOR PORTAL</h6>
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a href="{{ route('instructor.students.index') }}"
+                           class="nav-link {{ request()->routeIs('instructor.students.index') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-mortarboard me-3"></i> 
+                            <span>Manage Students</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('instructor.grades.index') }}" 
+                           class="nav-link {{ request()->routeIs('instructor.grades.*') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-card-checklist me-3"></i>
+                            <span>Manage Grades</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('instructor.activities.index') }}" 
+                           class="nav-link {{ request()->routeIs('instructor.activities.*') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-journal-text me-3"></i>
+                            <span>Manage Activities</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('instructor.final-grades.index') }}" 
+                           class="nav-link {{ request()->routeIs('instructor.final-grades.*') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-graph-up me-3"></i>
+                            <span>Final Grades</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-    {{-- Instructor --}}
-    @if ($role === 0)
-        <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Instructor</h6>
-        <ul class="nav nav-pills flex-column mb-4">
-            <li>
-                <a href="{{ route('instructor.students.index') }}"
-                class="nav-link text-white {{ request()->routeIs('instructor.students.index') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">🎓</span> Manage Students
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('instructor.grades.index') }}" class="nav-link text-white {{ request()->routeIs('instructor.grades.*') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📝</span> Manage Grades
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('instructor.activities.index') }}" class="nav-link text-white {{ request()->routeIs('instructor.activities.*') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📌</span> Manage Activities
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('instructor.final-grades.index') }}" class="nav-link text-white {{ request()->routeIs('instructor.final-grades.*') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📈</span> Final Grades
-                    </div>
-                </a>
-            </li>
-        </ul>
+            <div class="sidebar-section">
+                <h6 class="px-3 mb-2">DATA MANAGEMENT</h6>
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a href="{{ route('instructor.students.import') }}" 
+                           class="nav-link {{ request()->routeIs('instructor.students.import') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-file-earmark-arrow-up me-3"></i>
+                            <span>Import Students</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        @endif
 
-        <!-- Import Section for Instructor -->
-        <hr class="border-white-50">
-        <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Import Section</h6>
-        <ul class="nav nav-pills flex-column mb-4">
-            <li>
-                <a href="{{ route('instructor.students.import') }}" class="nav-link text-white {{ request()->routeIs('instructor.students.import') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📤</span> Import Student
-                    </div>
-                </a>
-            </li>
-        </ul>
-    @endif
+        {{-- Chairperson --}}
+        @if ($role === 1)
+            <div class="sidebar-section">
+                <h6 class="px-3 mb-2">DEPARTMENT MANAGEMENT</h6>
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a href="{{ route('chairperson.instructors') }}" 
+                           class="nav-link {{ request()->routeIs('chairperson.instructors') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-people me-3"></i>
+                            <span>Manage Instructors</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('chairperson.assignSubjects') }}" 
+                           class="nav-link {{ request()->routeIs('chairperson.assignSubjects') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-journal-plus me-3"></i>
+                            <span>Assign Subjects</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('chairperson.studentsByYear') }}" 
+                           class="nav-link {{ request()->routeIs('chairperson.studentsByYear') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-person-lines-fill me-3"></i>
+                            <span>Students by Year</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('chairperson.viewGrades') }}" 
+                           class="nav-link {{ request()->routeIs('chairperson.viewGrades') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-clipboard-data me-3"></i>
+                            <span>View Grades</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
 
-    {{-- Chairperson --}}
-    @if ($role === 1)
-        <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Chairperson</h6>
-        <ul class="nav nav-pills flex-column mb-4">
-            <li>
-                <a href="{{ route('chairperson.instructors') }}" class="nav-link text-white {{ request()->routeIs('chairperson.instructors') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">🧑‍🏫</span> Manage Instructors
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('chairperson.assignSubjects') }}" class="nav-link text-white {{ request()->routeIs('chairperson.assignSubjects') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📚</span> Assign Subjects
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('chairperson.studentsByYear') }}" class="nav-link text-white {{ request()->routeIs('chairperson.studentsByYear') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">👨‍🎓</span> Students by Year
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('chairperson.viewGrades') }}" class="nav-link text-white {{ request()->routeIs('chairperson.viewGrades') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📈</span> View Grades
-                    </div>
-                </a>
-            </li>
-        </ul>
+            <div class="sidebar-section">
+                <h6 class="px-3 mb-2">DATA MANAGEMENT</h6>
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a href="{{ route('curriculum.selectSubjects') }}" 
+                           class="nav-link {{ request()->routeIs('curriculum.selectSubjects') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-file-earmark-arrow-up me-3"></i>
+                            <span>Import Subjects</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        @endif
 
-        <!-- Imports Section for Chairperson -->
-        <hr class="border-white-50">
-        <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Import Section</h6>
-        <ul class="nav nav-pills flex-column mb-4">
-            <li>
-                <a href="{{ route('curriculum.selectSubjects') }}" class="nav-link text-white {{ request()->routeIs('curriculum.selectSubjects') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📥</span> Import Subjects
-                    </div>
-                </a>
-            </li>
-        </ul>
-    @endif
+        {{-- Dean --}}
+        @if ($role === 2)
+            <div class="sidebar-section">
+                <h6 class="px-3 mb-2">ACADEMIC OVERVIEW</h6>
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a href="{{ route('dean.instructors') }}" 
+                           class="nav-link {{ request()->routeIs('dean.instructors') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-people me-3"></i>
+                            <span>View Instructors</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('dean.students') }}" 
+                           class="nav-link {{ request()->routeIs('dean.students') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-mortarboard me-3"></i>
+                            <span>View Students</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('dean.grades') }}" 
+                           class="nav-link {{ request()->routeIs('dean.grades') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-clipboard-data me-3"></i>
+                            <span>View Grades</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        @endif
 
-    {{-- Dean --}}
-    @if ($role === 2)
-        <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Dean</h6>
-        <ul class="nav nav-pills flex-column mb-4">
-            <li>
-                <a href="{{ route('dean.instructors') }}" class="nav-link text-white {{ request()->routeIs('dean.instructors') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">🧑‍🏫</span> View Instructors
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('dean.students') }}" class="nav-link text-white {{ request()->routeIs('dean.students') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">👨‍🎓</span> View Students
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('dean.grades') }}" class="nav-link text-white {{ request()->routeIs('dean.grades') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📈</span> View Grades
-                    </div>
-                </a>
-            </li>
-        </ul>
-    @endif
-
-    {{-- Admin --}}
-    @if ($role === 3)
-        <h6 class="text-uppercase fw-bold text-white-50 px-2 mb-3">Admin</h6>
-        <ul class="nav nav-pills flex-column mb-4">
-            <li>
-                <a href="{{ route('admin.userLogs')}}"
-                class="nav-link text-white {{ request()->routeIs('admin.userLogs') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📋</span> Check/Manage User Logs
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('admin.departments') }}" class="nav-link text-white {{ request()->routeIs('admin.departments') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">🏢</span> Departments
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('admin.courses') }}" class="nav-link text-white {{ request()->routeIs('admin.courses') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📘</span> Courses
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('admin.subjects') }}" class="nav-link text-white {{ request()->routeIs('admin.subjects') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📖</span> Subjects
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('admin.users') }}" class="nav-link text-white {{ request()->routeIs('admin.users') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">👤</span> Users
-                    </div>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('admin.academicPeriods') }}" class="nav-link text-white {{ request()->routeIs('admin.academicPeriods') ? 'active bg-success' : '' }}">
-                    <div class="d-flex align-items-center">
-                        <span class="me-2" style="width: 20px;">📅</span> Academic Period
-                    </div>
-                </a>
-            </li>
-        </ul>
-    @endif
+        {{-- Admin --}}
+        @if ($role === 3)
+            <div class="sidebar-section">
+                <h6 class="px-3 mb-2">SYSTEM ADMINISTRATION</h6>
+                <ul class="nav nav-pills flex-column">
+                    <li class="nav-item">
+                        <a href="{{ route('admin.userLogs') }}" 
+                           class="nav-link {{ request()->routeIs('admin.userLogs') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-journal-text me-3"></i>
+                            <span>User Logs</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.departments') }}" 
+                           class="nav-link {{ request()->routeIs('admin.departments') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-building me-3"></i>
+                            <span>Departments</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.courses') }}" 
+                           class="nav-link {{ request()->routeIs('admin.courses') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-book me-3"></i>
+                            <span>Courses</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.subjects') }}" 
+                           class="nav-link {{ request()->routeIs('admin.subjects') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-journal-bookmark me-3"></i>
+                            <span>Subjects</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.users') }}" 
+                           class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-people me-3"></i>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.academicPeriods') }}" 
+                           class="nav-link {{ request()->routeIs('admin.academicPeriods') ? 'active' : '' }} d-flex align-items-center sidebar-link">
+                            <i class="bi bi-calendar3 me-3"></i>
+                            <span>Academic Period</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        @endif
+    </div>
 </div>

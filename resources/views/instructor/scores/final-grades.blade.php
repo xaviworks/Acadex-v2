@@ -100,67 +100,301 @@
         const content = document.getElementById('print-area').innerHTML;
         const subject = document.querySelector("select[name='subject_id']").selectedOptions[0].text;
         const bannerUrl = "{{ asset('images/banner-header.png') }}";
+        
+        // Count passed and failed students
+        const passedStudents = document.querySelectorAll('.badge.bg-success').length;
+        const failedStudents = document.querySelectorAll('.badge.bg-danger').length;
+        const totalStudents = passedStudents + failedStudents;
+        const passRate = totalStudents > 0 ? ((passedStudents / totalStudents) * 100).toFixed(1) : 0;
+
+        // Get current academic period
+        @php
+            $activePeriod = \App\Models\AcademicPeriod::find(session('active_academic_period_id'));
+            $semesterLabel = '';
+            if($activePeriod) {
+                switch ($activePeriod->semester) {
+                    case '1st':
+                        $semesterLabel = 'First';
+                        break;
+                    case '2nd':
+                        $semesterLabel = 'Second';
+                        break;
+                    case 'Summer':
+                        $semesterLabel = 'Summer';
+                        break;
+                }
+            }
+        @endphp
+        const academicPeriod = "{{ $activePeriod ? $activePeriod->academic_year : '' }}";
+        const semester = "{{ $semesterLabel }}";
+        const currentDate = new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
     
         const printWindow = window.open('', '', 'width=900,height=650');
         printWindow.document.write(`
             <html>
                 <head>
+                    <title>Grade Report - ${subject}</title>
                     <style>
+                        @media print {
+                            @page {
+                                size: portrait;
+                                margin: 0.5in;
+                            }
+                        }
+                        
                         body {
-                            font-family: 'Segoe UI', sans-serif;
-                            margin: 40px;
-                            color: #000;
+                            font-family: 'Arial', sans-serif;
+                            margin: 0;
+                            padding: 20px;
+                            color: #333;
                             -webkit-print-color-adjust: exact !important;
                             print-color-adjust: exact !important;
+                            line-height: 1.6;
                         }
+
                         .banner {
                             width: 100%;
-                            height: auto;
-                            margin-bottom: 20px;
+                            max-height: 130px;
+                            object-fit: contain;
+                            margin-bottom: 15px;
                         }
+
                         .header-content {
-                            text-align: center;
                             margin-bottom: 20px;
                         }
-                        h2 {
-                            margin: 0 0 10px 0;
+
+                        .report-title {
+                            font-size: 22px;
+                            font-weight: bold;
+                            text-align: center;
+                            margin: 15px 0;
+                            text-transform: uppercase;
+                            letter-spacing: 2px;
+                            color: #2c3e50;
+                            border-bottom: 2px solid #2c3e50;
+                            padding-bottom: 8px;
                         }
-                        p {
-                            margin: 0 0 15px 0;
+
+                        .metadata {
+                            text-align: right;
+                            font-size: 12px;
+                            color: #666;
+                            margin-bottom: 20px;
                         }
+
+                        .header-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 25px;
+                            background-color: #fff;
+                        }
+
+                        .header-table td {
+                            padding: 10px 15px;
+                            border: 1px solid #dee2e6;
+                        }
+
+                        .header-label {
+                            font-weight: bold;
+                            width: 150px;
+                            background-color: #f8f9fa;
+                            color: #2c3e50;
+                        }
+
+                        .header-value {
+                            font-family: 'Arial', sans-serif;
+                        }
+
+                        .stats-container {
+                            background-color: #f8f9fa;
+                            border: 1px solid #dee2e6;
+                            border-radius: 4px;
+                            margin-bottom: 20px;
+                            padding: 10px;
+                            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                        }
+
+                        .stats-title {
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            margin-bottom: 8px;
+                            font-size: 11px;
+                            color: #2c3e50;
+                            border-bottom: 1px solid #dee2e6;
+                            padding-bottom: 4px;
+                        }
+
+                        .stats-grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 10px;
+                        }
+
+                        .stat-item {
+                            background-color: #fff;
+                            padding: 8px;
+                            border-radius: 3px;
+                            border: 1px solid #dee2e6;
+                            text-align: center;
+                        }
+
+                        .stat-label {
+                            font-size: 10px;
+                            color: #666;
+                            margin-bottom: 2px;
+                            letter-spacing: 0.5px;
+                        }
+
+                        .stat-value {
+                            font-size: 14px;
+                            font-weight: bold;
+                        }
+
+                        .passed-count { color: #28a745; }
+                        .failed-count { color: #dc3545; }
+                        .total-count { color: #17a2b8; }
+
                         table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin-top: 10px;
+                            border: 2px solid #dee2e6;
+                            background-color: #fff;
+                            margin-top: 20px;
                         }
+
                         th, td {
-                            border: 1px solid #000;
-                            padding: 8px 12px;
-                            text-align: center;
-                            font-size: 14px;
+                            border: 1px solid #dee2e6;
+                            padding: 12px;
+                            font-size: 12px;
                         }
+
                         th {
-                            background-color: #f0f0f0;
+                            background-color: #f8f9fa;
+                            font-weight: bold;
+                            text-transform: uppercase;
+                            text-align: center;
+                            color: #2c3e50;
                         }
-                        .text-start {
+
+                        tr:nth-child(even) {
+                            background-color: #f8f9fa;
+                        }
+
+                        tr:hover {
+                            background-color: #f2f2f2;
+                        }
+
+                        td {
+                            text-align: center;
+                        }
+
+                        td:first-child {
                             text-align: left;
+                            font-weight: 500;
                         }
+
                         .text-success {
-                            color: green;
+                            color: #28a745;
+                            font-weight: bold;
+                        }
+
+                        .badge {
+                            padding: 5px 10px;
+                            border-radius: 4px;
+                            font-size: 11px;
+                            font-weight: bold;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                        }
+
+                        .bg-success {
+                            background-color: #d4edda;
+                            color: #155724;
+                            border: 1px solid #c3e6cb;
+                        }
+
+                        .bg-danger {
+                            background-color: #f8d7da;
+                            color: #721c24;
+                            border: 1px solid #f5c6cb;
+                        }
+
+                        .footer {
+                            margin-top: 30px;
+                            padding-top: 20px;
+                            border-top: 1px solid #dee2e6;
+                            font-size: 12px;
+                            color: #666;
+                            text-align: center;
                         }
                     </style>
                 </head>
                 <body>
-                    <img src="${bannerUrl}" alt="Banner Header" class="banner" onload="window.print(); window.close();">
+                    <img src="${bannerUrl}" alt="Banner Header" class="banner">
+                    
                     <div class="header-content">
-                    <h2>Final Grades Report</h2>
-                    <p><strong>Subject:</strong> ${subject}</p>
+                        <div class="report-title">Report of Grades</div>
+                        
+                        <table class="header-table">
+                            <tr>
+                                <td class="header-label">Course Code:</td>
+                                <td class="header-value">${subject.split(' - ')[0]}</td>
+                                <td class="header-label">Units:</td>
+                                <td class="header-value">{{ $subjects->first()->units ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td class="header-label">Description:</td>
+                                <td class="header-value">${subject.split(' - ')[1]}</td>
+                                <td class="header-label">Semester:</td>
+                                <td class="header-value">${semester}</td>
+                            </tr>
+                            <tr>
+                                <td class="header-label">Course/Section:</td>
+                                <td class="header-value">{{ $subjects->first()->course->course_code ?? 'N/A' }}</td>
+                                <td class="header-label">School Year:</td>
+                                <td class="header-value">${academicPeriod}</td>
+                            </tr>
+                        </table>
+
+                        <div class="stats-container">
+                            <div class="stats-title">Class Performance Summary</div>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-label">PASSED STUDENTS</div>
+                                    <div class="stat-value passed-count">${passedStudents}</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">FAILED STUDENTS</div>
+                                    <div class="stat-value failed-count">${failedStudents}</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">PASSING RATE</div>
+                                    <div class="stat-value total-count">${passRate}%</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
                     ${content}
+
+                    <div class="footer">
+                        This is a computer-generated document. No signature is required.
+                        <br>
+                        Printed via ACADEX - Academic Grade System
+                    </div>
                 </body>
             </html>
         `);
         printWindow.document.close();
+        
+        // Wait for resources to load then print
+        setTimeout(() => {
+            printWindow.print();
+        }, 500);
     }
 </script>
 @endpush

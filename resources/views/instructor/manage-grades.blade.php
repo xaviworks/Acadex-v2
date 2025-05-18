@@ -59,17 +59,6 @@
                 <input type="hidden" name="term" value="{{ $term }}">
                 @include('instructor.partials.grade-table')
             </form>
-
-            @if(session('success'))
-                <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
-                    <div class="toast show align-items-center text-bg-success border-0 shadow" role="alert">
-                        <div class="d-flex">
-                            <div class="toast-body">{{ session('success') }}</div>
-                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                        </div>
-                    </div>
-                </div>
-            @endif
         @endif
     </div>
 
@@ -77,6 +66,17 @@
         <div class="spinner"></div>
     </div>
 </div>
+
+@if(session('success'))
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div class="toast show align-items-center text-bg-success border-0 shadow" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">{{ session('success') }}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+@endif
 @endsection
 
 @push('styles')
@@ -128,13 +128,19 @@
 @include('instructor.partials.grade-script')
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', function() {
     const overlay = document.getElementById('fadeOverlay');
-
+    
+    // Handle subject card clicks
     document.querySelectorAll('.subject-card[data-url]').forEach(card => {
-        card.addEventListener('click', function () {
+        if (!card) return;
+        
+        card.addEventListener('click', function() {
             const url = this.dataset.url;
-            overlay.classList.remove('d-none');
+            if (!url) return;
+            
+            if (overlay) overlay.classList.remove('d-none');
 
             fetch(url, {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -144,24 +150,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 const newGradeSection = doc.querySelector('#grade-section');
-                document.getElementById('grade-section')?.replaceWith(newGradeSection);
-                if (typeof bindGradeInputEvents === 'function') bindGradeInputEvents();
-                overlay.classList.add('d-none');
+                const currentSection = document.getElementById('grade-section');
+                
+                if (newGradeSection && currentSection) {
+                    currentSection.replaceWith(newGradeSection);
+                    if (typeof bindGradeInputEvents === 'function') {
+                        bindGradeInputEvents();
+                    }
+                }
+                
+                if (overlay) overlay.classList.add('d-none');
             })
-            .catch(() => {
-                overlay.classList.add('d-none');
+            .catch(error => {
+                console.error('Error loading grades:', error);
+                if (overlay) overlay.classList.add('d-none');
                 alert('Failed to load subject grades.');
             });
         });
     });
 
-    document.addEventListener('click', function (e) {
+    // Handle term step clicks
+    document.addEventListener('click', function(e) {
         const button = e.target.closest('.term-step');
         if (!button) return;
+        
         const term = button.dataset.term;
-        const subjectId = document.querySelector('input[name="subject_id"]')?.value;
+        const subjectInput = document.querySelector('input[name="subject_id"]');
+        if (!term || !subjectInput) return;
+        
+        const subjectId = subjectInput.value;
         if (!subjectId) return;
-        overlay.classList.remove('d-none');
+        
+        if (overlay) overlay.classList.remove('d-none');
 
         fetch(`/instructor/grades/partial?subject_id=${subjectId}&term=${term}`, {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -171,12 +191,20 @@ document.addEventListener('DOMContentLoaded', function () {
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
             const newGradeSection = doc.querySelector('#grade-section');
-            document.getElementById('grade-section')?.replaceWith(newGradeSection);
-            if (typeof bindGradeInputEvents === 'function') bindGradeInputEvents();
-            overlay.classList.add('d-none');
+            const currentSection = document.getElementById('grade-section');
+            
+            if (newGradeSection && currentSection) {
+                currentSection.replaceWith(newGradeSection);
+                if (typeof bindGradeInputEvents === 'function') {
+                    bindGradeInputEvents();
+                }
+            }
+            
+            if (overlay) overlay.classList.add('d-none');
         })
-        .catch(() => {
-            overlay.classList.add('d-none');
+        .catch(error => {
+            console.error('Error loading term data:', error);
+            if (overlay) overlay.classList.add('d-none');
             alert('Failed to load term data.');
         });
     });
