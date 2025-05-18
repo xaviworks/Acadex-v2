@@ -4,52 +4,58 @@
 <div class="container-fluid px-0">
     <div id="grade-section">
         @if (!$subject)
-            <div class="row g-4 px-4 py-4" id="subject-selection">
-                @foreach($subjects as $subjectItem)
-                    <div class="col-md-4">
-                        <div
-                            class="subject-card card h-100 border-0 shadow-lg rounded-4 overflow-hidden transform transition hover:scale-105 hover:shadow-xl"
-                            data-url="{{ route('instructor.grades.index') }}?subject_id={{ $subjectItem->id }}&term=prelim"
-                            style="cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;"
-                        >
-                            {{-- Top header --}}
-                            <div class="position-relative" style="height: 80px; background-color: #4ecd85;">
-                                <div class="subject-circle position-absolute start-50 translate-middle"
-                                    style="top: 100%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: linear-gradient(135deg, #4da674, #023336); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;">
-                                    <h5 class="mb-0 text-white fw-bold">{{ $subjectItem->subject_code }}</h5>
+            @if(count($subjects))
+                <div class="row g-4 px-4 py-4" id="subject-selection">
+                    @foreach($subjects as $subjectItem)
+                        <div class="col-md-4">
+                            <div
+                                class="subject-card card h-100 border-0 shadow-lg rounded-4 overflow-hidden transform transition hover:scale-105 hover:shadow-xl"
+                                data-url="{{ route('instructor.grades.index') }}?subject_id={{ $subjectItem->id }}&term=prelim"
+                                style="cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease;"
+                            >
+                                {{-- Top header --}}
+                                <div class="position-relative" style="height: 80px; background-color: #4ecd85;">
+                                    <div class="subject-circle position-absolute start-50 translate-middle"
+                                        style="top: 100%; transform: translate(-50%, -50%); width: 80px; height: 80px; background: linear-gradient(135deg, #4da674, #023336); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: all 0.3s ease;">
+                                        <h5 class="mb-0 text-white fw-bold">{{ $subjectItem->subject_code }}</h5>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {{-- Card body --}}
-                            <div class="card-body pt-5 text-center">
-                                <h6 class="fw-semibold mt-4 text-dark text-truncate" title="{{ $subjectItem->subject_description }}">
-                                    {{ $subjectItem->subject_description }}
-                                </h6>
+                                {{-- Card body --}}
+                                <div class="card-body pt-5 text-center">
+                                    <h6 class="fw-semibold mt-4 text-dark text-truncate" title="{{ $subjectItem->subject_description }}">
+                                        {{ $subjectItem->subject_description }}
+                                    </h6>
 
-                                {{-- Footer badges --}}
-                                <div class="d-flex justify-content-between align-items-center mt-4 px-2">
-                                    <span class="badge bg-light border text-secondary px-3 py-2 rounded-pill">
-                                        👥 {{ $subjectItem->students_count }} Students
-                                    </span>
-                                    <span class="badge px-3 py-2 fw-semibold text-uppercase rounded-pill
-                                        @if($subjectItem->grade_status === 'completed') bg-success
-                                        @elseif($subjectItem->grade_status === 'pending') bg-warning text-dark
-                                        @else bg-secondary
-                                        @endif">
-                                        @if($subjectItem->grade_status === 'completed')
-                                            ✔ Completed
-                                        @elseif($subjectItem->grade_status === 'pending')
-                                            ⏳ Pending
-                                        @else
-                                            ⭕ Not Started
-                                        @endif
-                                    </span>
+                                    {{-- Footer badges --}}
+                                    <div class="d-flex justify-content-between align-items-center mt-4 px-2">
+                                        <span class="badge bg-light border text-secondary px-3 py-2 rounded-pill">
+                                            👥 {{ $subjectItem->students_count }} Students
+                                        </span>
+                                        <span class="badge px-3 py-2 fw-semibold text-uppercase rounded-pill
+                                            @if($subjectItem->grade_status === 'completed') bg-success
+                                            @elseif($subjectItem->grade_status === 'pending') bg-warning text-dark
+                                            @else bg-secondary
+                                            @endif">
+                                            @if($subjectItem->grade_status === 'completed')
+                                                ✔ Completed
+                                            @elseif($subjectItem->grade_status === 'pending')
+                                                ⏳ Pending
+                                            @else
+                                                ⭕ Not Started
+                                            @endif
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @endforeach
-            </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="alert alert-warning text-center mt-5 rounded">
+                    No subjects have been assigned to you yet.
+                </div>
+            @endif
         @else
             @include('instructor.partials.term-stepper')
             @include('instructor.partials.activity-header', ['subject' => $subject, 'term' => $term])
