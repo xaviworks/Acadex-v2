@@ -16,9 +16,9 @@
 
     {{-- Logs Table --}}
     <div class="card shadow-sm">
-        <div class="card-body">
-            <table id="userLogsTable" class="table table-hover align-middle mb-0">
-                <thead>
+        <div class="card-body p-0">
+            <table id="userLogsTable" class="table table-bordered mb-0">
+                <thead class="table-success">
                     <tr>
                         <th>User</th>
                         <th>Event Type</th>
@@ -52,6 +52,10 @@
                                 </td>
                             </tr>
                         @endforeach
+                    @else
+                        <tr>
+                            <td colspan="7" class="text-center text-muted fst-italic py-3">No logs found for the selected date.</td>
+                        </tr>
                     @endif
                 </tbody>
             </table>
