@@ -21,9 +21,16 @@ class CurriculumController extends Controller
     {
         Gate::authorize('admin-chair');
 
-        $curriculums = Curriculum::with('course')
-            ->orderByDesc('created_at')
-            ->get();
+        $query = Curriculum::with('course')->orderByDesc('created_at');
+        
+        // If user is chairperson, only show curriculums for their assigned course
+        if (Gate::allows('chairperson')) {
+            $query->whereHas('course', function($q) {
+                $q->where('id', Auth::user()->course_id);
+            });
+        }
+
+        $curriculums = $query->get();
 
         return view('curriculum.index', compact('curriculums'));
     }
@@ -31,6 +38,11 @@ class CurriculumController extends Controller
     public function show(Curriculum $curriculum)
     {
         Gate::authorize('admin-chair');
+
+        // If user is chairperson, verify they can access this curriculum
+        if (Gate::allows('chairperson') && $curriculum->course_id !== Auth::user()->course_id) {
+            abort(403, 'Unauthorized access to this curriculum.');
+        }
 
         $subjects = $curriculum->subjects()->orderBy('year_level')->orderBy('semester')->get();
 
@@ -41,7 +53,14 @@ class CurriculumController extends Controller
     {
         Gate::authorize('admin-chair');
 
-        $courses = Course::where('is_deleted', false)->orderBy('course_code')->get();
+        $query = Course::where('is_deleted', false);
+        
+        // If user is chairperson, only show their assigned course
+        if (Gate::allows('chairperson')) {
+            $query->where('id', Auth::user()->course_id);
+        }
+
+        $courses = $query->orderBy('course_code')->get();
 
         return view('curriculum.create', compact('courses'));
     }
@@ -54,6 +73,11 @@ class CurriculumController extends Controller
             'course_id' => 'required|exists:courses,id',
             'name' => 'required|string|max:255|unique:curriculums,name',
         ]);
+
+        // If user is chairperson, verify they can create curriculum for this course
+        if (Gate::allows('chairperson') && $request->course_id != Auth::user()->course_id) {
+            abort(403, 'Unauthorized to create curriculum for this course.');
+        }
 
         Curriculum::create([
             'course_id' => $request->course_id,
@@ -68,6 +92,11 @@ class CurriculumController extends Controller
     {
         Gate::authorize('admin-chair');
 
+        // If user is chairperson, verify they can delete this curriculum
+        if (Gate::allows('chairperson') && $curriculum->course_id !== Auth::user()->course_id) {
+            abort(403, 'Unauthorized to delete this curriculum.');
+        }
+
         $curriculum->delete();
 
         return redirect()->route('curriculum.index')->with('success', 'Curriculum deleted.');
@@ -76,6 +105,11 @@ class CurriculumController extends Controller
     public function addSubject(Request $request, Curriculum $curriculum)
     {
         Gate::authorize('admin-chair');
+
+        // If user is chairperson, verify they can add subjects to this curriculum
+        if (Gate::allows('chairperson') && $curriculum->course_id !== Auth::user()->course_id) {
+            abort(403, 'Unauthorized to add subjects to this curriculum.');
+        }
 
         $request->validate([
             'subject_code' => 'required|string|max:255',
@@ -98,6 +132,11 @@ class CurriculumController extends Controller
     {
         Gate::authorize('admin-chair');
 
+        // If user is chairperson, verify they can remove subjects from this curriculum
+        if (Gate::allows('chairperson') && $subject->curriculum->course_id !== Auth::user()->course_id) {
+            abort(403, 'Unauthorized to remove subjects from this curriculum.');
+        }
+
         $subject->delete();
 
         return back()->with('success', 'Subject removed from curriculum.');
@@ -107,13 +146,27 @@ class CurriculumController extends Controller
     {
         Gate::authorize('admin-chair');
 
-        $curriculums = Curriculum::with('course')->get();
+        $query = Curriculum::with('course');
+        
+        // If user is chairperson, only show curriculums for their assigned course
+        if (Gate::allows('chairperson')) {
+            $query->whereHas('course', function($q) {
+                $q->where('id', Auth::user()->course_id);
+            });
+        }
+
+        $curriculums = $query->get();
         return view('chairperson.select-curriculum-subjects', compact('curriculums'));
     }
 
     public function fetchSubjects(Curriculum $curriculum)
     {
         Gate::authorize('admin-chair');
+
+        // If user is chairperson, verify they can fetch subjects from this curriculum
+        if (Gate::allows('chairperson') && $curriculum->course_id !== Auth::user()->course_id) {
+            abort(403, 'Unauthorized to fetch subjects from this curriculum.');
+        }
 
         $subjects = $curriculum->subjects()
             ->orderBy('year_level')
@@ -131,6 +184,13 @@ class CurriculumController extends Controller
             'curriculum_id' => 'required|exists:curriculums,id',
             'subject_ids' => 'required|array',
         ]);
+
+        $curriculum = Curriculum::findOrFail($request->curriculum_id);
+
+        // If user is chairperson, verify they can confirm subjects for this curriculum
+        if (Gate::allows('chairperson') && $curriculum->course_id !== Auth::user()->course_id) {
+            abort(403, 'Unauthorized to confirm subjects for this curriculum.');
+        }
 
         $subjects = CurriculumSubject::where('curriculum_id', $request->curriculum_id)
             ->whereIn('id', $request->subject_ids)

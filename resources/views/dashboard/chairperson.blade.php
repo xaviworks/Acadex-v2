@@ -4,8 +4,8 @@
 <div class="container-fluid px-4 py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="fw-bold text-dark mb-1">Department Chair Overview 👨‍💼</h2>
-            <p class="text-muted mb-0">Monitor department performance and faculty management</p>
+            <h2 class="fw-bold text-dark mb-1">Course Chair Overview 👨‍💼</h2>
+            <p class="text-muted mb-0">Monitor Course performance and faculty management</p>
         </div>
         <div class="d-flex align-items-center gap-3">
             <a href="{{ route('chairperson.instructors') }}" class="btn btn-success rounded-pill px-3 shadow-sm">
@@ -69,110 +69,187 @@
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-4">
+                    {{-- Header Section --}}
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h5 class="fw-semibold mb-1">
-                                <i class="bi bi-people-fill me-2"></i>Faculty Status Overview
-                            </h5>
-                            <p class="text-muted small mb-0">
-                                <i class="bi bi-info-circle me-1"></i>
-                                Total Faculty Members: <span class="fw-bold">{{ $countInstructors }}</span>
-                            </p>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-3 p-2 bg-primary-subtle me-3">
+                                <i class="bi bi-person-video3 text-primary fs-4"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-semibold mb-1">Faculty Status Overview</h5>
+                                <p class="text-muted small mb-0">
+                                    Managing <span class="fw-bold">{{ $countInstructors }}</span> Course Faculty Members
+                                </p>
+                            </div>
                         </div>
                         <div class="dropdown">
-                            <button class="btn btn-light btn-sm rounded-pill" type="button" id="helpDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-question-circle"></i> Help
+                            <button class="btn btn-light btn-sm rounded-pill px-3 hover-lift" type="button" id="helpDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-info-circle me-1"></i> Help
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end p-3 shadow-sm" aria-labelledby="helpDropdown" style="min-width: 280px;">
                                 <li class="small">
-                                    <div class="mb-2"><strong>Understanding Faculty Status:</strong></div>
-                                    <div class="mb-2">
-                                        <i class="bi bi-check-circle-fill text-success me-1"></i>
-                                        <strong>Active:</strong> Currently teaching faculty
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                                        <h6 class="mb-0">Status Guide</h6>
                                     </div>
-                                    <div class="mb-2">
-                                        <i class="bi bi-x-circle-fill text-danger me-1"></i>
-                                        <strong>Inactive:</strong> On leave or deactivated
-                                    </div>
-                                    <div>
-                                        <i class="bi bi-clock-fill text-warning me-1"></i>
-                                        <strong>Pending:</strong> Awaiting verification
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-mortarboard-fill text-success me-2"></i>
+                                                <strong>Active:</strong>
+                                                <span class="ms-2 text-muted small">Currently teaching</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-person-x-fill text-danger me-2"></i>
+                                                <strong>Inactive:</strong>
+                                                <span class="ms-2 text-muted small">On leave/deactivated</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-person-plus text-warning me-2"></i>
+                                                <strong>Pending:</strong>
+                                                <span class="ms-2 text-muted small">Awaiting verification</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </li>
                             </ul>
                         </div>
                     </div>
 
+                    {{-- Overall Progress Bar --}}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-semibold mb-0">
+                                <i class="bi bi-graph-up text-primary me-2"></i>
+                                Faculty Distribution
+                            </h6>
+                            <div class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill">
+                                Total: {{ $countInstructors }} Members
+                            </div>
+                        </div>
+                        <div class="progress rounded-pill" style="height: 12px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                style="width: {{ $countInstructors > 0 ? ($countActiveInstructors / $countInstructors) * 100 : 0 }}%" 
+                                data-bs-toggle="tooltip" 
+                                title="Active: {{ $countActiveInstructors }} faculty members">
+                            </div>
+                            <div class="progress-bar bg-danger" role="progressbar" 
+                                style="width: {{ $countInstructors > 0 ? ($countInactiveInstructors / $countInstructors) * 100 : 0 }}%" 
+                                data-bs-toggle="tooltip" 
+                                title="Inactive: {{ $countInactiveInstructors }} faculty members">
+                            </div>
+                            <div class="progress-bar bg-warning" role="progressbar" 
+                                style="width: {{ $countInstructors > 0 ? ($countUnverifiedInstructors / $countInstructors) * 100 : 0 }}%" 
+                                data-bs-toggle="tooltip" 
+                                title="Pending: {{ $countUnverifiedInstructors }} faculty members">
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <div class="small">
+                                <i class="bi bi-circle-fill text-success me-1"></i> Active
+                            </div>
+                            <div class="small">
+                                <i class="bi bi-circle-fill text-danger me-1"></i> Inactive
+                            </div>
+                            <div class="small">
+                                <i class="bi bi-circle-fill text-warning me-1"></i> Pending
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Status Cards --}}
                     <div class="row g-4">
-                        {{-- Overall Progress --}}
-                        <div class="col-12 mb-2">
-                            <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-success" role="progressbar" 
-                                    style="width: {{ ($countActiveInstructors / $countInstructors) * 100 }}%" 
-                                    title="Active: {{ $countActiveInstructors }}">
-                                </div>
-                                <div class="progress-bar bg-danger" role="progressbar" 
-                                    style="width: {{ ($countInactiveInstructors / $countInstructors) * 100 }}%" 
-                                    title="Inactive: {{ $countInactiveInstructors }}">
-                                </div>
-                                <div class="progress-bar bg-warning" role="progressbar" 
-                                    style="width: {{ ($countUnverifiedInstructors / $countInstructors) * 100 }}%" 
-                                    title="Pending: {{ $countUnverifiedInstructors }}">
+                        {{-- Active Faculty Card --}}
+                        <div class="col-md-4">
+                            <div class="card h-100 border-0 shadow-sm rounded-4 bg-success-subtle hover-lift">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-3 p-2 bg-success text-white me-3">
+                                            <i class="bi bi-mortarboard-fill fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-success small fw-semibold">Active Faculty</div>
+                                            <h3 class="fw-bold text-success mb-0">{{ $countActiveInstructors }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small">Currently Teaching</span>
+                                        <span class="badge bg-success text-white px-2 py-1">
+                                            {{ $countInstructors > 0 ? number_format(($countActiveInstructors / $countInstructors) * 100, 1) : '0.0' }}%
+                                        </span>
+                                    </div>
+                                    @if($countActiveInstructors > 0)
+                                        <a href="{{ route('chairperson.instructors') }}#active" 
+                                           class="stretched-link" 
+                                           data-bs-toggle="tooltip" 
+                                           title="View active faculty members">
+                                        </a>
+                                    @endif
                                 </div>
                             </div>
                         </div>
 
-                        {{-- Active Instructors --}}
+                        {{-- Inactive Faculty Card --}}
                         <div class="col-md-4">
-                            <div class="status-card active p-4 rounded-4 bg-success-subtle border border-success-subtle h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <span class="badge bg-success-subtle text-success mb-2 px-3 py-2 rounded-pill">
-                                            <i class="bi bi-check-circle-fill me-1"></i> Active
+                            <div class="card h-100 border-0 shadow-sm rounded-4 bg-danger-subtle hover-lift">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-3 p-2 bg-danger text-white me-3">
+                                            <i class="bi bi-person-x-fill fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-danger small fw-semibold">Inactive Faculty</div>
+                                            <h3 class="fw-bold text-danger mb-0">{{ $countInactiveInstructors }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small">On Deactivated</span>
+                                        <span class="badge bg-danger text-white px-2 py-1">
+                                            {{ $countInstructors > 0 ? number_format(($countInactiveInstructors / $countInstructors) * 100, 1) : '0.0' }}%
                                         </span>
-                                        <h3 class="fw-bold text-success mb-0">{{ $countActiveInstructors }}</h3>
                                     </div>
-                                    <div class="status-percentage text-success">
-                                        {{ number_format(($countActiveInstructors / $countInstructors) * 100, 1) }}%
-                                    </div>
+                                    @if($countInactiveInstructors > 0)
+                                        <a href="{{ route('chairperson.instructors') }}#inactive" 
+                                           class="stretched-link" 
+                                           data-bs-toggle="tooltip" 
+                                           title="Review inactive faculty members">
+                                        </a>
+                                    @endif
                                 </div>
-                                <p class="text-muted small mb-0">Currently teaching faculty members</p>
                             </div>
                         </div>
 
-                        {{-- Inactive Instructors --}}
+                        {{-- Pending Verification Card --}}
                         <div class="col-md-4">
-                            <div class="status-card inactive p-4 rounded-4 bg-danger-subtle border border-danger-subtle h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <span class="badge bg-danger-subtle text-danger mb-2 px-3 py-2 rounded-pill">
-                                            <i class="bi bi-x-circle-fill me-1"></i> Inactive
+                            <div class="card h-100 border-0 shadow-sm rounded-4 bg-warning-subtle hover-lift">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="rounded-3 p-2 bg-warning text-white me-3">
+                                            <i class="bi bi-person-plus fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-warning small fw-semibold">Pending Verification</div>
+                                            <h3 class="fw-bold text-warning mb-0">{{ $countUnverifiedInstructors }}</h3>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-muted small">Awaiting Approval</span>
+                                        <span class="badge bg-warning text-dark px-2 py-1">
+                                            {{ $countInstructors > 0 ? number_format(($countUnverifiedInstructors / $countInstructors) * 100, 1) : '0.0' }}%
                                         </span>
-                                        <h3 class="fw-bold text-danger mb-0">{{ $countInactiveInstructors }}</h3>
                                     </div>
-                                    <div class="status-percentage text-danger">
-                                        {{ number_format(($countInactiveInstructors / $countInstructors) * 100, 1) }}%
-                                    </div>
+                                    @if($countUnverifiedInstructors > 0)
+                                        <a href="{{ route('chairperson.instructors') }}#pending" 
+                                           class="stretched-link" 
+                                           data-bs-toggle="tooltip" 
+                                           title="Review pending faculty accounts">
+                                        </a>
+                                    @endif
                                 </div>
-                                <p class="text-muted small mb-0">Faculty members on leave or deactivated</p>
-                            </div>
-                        </div>
-
-                        {{-- Unverified Instructors --}}
-                        <div class="col-md-4">
-                            <div class="status-card pending p-4 rounded-4 bg-warning-subtle border border-warning-subtle h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <span class="badge bg-warning-subtle text-warning mb-2 px-3 py-2 rounded-pill">
-                                            <i class="bi bi-clock-fill me-1"></i> Pending
-                                        </span>
-                                        <h3 class="fw-bold text-warning mb-0">{{ $countUnverifiedInstructors }}</h3>
-                                    </div>
-                                    <div class="status-percentage text-warning">
-                                        {{ number_format(($countUnverifiedInstructors / $countInstructors) * 100, 1) }}%
-                                    </div>
-                                </div>
-                                <p class="text-muted small mb-0">New faculty members awaiting verification</p>
                             </div>
                         </div>
                     </div>
@@ -247,10 +324,11 @@
     }
 
     .hover-lift {
-        transition: transform 0.2s ease;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .hover-lift:hover {
         transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
     }
 
     /* Custom Theme Colors */
@@ -328,108 +406,114 @@
 
     /* Status Cards Enhancements */
     .status-card {
-        transition: all 0.3s ease;
         position: relative;
-        overflow: hidden;
+        transition: all 0.3s ease;
     }
     
     .status-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
     }
     
-    .status-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 4px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+    .status-help-item {
+        transition: background-color 0.3s ease;
     }
-
-    .status-card.active::before {
-        background-color: var(--theme-success);
-        opacity: 1;
+    
+    .status-help-item:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
     }
-
-    .status-card.inactive::before {
-        background-color: var(--theme-danger);
-        opacity: 1;
+    
+    /* Responsive adjustments */
+    .min-w-0 {
+        min-width: 0;
+        flex: 1;
     }
-
-    .status-card.pending::before {
-        background-color: var(--theme-warning);
-        opacity: 1;
-    }
-
-    .status-percentage {
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-
-    /* Progress Bar Enhancements */
-    .progress {
-        border-radius: 10px;
+    
+    .text-truncate {
         overflow: hidden;
-        background-color: #f8f9fc;
-    }
-
-    .progress-bar {
-        transition: width 0.8s ease;
-    }
-
-    /* Badge Enhancements */
-    .badge {
-        font-weight: 500;
-        letter-spacing: 0.3px;
-    }
-
-    /* Dropdown Enhancements */
-    .dropdown-menu {
-        border: none;
-        border-radius: 12px;
-    }
-
-    .btn-light {
-        background-color: #f8f9fc;
-        border-color: #e3e6f0;
-    }
-
-    .btn-light:hover {
-        background-color: #eaecf4;
-        border-color: #d1d3e2;
-    }
-
-    /* Tooltip customization */
-    .tooltip {
-        font-size: 0.875rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     
-    .tooltip .tooltip-inner {
-        background-color: var(--theme-dark);
-        padding: 0.5rem 1rem;
+    .flex-shrink-0 {
+        flex-shrink: 0;
+    }
+    
+    /* Progress bar enhancements */
+    .progress {
+        overflow: visible;
+    }
+    
+    .progress-bar {
+        transition: width 0.6s ease;
+        position: relative;
+    }
+    
+    /* Mobile optimizations */
+    @media (max-width: 576px) {
+        .status-card {
+            padding: 0.75rem !important;
+        }
+        
+        .status-card .rounded-circle {
+            padding: 0.5rem !important;
+        }
+        
+        .status-card .fs-5 {
+            font-size: 1rem !important;
+        }
+        
+        .status-card h3 {
+            font-size: 1.5rem !important;
+        }
+        
+        .alert .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+    
+    /* Accessibility improvements */
+    .stretched-link:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+        border-radius: 0.5rem;
+    }
+    
+    /* Print optimization */
+    @media print {
+        .status-card {
+            break-inside: avoid;
+        }
+        
+        .hover-lift {
+            transform: none !important;
+            box-shadow: none !important;
+        }
     }
 </style>
 @endpush
 
 @push('scripts')
 <script>
-    // Initialize tooltips
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize all tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            trigger: 'hover'
         });
     });
-
-    // Initialize tooltips for progress bars
-    document.addEventListener('DOMContentLoaded', function() {
-        var progressBars = document.querySelectorAll('.progress-bar');
-        progressBars.forEach(function(bar) {
-            new bootstrap.Tooltip(bar);
+    
+    // Add hover effect to status cards
+    document.querySelectorAll('.status-card').forEach(function(card) {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
         });
     });
+});
 </script>
 @endpush

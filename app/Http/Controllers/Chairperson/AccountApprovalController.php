@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class AccountApprovalController extends Controller
@@ -17,8 +19,13 @@ class AccountApprovalController extends Controller
      */
     public function index(): View
     {
-        // Eager-load related department and course for display
-        $pendingAccounts = UnverifiedUser::with(['department', 'course'])->get();
+        Gate::authorize('chairperson');
+
+        // Eager-load related department and course for display, filtered by chairperson's department and course
+        $pendingAccounts = UnverifiedUser::with(['department', 'course'])
+            ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
+            ->get();
 
         return view('chairperson.manage-instructors', compact('pendingAccounts'));
     }
@@ -31,7 +38,12 @@ class AccountApprovalController extends Controller
      */
     public function approve(int $id): RedirectResponse
     {
-        $pending = UnverifiedUser::findOrFail($id);
+        Gate::authorize('chairperson');
+
+        $pending = UnverifiedUser::where('id', $id)
+            ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
+            ->firstOrFail();
 
         // Transfer to the main users table
         User::create([
@@ -60,7 +72,13 @@ class AccountApprovalController extends Controller
      */
     public function reject(int $id): RedirectResponse
     {
-        $pending = UnverifiedUser::findOrFail($id);
+        Gate::authorize('chairperson');
+
+        $pending = UnverifiedUser::where('id', $id)
+            ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
+            ->firstOrFail();
+            
         $pending->delete();
 
         return back()->with('status', 'Instructor account request has been rejected and removed.');

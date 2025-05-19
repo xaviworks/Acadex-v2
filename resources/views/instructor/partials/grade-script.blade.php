@@ -1,4 +1,7 @@
 <script>
+    // Define hasUnsavedChanges globally
+    let hasUnsavedChanges = false;
+
     function bindGradeInputEvents() {
         console.log("Binding grade input events...");
         
@@ -9,8 +12,7 @@
         const form = document.querySelector('form');
         const studentSearch = document.getElementById('studentSearch');
 
-        // Track unsaved changes
-        let hasUnsavedChanges = false;
+        // Track changes
         const originalValues = new Map();
 
         // Store original values
@@ -18,56 +20,65 @@
             originalValues.set(input, input.value);
         });
 
-        // Function to check for unsaved changes
-        function checkUnsavedChanges() {
-            let changed = false;
+        // Function to check for changes
+        function checkForChanges() {
+            let hasChanges = false;
+            let hasInvalidInputs = false;
+
             inputs.forEach(input => {
+                // Check for changes from original value
                 if (input.value !== originalValues.get(input)) {
-                    changed = true;
+                    hasChanges = true;
+                }
+                // Check for invalid inputs
+                if (input.classList.contains('is-invalid')) {
+                    hasInvalidInputs = true;
                 }
             });
-            return changed;
+
+            return {
+                hasChanges,
+                hasInvalidInputs
+            };
         }
 
         // Function to update save button state
         function updateSaveButtonState() {
-            if (saveButton) {
-                const hasChanges = checkUnsavedChanges();
-                hasUnsavedChanges = hasChanges;
-                
-                // Update button appearance
-                saveButton.classList.toggle('btn-pulse', hasChanges);
-                saveButton.disabled = !hasChanges || !validateAllInputs();
-                
-                // Update notification message
-                const container = document.getElementById('unsavedNotificationContainer');
-                if (container) {
-                    if (hasChanges) {
-                        container.innerHTML = `
-                            <div class="alert alert-warning py-2 px-3 mb-0 me-3 d-flex align-items-center">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                <span>You have unsaved changes</span>
-                            </div>
-                        `;
-                    } else {
-                        container.innerHTML = '';
-                    }
-                }
+            if (!saveButton) return;
 
-                // Update notification badge
-                let badge = document.getElementById('unsavedChangesBadge');
+            const { hasChanges, hasInvalidInputs } = checkForChanges();
+            hasUnsavedChanges = hasChanges;
+
+            // Update button state
+            saveButton.disabled = !hasChanges || hasInvalidInputs;
+            saveButton.classList.toggle('has-changes', hasChanges);
+
+            // Update notification
+            const container = document.getElementById('unsavedNotificationContainer');
+            if (container) {
                 if (hasChanges) {
-                    if (!badge) {
-                        badge = document.createElement('span');
-                        badge.id = 'unsavedChangesBadge';
-                        badge.className = 'position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle';
-                        badge.innerHTML = '<span class="visually-hidden">Unsaved changes</span>';
-                        saveButton.style.position = 'relative';
-                        saveButton.appendChild(badge);
+                    let message = 'You have unsaved changes';
+                    if (hasInvalidInputs) {
+                        message = 'Please correct invalid grades before saving';
                     }
-                } else if (badge) {
-                    badge.remove();
+                    container.innerHTML = `
+                        <div class="unsaved-notification">
+                            <i class="bi ${hasInvalidInputs ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill'}"></i>
+                            <span>${message}</span>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = '';
                 }
+            }
+
+            // Update save button tooltip
+            if (hasInvalidInputs) {
+                saveButton.title = 'Please correct invalid grades before saving';
+            } else if (!hasChanges) {
+                saveButton.title = 'No changes to save';
+            } else {
+                saveButton.title = 'Save changes';
             }
         }
 
@@ -136,12 +147,37 @@
             const value = input.value.trim();
             const max = parseInt(input.getAttribute('max'));
             
-            input.classList.remove('is-invalid', 'border-danger');
+            // Remove existing tooltip
+            const existingTooltip = input.parentNode.querySelector('.invalid-tooltip');
+            if (existingTooltip) {
+                existingTooltip.remove();
+            }
+            
+            // Reset validation state
+            input.classList.remove('is-invalid');
             
             if (value !== '') {
                 const numValue = parseInt(value);
+                // Check if the value is a valid number and within range (0 to max, inclusive)
                 if (isNaN(numValue) || numValue < 0 || numValue > max) {
-                    input.classList.add('is-invalid', 'border-danger');
+                    input.classList.add('is-invalid');
+                    
+                    // Create error message with icon
+                    let errorHTML = '';
+                    if (isNaN(numValue)) {
+                        errorHTML = '<i class="bi bi-x-circle-fill"></i> Please enter a valid number';
+                    } else if (numValue < 0) {
+                        errorHTML = '<i class="bi bi-dash-circle-fill"></i> Score cannot be negative';
+                    } else if (numValue > max) {
+                        errorHTML = `<i class="bi bi-exclamation-circle-fill"></i> Maximum allowed score is ${max}`;
+                    }
+                    
+                    // Create and show tooltip
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'invalid-tooltip';
+                    tooltip.innerHTML = `<div class="error-message">${errorHTML}</div>`;
+                    input.parentNode.appendChild(tooltip);
+                    
                     return false;
                 }
             }
@@ -185,6 +221,41 @@
                     const studentName = row.querySelector('td')?.textContent.toLowerCase() || '';
                     row.style.display = studentName.includes(searchTerm) ? '' : 'none';
                 });
+            });
+        }
+
+        // Handle sorting
+        const sortFilter = document.getElementById('sortFilter');
+        if (sortFilter) {
+            // Function to sort the table
+            function sortTable(order) {
+                const tbody = document.getElementById('studentTableBody');
+                const rows = Array.from(tbody.querySelectorAll('.student-row'));
+                
+                rows.sort((a, b) => {
+                    const nameA = a.querySelector('td')?.textContent.trim().toLowerCase() || '';
+                    const nameB = b.querySelector('td')?.textContent.trim().toLowerCase() || '';
+                    
+                    if (order === 'asc') {
+                        return nameA.localeCompare(nameB);
+                    } else if (order === 'desc') {
+                        return nameB.localeCompare(nameA);
+                    }
+                    return 0;
+                });
+                
+                // Clear the table body
+                tbody.innerHTML = '';
+                // Append sorted rows
+                rows.forEach(row => tbody.appendChild(row));
+            }
+
+            // Sort initially in A to Z order
+            sortTable('asc');
+
+            // Handle sort filter changes
+            sortFilter.addEventListener('change', function() {
+                sortTable(this.value);
             });
         }
 
@@ -272,9 +343,9 @@
                                     // Check if current value exceeds new max
                                     if (!isNaN(currentValue) && currentValue > newValue) {
                                         hasInvalidGrades = true;
-                                        gradeInput.classList.add('is-invalid', 'border-danger');
+                                        gradeInput.classList.add('is-invalid');
                                     } else {
-                                        gradeInput.classList.remove('is-invalid', 'border-danger');
+                                        gradeInput.classList.remove('is-invalid');
                                     }
                                 }
                             });
@@ -324,20 +395,184 @@
                     if (!inputGrid[activity]) inputGrid[activity] = {};
                     inputGrid[activity][student] = input;
                 }
+
+                // Real-time validation
+                input.addEventListener('input', () => {
+                    validateInput(input);
+                    updateSaveButtonState();
+                });
+                
+                // Handle keyboard input
+                input.addEventListener('keypress', function(e) {
+                    // Allow only numbers and control keys
+                    if (!/^\d$/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                        e.preventDefault();
+                        return;
+                    }
+                    
+                    const currentValue = this.value;
+                    const max = parseInt(this.getAttribute('max'));
+                    
+                    // Check if new value would exceed max
+                    const newValue = parseInt(currentValue + e.key);
+                    if (newValue > max) {
+                        e.preventDefault();
+                        showError(this, `Cannot exceed maximum score of ${max}`);
+                    }
+
+                    updateSaveButtonState();
+                });
+
+                // Handle up/down arrow keys for increment/decrement
+                input.addEventListener('keydown', function(e) {
+                    const max = parseInt(this.getAttribute('max'));
+                    const currentValue = parseInt(this.value) || 0;
+
+                    if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        if (currentValue < max) {
+                            this.value = currentValue + 1;
+                            this.dispatchEvent(new Event('input'));
+                        } else {
+                            showError(this, `Cannot exceed maximum score of ${max}`);
+                        }
+                    } else if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        if (currentValue > 0) {
+                            this.value = currentValue - 1;
+                            this.dispatchEvent(new Event('input'));
+                        }
+                    }
+                });
+
+                // Format number on blur
+                input.addEventListener('blur', function() {
+                    const value = this.value.trim();
+                    if (value !== '') {
+                        const numValue = parseInt(value);
+                        if (!isNaN(numValue)) {
+                            this.value = numValue; // Remove leading zeros
+                        }
+                    }
+                });
+
+                // Handle paste event
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const pastedData = e.clipboardData.getData('text').trim();
+                    const max = parseInt(this.getAttribute('max'));
+                    
+                    if (!/^\d+$/.test(pastedData)) {
+                        showError(this, 'Only numbers can be pasted');
+                        return;
+                    }
+                    
+                    const numValue = parseInt(pastedData);
+                    if (numValue > max) {
+                        showError(this, `Cannot paste value greater than ${max}`);
+                        return;
+                    }
+                    
+                    this.value = numValue;
+                    this.dispatchEvent(new Event('input'));
+                });
+
+                // Helper function to show errors
+                function showError(input, message) {
+                    // Remove any existing tooltip first
+                    const existingTooltip = input.parentNode.querySelector('.invalid-tooltip');
+                    if (existingTooltip) {
+                        existingTooltip.remove();
+                    }
+
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'invalid-tooltip';
+                    tooltip.innerHTML = `
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-circle-fill"></i>
+                            <span>${message}</span>
+                        </div>
+                    `;
+                    input.parentNode.appendChild(tooltip);
+                    input.classList.add('is-invalid');
+                    
+                    setTimeout(() => {
+                        tooltip.remove();
+                        const currentValue = parseInt(input.value);
+                        const max = parseInt(input.getAttribute('max'));
+                        if (!isNaN(currentValue) && currentValue >= 0 && currentValue <= max) {
+                            input.classList.remove('is-invalid');
+                        }
+                    }, 2000);
+                }
+                
+                // Clear error on focus
+                input.addEventListener('focus', function() {
+                    if (this.value.trim() === '') {
+                        this.classList.remove('is-invalid');
+                        const tooltip = this.parentNode.querySelector('.invalid-tooltip');
+                        if (tooltip) tooltip.remove();
+                    }
+                });
             });
         }
 
         // Setup form validation if form exists
         if (form) {
             form.addEventListener('submit', function(e) {
-                if (!validateAllInputs()) {
-                    e.preventDefault();
+                e.preventDefault(); // Prevent default form submission
+
+                const { hasInvalidInputs } = checkForChanges();
+                
+                if (hasInvalidInputs) {
                     alert('Please correct all invalid grades before submitting.');
-                    return false;
+                    return;
                 }
-                // Reset change tracking after successful submission
+
+                // Show loading state
+                if (saveButton) {
+                    saveButton.disabled = true;
+                    saveButton.querySelector('.spinner-border')?.classList.remove('d-none');
+                }
+
+                // Clear unsaved changes before submitting
                 hasUnsavedChanges = false;
-                updateSaveButtonState();
+
+                // Submit form using fetch
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Update original values after successful save
+                    inputs.forEach(input => {
+                        originalValues.set(input, input.value);
+                    });
+                    
+                    // Hide loading state
+                    if (saveButton) {
+                        saveButton.disabled = true;
+                        saveButton.querySelector('.spinner-border')?.classList.add('d-none');
+                    }
+
+                    // Reload the page after successful save
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to save grades. Please try again.');
+                    
+                    // Reset button state
+                    if (saveButton) {
+                        saveButton.disabled = false;
+                        saveButton.querySelector('.spinner-border')?.classList.add('d-none');
+                    }
+                });
             });
         }
 
@@ -365,28 +600,6 @@
             });
         });
 
-        // Add input event listeners for change tracking
-        inputs.forEach(input => {
-            if (!input) return;
-
-            // Update on typing
-            input.addEventListener('input', () => {
-                updateSaveButtonState();
-                validateInput(input);
-            });
-
-            // Update on change (blur/enter)
-            input.addEventListener('change', () => {
-                updateSaveButtonState();
-                validateInput(input);
-            });
-
-            // Select all text when focusing
-            input.addEventListener('focus', () => {
-                input.select();
-            });
-        });
-
         // Initial state check
         updateSaveButtonState();
     }
@@ -397,9 +610,10 @@
         bindGradeInputEvents();
     });
 
-    // Add navigation prevention with modal
+    // Add navigation prevention with modal only if there are actual unsaved changes
     window.addEventListener('beforeunload', function(e) {
-        if (hasUnsavedChanges) {
+        const { hasChanges } = checkForChanges();
+        if (hasChanges) {
             e.preventDefault();
             e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
             return e.returnValue;
@@ -408,11 +622,13 @@
 
     // Prevent navigation when clicking links if there are unsaved changes
     document.addEventListener('click', function(e) {
-        if (hasUnsavedChanges) {
+        const { hasChanges } = checkForChanges();
+        if (hasChanges) {
             const link = e.target.closest('a');
             if (link && !link.hasAttribute('data-bs-toggle')) {
                 e.preventDefault();
                 if (confirm('You have unsaved changes. Are you sure you want to leave this page?')) {
+                    hasUnsavedChanges = false; // Clear the flag before navigation
                     window.location.href = link.href;
                 }
             }
@@ -452,6 +668,41 @@
                 transform: translateX(0);
                 opacity: 1;
             }
+        }
+
+        .invalid-tooltip {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 5;
+            display: none;
+            max-width: 100%;
+            padding: 0.25rem 0.5rem;
+            margin-top: 0.1rem;
+            font-size: 0.875rem;
+            color: #fff;
+            background-color: rgba(220, 53, 69, 0.9);
+            border-radius: 0.25rem;
+        }
+
+        .grade-input.is-invalid:hover + .invalid-tooltip,
+        .grade-input.is-invalid:focus + .invalid-tooltip {
+            display: block;
+        }
+
+        .grade-input::-webkit-inner-spin-button,
+        .grade-input::-webkit-outer-spin-button,
+        .items-input::-webkit-inner-spin-button,
+        .items-input::-webkit-outer-spin-button {
+            opacity: 1;
+            background: transparent;
+        }
+
+        .grade-input::placeholder,
+        .items-input::placeholder {
+            color: #adb5bd;
+            opacity: 1;
         }
     `;
     document.head.appendChild(style);

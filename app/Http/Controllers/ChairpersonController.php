@@ -31,11 +31,13 @@ class ChairpersonController extends Controller
 
         $instructors = User::where('role', 0)
             ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
             ->orderBy('last_name')
             ->get();
 
         $pendingAccounts = UnverifiedUser::with('department', 'course')
             ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
             ->get();
 
         return view('chairperson.manage-instructors', compact('instructors', 'pendingAccounts'));
@@ -112,8 +114,9 @@ class ChairpersonController extends Controller
     
         $academicPeriodId = session('active_academic_period_id');
     
-        // Fetch subjects filtered by department, academic period, and not deleted
+        // Fetch subjects filtered by department, course, academic period, and not deleted
         $subjects = Subject::where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
             ->where('is_deleted', false)
             ->where('academic_period_id', $academicPeriodId)
             ->orderBy('subject_code')
@@ -122,9 +125,10 @@ class ChairpersonController extends Controller
         // Group subjects by year_level
         $yearLevels = $subjects->groupBy('year_level');
     
-        // Fetch active instructors in the department
+        // Fetch active instructors in the department and course
         $instructors = User::where('role', 0)
             ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
             ->where('is_active', true)
             ->orderBy('last_name')
             ->get();
@@ -147,12 +151,14 @@ class ChairpersonController extends Controller
 
         $subject = Subject::where('id', $request->subject_id)
             ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
             ->where('academic_period_id', $academicPeriodId)
             ->firstOrFail();
 
         $instructor = User::where('id', $request->instructor_id)
             ->where('role', 0)
             ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
             ->where('is_active', true)
             ->firstOrFail();
 
@@ -176,6 +182,7 @@ class ChairpersonController extends Controller
     
         $subject = Subject::where('id', $request->subject_id)
             ->where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
             ->where('academic_period_id', $academicPeriodId)
             ->firstOrFail();
     
@@ -192,6 +199,7 @@ class ChairpersonController extends Controller
             $instructor = User::where('id', $request->instructor_id)
                 ->where('role', 0) // Ensure the user is an instructor
                 ->where('department_id', Auth::user()->department_id)
+                ->where('course_id', Auth::user()->course_id)
                 ->where('is_active', true)
                 ->firstOrFail();
     
@@ -226,11 +234,13 @@ class ChairpersonController extends Controller
         
         $academicPeriodId = session('active_academic_period_id');
         $departmentId = Auth::user()->department_id;
+        $courseId = Auth::user()->course_id;
         
-        // Fetch instructors in department (role: 0 = instructor)
+        // Fetch instructors in department and course (role: 0 = instructor)
         $instructors = User::where([
             ['role', 0],
             ['department_id', $departmentId],
+            ['course_id', $courseId],
             ['is_active', true],
         ])
         ->orderBy('last_name')
@@ -242,6 +252,7 @@ class ChairpersonController extends Controller
             $subjects = Subject::where([
                 ['instructor_id', $selectedInstructorId],
                 ['department_id', $departmentId],
+                ['course_id', $courseId],
                 ['academic_period_id', $academicPeriodId],
                 ['is_deleted', false],
             ])
@@ -256,6 +267,7 @@ class ChairpersonController extends Controller
             $subject = Subject::where([
                 ['id', $selectedSubjectId],
                 ['department_id', $departmentId],
+                ['course_id', $courseId],
             ])
             ->firstOrFail();
     
@@ -285,10 +297,10 @@ class ChairpersonController extends Controller
     {
         Gate::authorize('chairperson');
 
-        $students = Student::with('course')
-            ->where('department_id', Auth::user()->department_id)
-            ->when(Auth::user()->course_id, fn($q) => $q->where('course_id', Auth::user()->course_id))
+        $students = Student::where('department_id', Auth::user()->department_id)
+            ->where('course_id', Auth::user()->course_id)
             ->where('is_deleted', false)
+            ->with('course')
             ->orderBy('year_level')
             ->orderBy('last_name')
             ->get();

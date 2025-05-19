@@ -169,13 +169,35 @@ class DashboardController extends Controller
             return redirect()->route('select.academicPeriod');
         }
 
+        $departmentId = Auth::user()->department_id;
+        $courseId = Auth::user()->course_id;
+
         $data = [
-            "countInstructors" => User::where("role", 0)->count(),
-            "countStudents" => Student::count(),
-            "countCourses" => Course::count(),
-            "countActiveInstructors" => User::where("is_active", 1)->where("role", 0)->count(),
-            "countInactiveInstructors" => User::where("is_active", 0)->where("role", 0)->count(),
-            "countUnverifiedInstructors" => UnverifiedUser::count(),
+            "countInstructors" => User::where("role", 0)
+                ->where("department_id", $departmentId)
+                ->where("course_id", $courseId)
+                ->count(),
+            "countStudents" => Student::where("department_id", $departmentId)
+                ->where("course_id", $courseId)
+                ->where("is_deleted", false)
+                ->count(),
+            "countCourses" => Course::where("department_id", $departmentId)
+                ->where("id", $courseId)
+                ->where("is_deleted", false)
+                ->count(),
+            "countActiveInstructors" => User::where("is_active", 1)
+                ->where("role", 0)
+                ->where("department_id", $departmentId)
+                ->where("course_id", $courseId)
+                ->count(),
+            "countInactiveInstructors" => User::where("is_active", 0)
+                ->where("role", 0)
+                ->where("department_id", $departmentId)
+                ->where("course_id", $courseId)
+                ->count(),
+            "countUnverifiedInstructors" => UnverifiedUser::where("department_id", $departmentId)
+                ->where("course_id", $courseId)
+                ->count(),
         ];
 
         return view('dashboard.chairperson', $data);

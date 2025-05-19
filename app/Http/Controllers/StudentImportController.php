@@ -30,6 +30,7 @@ class StudentImportController extends Controller
         $reviewStudents = ReviewStudent::with('course', 'subject')
             ->where('instructor_id', Auth::id())
             ->orderByDesc('created_at')
+            ->orderBy('is_confirmed')  // Show unconfirmed first
             ->get();
 
         return view('instructor.excel.import-students', compact('subjects', 'reviewStudents'));
@@ -169,11 +170,11 @@ public function upload(Request $request)
             }
         }
     
-        // Delete review students after import
+                // Mark review students as confirmed instead of deleting them
         ReviewStudent::where('instructor_id', Auth::id())
             ->whereIn('id', $selectedIds)
-            ->delete();
-    
+            ->update(['is_confirmed' => true]);
+
         return redirect()->route('instructor.students.import')->with('status', '✅ Selected students successfully imported to the selected subject.');
     }
     
