@@ -14,6 +14,14 @@
         </div>
     </div>
 
+    {{-- Empty State Notification --}}
+    @if(count($userLogs) === 0)
+        <div class="alert mb-4" style="background-color: var(--light-green); border: 1px solid var(--primary-green); color: var(--primary-green);">
+            <i class="bi bi-info-circle me-2"></i>
+            No logs found for the selected date.
+        </div>
+    @endif
+
     {{-- Logs Table --}}
     <div class="card shadow-sm">
         <div class="card-body p-0">
@@ -30,33 +38,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if(count($userLogs) > 0)
-                        @foreach($userLogs as $log)
-                            <tr>
-                                <td>
-                                    @if ($log->user)
-                                        {{ $log->user->first_name }} {{ $log->user->last_name }}
-                                    @else
-                                        <em class="text-muted">Unknown</em>
-                                    @endif
-                                </td>
-                                <td>{{ ucfirst($log->event_type) }}</td>
-                                <td>{{ $log->browser ?? 'N/A' }}</td>
-                                <td>{{ $log->device ?? 'N/A' }}</td>
-                                <td>{{ $log->platform ?? 'N/A' }}</td>
-                                <td data-sort="{{ $log->created_at ? $log->created_at->format('Y-m-d') : '' }}">
-                                    {{ $log->created_at ? $log->created_at->format('F j, Y') : 'N/A' }}
-                                </td>
-                                <td data-sort="{{ $log->created_at ? $log->created_at->format('His') : '' }}">
-                                    {{ $log->created_at ? $log->created_at->format('g:i A') : 'N/A' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    @else
+                    @foreach($userLogs as $log)
                         <tr>
-                            <td colspan="7" class="text-center text-muted fst-italic py-3">No logs found for the selected date.</td>
+                            <td>
+                                @if ($log->user)
+                                    {{ $log->user->first_name }} {{ $log->user->last_name }}
+                                @else
+                                    <em class="text-muted">Unknown</em>
+                                @endif
+                            </td>
+                            <td>{{ ucfirst($log->event_type) }}</td>
+                            <td>{{ $log->browser ?? 'N/A' }}</td>
+                            <td>{{ $log->device ?? 'N/A' }}</td>
+                            <td>{{ $log->platform ?? 'N/A' }}</td>
+                            <td data-sort="{{ $log->created_at ? $log->created_at->format('Y-m-d') : '' }}">
+                                {{ $log->created_at ? $log->created_at->format('F j, Y') : 'N/A' }}
+                            </td>
+                            <td data-sort="{{ $log->created_at ? $log->created_at->format('His') : '' }}">
+                                {{ $log->created_at ? $log->created_at->format('g:i A') : 'N/A' }}
+                            </td>
                         </tr>
-                    @endif
+                    @endforeach
                 </tbody>
             </table>
         </div>
@@ -77,8 +79,8 @@
                 search: "",
                 searchPlaceholder: "Search logs...",
                 lengthMenu: "_MENU_ logs per page",
-                emptyTable: "No Logs found for the selected date.",
-                zeroRecords: "No matching logs found.",
+                emptyTable: "",  // Remove default empty table message
+                zeroRecords: "", // Remove default zero records message
                 info: "Showing _START_ to _END_ of _TOTAL_ logs",
                 infoEmpty: "Showing 0 logs",
                 infoFiltered: "(filtered from _MAX_ total logs)"

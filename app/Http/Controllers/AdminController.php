@@ -249,33 +249,56 @@ class AdminController extends Controller
     
     public function storeUser(Request $request)
     {
-        $request->validate([
+        $validationRules = [
             'first_name'    => ['required', 'string', 'max:255'],
             'middle_name'   => ['nullable', 'string', 'max:255'],
             'last_name'     => ['required', 'string', 'max:255'],
-            'email'         => ['required', 'string', 'regex:/^[^@]+$/', 'max:255', 'unique:unverified_users,email'],
-            'department_id' => ['required', 'exists:departments,id'],
-            'course_id'     => ['required', 'exists:courses,id'],
+            'email'         => ['required', 'string', 'regex:/^[^@]+$/', 'max:255', 'unique:users,email'],
+            'role'          => ['required', 'in:1,2,3'],
             'password'      => [
                 'required',
                 'confirmed',
                 Password::min(8)->mixedCase()->letters()->numbers()->symbols(),
             ],
-        ]);
+        ];
+
+        // Add department validation for non-admin roles
+        if ($request->role != 3) {
+            $validationRules['department_id'] = ['required', 'exists:departments,id'];
+            
+            // Course validation based on role
+            if ($request->role == 1) { // Chairperson
+                $validationRules['course_id'] = ['required', 'exists:courses,id'];
+            } else if ($request->role == 2) { // Dean
+                $validationRules['course_id'] = ['nullable', 'exists:courses,id'];
+            }
+        }
+
+        $request->validate($validationRules);
 
         $fullEmail = $request->email . '@brokenshire.edu.ph';
 
-        User::create([
+        $userData = [
             'first_name'    => $request->first_name,
             'middle_name'   => $request->middle_name,
             'last_name'     => $request->last_name,
             'email'         => $fullEmail,
             'password'      => Hash::make($request->password),
-            'department_id' => $request->department_id,
-            'course_id'     => $request->course_id,
             'role'          => $request->role,
             'is_active'     => true,
-        ]);
+        ];
+
+        // Add department for non-admin roles
+        if ($request->role != 3) {
+            $userData['department_id'] = $request->department_id;
+            
+            // Add course_id only if it's provided (for Dean) or required (for Chairperson)
+            if ($request->role == 1 || ($request->role == 2 && $request->has('course_id'))) {
+                $userData['course_id'] = $request->course_id;
+            }
+        }
+
+        User::create($userData);
 
         return redirect()->route('admin.users')->with('success', 'User created successfully.');
     }
