@@ -102,4 +102,12 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Course::class);
     }
+
+    /**
+     * Check if the user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 3;
+    }
 }

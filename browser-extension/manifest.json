@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "ACADEX Password Manager",
+  "version": "1.0",
+  "description": "Premium password manager for ACADEX system with advanced security and auto-fill capabilities",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://*.brokenshire.edu.ph/*"
+  ],
+  "action": {
+    "default_popup": "src/popup.html",
+    "default_icon": {
+      "16": "src/icons/icon16.png",
+      "48": "src/icons/icon48.png",
+      "128": "src/icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "src/icons/icon16.png",
+    "48": "src/icons/icon48.png",
+    "128": "src/icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.brokenshire.edu.ph/*"],
+      "js": ["src/content.js"],
+      "css": ["src/content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  }
+} 

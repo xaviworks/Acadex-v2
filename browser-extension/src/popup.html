@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ACADEX Secure Password</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-green: #198754;
+      --primary-green-dark: #157347;
+      --primary-green-darker: #146c43;
+      --primary-green-light: #e6f4ea;
+      --danger: #dc2626;
+      --neutral: #f3f4f6;
+      --text-primary: #1f2937;
+      --text-secondary: #6b7280;
+      --bg-gradient: linear-gradient(135deg, #e6f4ea 0%, #f3f4f6 100%);
+      --header-gradient: linear-gradient(90deg, #198754 0%, #43c59e 100%);
+      --card-shadow: 0 4px 24px 0 rgba(25, 135, 84, 0.10);
+      --border-radius: 18px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 400px;
+      min-height: 600px;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: var(--card-shadow);
+      padding: 0 0 24px 0;
+      width: 100%;
+      max-width: 370px;
+      margin: 32px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow: hidden;
+    }
+    .header {
+      background: var(--header-gradient);
+      padding: 32px 28px 18px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      border-bottom-left-radius: 32px 18px;
+      border-bottom-right-radius: 32px 18px;
+      box-shadow: 0 2px 12px 0 rgba(25,135,84,0.08);
+      position: relative;
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+    }
+    .logo { width: 38px; height: 38px; border-radius: 8px; box-shadow: 0 2px 8px 0 rgba(25,135,84,0.10); background: #fff; }
+    .title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 8px rgba(25,135,84,0.10);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 300px;
+      display: block;
+    }
+    .tagline {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #e6f4ea;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      text-shadow: 0 1px 4px rgba(25,135,84,0.10);
+      width: 100%;
+      text-align: center;
+    }
+    .input-group {
+      margin: 12px 28px 0 28px;
+    }
+    .input-group:first-of-type {
+      margin-top: 24px;
+    }
+    .input-group:last-of-type {
+      margin-bottom: 32px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: -0.2px;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 12px 18px;
+      border: 1.5px solid var(--primary-green-light);
+      border-radius: 10px;
+      font-size: 15px;
+      transition: all 0.2s;
+      font-weight: 500;
+      background: var(--neutral);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px 0 rgba(25,135,84,0.04) inset;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary-green);
+      box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.10);
+    }
+    .btn-success {
+      color: #fff;
+      background: linear-gradient(90deg, #198754 0%, #43c59e 100%);
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      width: calc(100% - 56px);
+      margin: 0 28px 18px 28px;
+      padding: 14px 0;
+      box-shadow: 0 2px 8px 0 rgba(25,135,84,0.08);
+      transition: background 0.2s, box-shadow 0.2s, border 0.2s;
+      letter-spacing: 0.02em;
+      display: block;
+      margin-top: 18px;
+      margin-bottom: 18px;
+    }
+    .btn-success:hover {
+      background: linear-gradient(90deg, #157347 0%, #198754 100%);
+      box-shadow: 0 4px 16px 0 rgba(25,135,84,0.16);
+    }
+    .btn-success:active {
+      background: linear-gradient(90deg, #146c43 0%, #198754 100%);
+      box-shadow: 0 2px 8px 0 rgba(25,135,84,0.16);
+    }
+    .btn-success:disabled {
+      background: var(--primary-green-light);
+      color: #fff;
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+    .divider {
+      width: calc(100% - 56px);
+      height: 1.5px;
+      background: var(--primary-green-light);
+      margin: 18px 28px 16px 28px;
+      border-radius: 1px;
+      opacity: 0.7;
+    }
+    .password-section {
+      position: relative;
+      max-height: 300px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      margin: 0 28px;
+    }
+    .sticky-search {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #fff;
+      padding-bottom: 8px;
+      margin-bottom: 0;
+    }
+    .search-box {
+      position: relative;
+      margin-bottom: 0;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 12px 18px 12px 44px;
+      border: 1.5px solid var(--primary-green-light);
+      border-radius: 10px;
+      font-size: 15px;
+      background-color: var(--neutral);
+      transition: all 0.2s;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .search-box input:focus {
+      outline: none;
+      border-color: var(--primary-green);
+      box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.10);
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--primary-green-dark);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+    .password-list {
+      margin-top: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      padding-right: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .password-item {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px 0 rgba(25,135,84,0.08);
+      border: 1.5px solid var(--primary-green-light);
+      padding: 18px 18px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s, border 0.2s, transform 0.2s;
+      position: relative;
+      min-height: 64px;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .password-item:hover {
+      border-color: var(--primary-green);
+      box-shadow: 0 8px 24px 0 rgba(25,135,84,0.16);
+      transform: translateY(-2px) scale(1.01);
+    }
+    .password-header {
+      width: 100%;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .username-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1 1 auto;
+      margin-bottom: 6px;
+    }
+    .user-icon {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      color: var(--primary-green-dark);
+      opacity: 0.85;
+    }
+    .username {
+      font-weight: 600;
+      color: var(--primary-green-dark);
+      font-size: 15px;
+      letter-spacing: -0.2px;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+      word-break: break-all;
+      display: block;
+      padding: 2px 0;
+      margin-bottom: 2px;
+    }
+    .password-actions {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      justify-content: flex-start;
+      align-items: center;
+      margin: 10px 0 0 0;
+    }
+    .action-btn {
+      padding: 7px 14px;
+      border: none;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      background: var(--neutral);
+      color: var(--primary-green-dark);
+      box-shadow: 0 1px 4px 0 rgba(25,135,84,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+      min-height: 36px;
+      gap: 6px;
+    }
+    .action-btn:hover {
+      background: var(--primary-green-light);
+      color: var(--primary-green-dark);
+      box-shadow: 0 2px 8px 0 rgba(25,135,84,0.10);
+    }
+    .action-btn:focus {
+      outline: 2px solid var(--primary-green-dark);
+      outline-offset: 2px;
+      background: var(--primary-green-light);
+    }
+    .action-btn:active {
+      background: var(--primary-green-dark);
+      color: #fff;
+    }
+    .action-btn.copied {
+      background: #e6f4ea;
+      color: var(--primary-green-dark);
+      border: 1.5px solid var(--primary-green);
+    }
+    .action-btn[title]:hover:after {
+      content: attr(title);
+      position: absolute;
+      left: 50%;
+      top: 110%;
+      transform: translateX(-50%);
+      background: #222;
+      color: #fff;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      z-index: 10;
+      opacity: 0.95;
+      pointer-events: none;
+    }
+    .copy-btn {
+      border: 1.5px solid var(--primary-green-light);
+    }
+    .fill-btn {
+      border: 1.5px solid var(--primary-green);
+      background: var(--primary-green);
+      color: #fff;
+    }
+    .fill-btn:hover {
+      background: var(--primary-green-dark);
+      border-color: var(--primary-green-darker);
+      color: #fff;
+    }
+    .delete-btn {
+      border: 1.5px solid var(--danger);
+      background: #fff;
+      color: var(--danger);
+    }
+    .delete-btn:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+    .no-passwords {
+      text-align: center;
+      padding: 48px 20px 0 20px;
+      color: var(--text-secondary);
+    }
+    .no-passwords-icon {
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 56px;
+    }
+    .no-passwords-icon svg {
+      width: 56px;
+      height: 56px;
+      stroke: var(--primary-green-light);
+      opacity: 0.7;
+    }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--neutral); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: var(--primary-green-light); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--primary-green); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo-row">
+        <img src="icons/icon48.png" alt="ACADEX Logo" class="logo">
+        <h1 class="title">ACADEX Secure Password</h1>
+      </div>
+      <div class="tagline">Your secure vault for all credentials</div>
+    </div>
+    <button class="btn-success" id="addAccountBtn" style="margin: 24px 28px 18px 28px;">+ Add Account</button>
+    <form id="addAccountForm" style="display: none;">
+      <div class="input-group">
+        <label for="username">Username (or Email)</label>
+        <input type="text" id="username" placeholder="Enter your username or email">
+      </div>
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password">
+      </div>
+      <button class="btn-success" id="saveBtn" type="submit">Save Password</button>
+      <button type="button" id="cancelAddAccount" style="margin: 0 28px 0 28px; width: calc(100% - 56px); border-radius: 12px; background: #fff; color: var(--primary-green-dark); border: 1.5px solid var(--primary-green-light); font-weight: 700; font-size: 16px; padding: 14px 0; margin-bottom: 18px;">Cancel</button>
+    </form>
+    <div class="divider"></div>
+    <div class="password-section">
+      <div class="search-box sticky-search">
+        <span class="search-icon">
+          <svg width="20" height="20" fill="none" stroke="#198754" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7"/>
+            <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+          </svg>
+        </span>
+        <input type="text" id="searchInput" placeholder="Search saved passwords...">
+      </div>
+      <div class="password-list" id="passwordList">
+        <!-- Password items will be added here dynamically -->
+      </div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 

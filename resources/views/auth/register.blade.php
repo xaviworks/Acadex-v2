@@ -68,23 +68,24 @@
             <x-text-input id="password" name="password" type="password" class="w-full mt-1 text-white placeholder-white bg-transparent" required placeholder="Min. 8 characters" autocomplete="new-password" oninput="checkPassword(this.value)" />
             <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-400" />
 
-            <div id="password-requirements" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm text-white">
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3">
+            <div id="password-requirements" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 text-sm text-white">
+                <h3 class="md:col-span-2 text-sm font-semibold mb-1">Password Requirements:</h3>
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
                         <div id="circle-length" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
                         <span>Minimum 8 chars</span>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
                         <div id="circle-case" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
                         <span>Upper & lowercase</span>
                     </div>
                 </div>
-                <div class="space-y-3">
-                    <div class="flex items-center gap-3">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
                         <div id="circle-number" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
                         <span>At least 1 number</span>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
                         <div id="circle-special" class="w-3 h-3 rounded-full bg-gray-300 border transition-all"></div>
                         <span>Special character</span>
                     </div>

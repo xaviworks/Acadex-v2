@@ -35,6 +35,23 @@
                 <x-text-input id="last_name" name="last_name" type="text" class="mt-1 block w-full" :value="old('last_name', $user->last_name)" required autocomplete="family-name" />
                 <x-input-error class="mt-2" :messages="$errors->get('last_name')" />
             </div>
+
+            <div>
+                <x-input-label for="role" :value="__('Role')" />
+                <x-text-input id="role" type="text" class="mt-1 block w-full bg-gray-100" :value="$user->role == 0 ? 'Instructor' : ($user->role == 1 ? 'Chairperson' : ($user->role == 2 ? 'Dean' : ($user->role == 3 ? 'Admin' : 'Unknown')))" readonly />
+            </div>
+
+            @if(!$user->isAdmin())
+                <div>
+                    <x-input-label for="department" :value="__('Department')" />
+                    <x-text-input id="department" type="text" class="mt-1 block w-full bg-gray-100" :value="$user->department?->department_description" readonly />
+                </div>
+
+                <div>
+                    <x-input-label for="course" :value="__('Course')" />
+                    <x-text-input id="course" type="text" class="mt-1 block w-full bg-gray-100" :value="$user->course?->course_description" readonly />
+                </div>
+            @endif
         </div>
 
         <div>

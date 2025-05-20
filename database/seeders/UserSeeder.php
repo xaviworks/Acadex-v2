@@ -12,24 +12,74 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Fetch Department and Course dynamically
+        // Fetch Department and Courses
         $department = Department::where('department_code', 'ASBM')->first();
-        $course = Course::where('course_code', 'BSIT')->first();
+        $bsit = Course::where('course_code', 'BSIT')->first();
+        $bsba = Course::where('course_code', 'BSBA')->first();
+        $bspsy = Course::where('course_code', 'BSPSY')->first();
+
+        if (!$department || !$bsit || !$bsba || !$bspsy) {
+            throw new \Exception('Required department or courses not found. Seed departments and courses first.');
+        }
 
         $users = [
+            // Admin
             [
                 'first_name' => 'Admin',
                 'middle_name' => null,
                 'last_name' => 'User',
                 'email' => 'admin@brokenshire.edu.ph',
                 'role' => 3,
+                'department_id' => $department->id,
+                'course_id' => null,
             ],
+            // BSIT Users
             [
                 'first_name' => 'Chairperson',
                 'middle_name' => null,
-                'last_name' => 'User',
-                'email' => 'chairperson@brokenshire.edu.ph',
+                'last_name' => 'BSIT',
+                'email' => 'chairperson.bsit@brokenshire.edu.ph',
                 'role' => 1,
+                'department_id' => $department->id,
+                'course_id' => $bsit->id,
+            ],
+            [
+                'first_name' => 'Instructor',
+                'middle_name' => null,
+                'last_name' => 'BSIT',
+                'email' => 'instructor.bsit@brokenshire.edu.ph',
+                'role' => 0,
+                'department_id' => $department->id,
+                'course_id' => $bsit->id,
+            ],
+            // BSBA Users
+            [
+                'first_name' => 'Chairperson',
+                'middle_name' => null,
+                'last_name' => 'BSBA',
+                'email' => 'chairperson.bsba@brokenshire.edu.ph',
+                'role' => 1,
+                'department_id' => $department->id,
+                'course_id' => $bsba->id,
+            ],
+            [
+                'first_name' => 'Instructor',
+                'middle_name' => null,
+                'last_name' => 'BSBA',
+                'email' => 'instructor.bsba@brokenshire.edu.ph',
+                'role' => 0,
+                'department_id' => $department->id,
+                'course_id' => $bsba->id,
+            ],
+            // BSPSY Users
+            [
+                'first_name' => 'Chairperson',
+                'middle_name' => null,
+                'last_name' => 'BSPSY',
+                'email' => 'chairperson.bspsy@brokenshire.edu.ph',
+                'role' => 1,
+                'department_id' => $department->id,
+                'course_id' => $bspsy->id,
             ],
             [
                 'first_name' => 'Dean',
@@ -37,13 +87,16 @@ class UserSeeder extends Seeder
                 'last_name' => 'User',
                 'email' => 'dean@brokenshire.edu.ph',
                 'role' => 2,
+                'department_id' => $department->id,
             ],
             [
                 'first_name' => 'Instructor',
                 'middle_name' => null,
-                'last_name' => 'User',
-                'email' => 'instructor@brokenshire.edu.ph',
+                'last_name' => 'BSPSY',
+                'email' => 'instructor.bspsy@brokenshire.edu.ph',
                 'role' => 0,
+                'department_id' => $department->id,
+                'course_id' => $bspsy->id,
             ],
         ];
 
@@ -53,8 +106,6 @@ class UserSeeder extends Seeder
                 array_merge($data, [
                     'password' => Hash::make('password'),
                     'is_active' => true,
-                    'department_id' => $department?->id ?? 1,
-                    'course_id' => $course?->id ?? 1,
                 ])
             );
         }
