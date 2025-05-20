@@ -18,7 +18,7 @@
     <div class="card shadow-sm">
         <div class="card-body p-0">
             <table id="userLogsTable" class="table table-bordered mb-0">
-                <thead class="table-success">
+                <thead class="custom-thead">
                     <tr>
                         <th>User</th>
                         <th>Event Type</th>
@@ -88,6 +88,37 @@
                 // Add Bootstrap classes to controls
                 $('.dataTables_filter input').addClass('form-control-sm');
                 $('.dataTables_length select').addClass('form-select-sm');
+                
+                // Style the top container row
+                $('.dataTables_wrapper .row.mb-3').css({
+                    'background-color': '#EAF8E7',
+                    'padding': '1rem',
+                    'border-radius': '0.5rem',
+                    'border': '1px solid rgba(15, 75, 54, 0.1)',
+                    'margin': '0 0 1rem 0'
+                });
+
+                // Style the search input container
+                $('.dataTables_filter').css({
+                    'margin-bottom': '0'
+                });
+
+                // Style the length menu container
+                $('.dataTables_length').css({
+                    'margin-bottom': '0'
+                });
+
+                // Style both input and select elements
+                $('.dataTables_filter input, .dataTables_length select').css({
+                    'border-color': '#0F4B36',
+                    'color': '#0F4B36'
+                });
+
+                // Style the labels
+                $('.dataTables_filter label, .dataTables_length label').css({
+                    'color': '#0F4B36',
+                    'font-weight': '500'
+                });
             }
         });
 
