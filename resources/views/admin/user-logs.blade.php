@@ -18,7 +18,7 @@
     <div class="card shadow-sm">
         <div class="card-body p-0">
             <table id="userLogsTable" class="table table-bordered mb-0">
-                <thead class="custom-thead">
+                <thead class="table-success">
                     <tr>
                         <th>User</th>
                         <th>Event Type</th>
