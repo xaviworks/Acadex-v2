@@ -1,0 +1,252 @@
+/* DataTables Custom Styling */
+#userLogsTable {
+    border-collapse: collapse;
+    margin-bottom: 0;
+}
+
+#userLogsTable thead th {
+    background-color: #198754 !important;
+    color: #fff;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 0.75rem;
+    border-color: #198754 !important;
+}
+
+#userLogsTable tbody td {
+    padding: 0.75rem;
+    border-color: #dee2e6;
+    vertical-align: middle;
+    color: #2D3748;
+}
+
+#userLogsTable tbody tr:hover {
+    background-color: rgba(25, 135, 84, 0.05);
+}
+
+/* DataTables Controls Container */
+.dataTables_wrapper .row:first-child {
+    background-color: #198754 !important;
+    margin: 0 0 1rem 0;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Length (Entries per page) Styling */
+.dataTables_wrapper .dataTables_length {
+    display: flex;
+    align-items: center;
+}
+
+.dataTables_wrapper .dataTables_length label {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    font-size: 0.875rem;
+    color: #fff !important;
+    font-weight: 500;
+}
+
+.dataTables_wrapper .dataTables_length select {
+    margin: 0 0.5rem;
+    padding: 0.375rem 2rem 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.5;
+    color: #2D3748;
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%232D3748' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    appearance: none;
+    min-width: 90px;
+    transition: all 0.2s ease-in-out;
+}
+
+.dataTables_wrapper .dataTables_length select:hover {
+    background-color: #f8fafc;
+    border-color: var(--primary-green);
+}
+
+.dataTables_wrapper .dataTables_length select:focus {
+    background-color: #ffffff;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.25rem rgba(15, 75, 54, 0.15);
+    outline: 0;
+}
+
+/* Search Box Styling */
+.dataTables_wrapper .dataTables_filter {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.dataTables_wrapper .dataTables_filter label {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    position: relative;
+    width: 250px;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    padding: 0.5rem 1rem 0.5rem 2.5rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #2D3748;
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    width: 100%;
+    transition: all 0.2s ease-in-out;
+}
+
+.dataTables_wrapper .dataTables_filter label::before {
+    content: "";
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%232D3748' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.dataTables_wrapper .dataTables_filter input:hover {
+    background-color: #f8fafc;
+    border-color: var(--primary-green);
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    background-color: #ffffff;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.25rem rgba(15, 75, 54, 0.15);
+    outline: 0;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus + label::before {
+    opacity: 0.7;
+}
+
+.dataTables_wrapper .dataTables_filter input::placeholder {
+    color: #718096;
+}
+
+/* Info Text Styling */
+.dataTables_wrapper .dataTables_info {
+    font-size: 0.875rem;
+    color: #2D3748;
+    padding: 1rem 0.75rem;
+    font-weight: 500;
+}
+
+/* Pagination Styling */
+.dataTables_wrapper .dataTables_paginate {
+    padding: 1rem 0.75rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    margin: 0 0.125rem;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    background: transparent !important;
+    color: var(--primary-green) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:not(.disabled):hover {
+    background: var(--light-green) !important;
+    border-color: var(--primary-green) !important;
+    color: var(--primary-green) !important;
+    box-shadow: 0 2px 4px rgba(15, 75, 54, 0.1);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--primary-green) !important;
+    border-color: var(--primary-green) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(15, 75, 54, 0.2);
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: var(--dark-green) !important;
+    border-color: var(--dark-green) !important;
+    color: #ffffff !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    color: var(--primary-green) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .previous,
+.dataTables_wrapper .dataTables_paginate .next {
+    font-weight: 600;
+}
+
+.dataTables_wrapper .dataTables_paginate .previous {
+    margin-right: 0.5rem;
+}
+
+.dataTables_wrapper .dataTables_paginate .next {
+    margin-left: 0.5rem;
+}
+
+/* Responsive padding for the card */
+.card-body {
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .dataTables_wrapper .row:first-child {
+        margin: 0 0 1rem 0;
+        padding: 1rem;
+    }
+
+    .card-body {
+        padding: 0;
+    }
+    
+    #userLogsTable thead th,
+    #userLogsTable tbody td {
+        padding: 0.75rem;
+    }
+
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 0.75rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter {
+        justify-content: flex-start;
+    }
+
+    .dataTables_wrapper .dataTables_filter label {
+        width: 100%;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.375rem 0.5rem;
+    }
+    
+    .dataTables_wrapper .dataTables_paginate .previous,
+    .dataTables_wrapper .dataTables_paginate .next {
+        padding: 0.375rem 0.75rem;
+    }
+} 
