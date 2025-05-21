@@ -261,43 +261,109 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-4 h-100">
                 <div class="card-body p-4 d-flex flex-column">
-                    <h5 class="fw-semibold mb-4">
-                        <i class="bi bi-lightning-charge-fill me-2"></i>Quick Actions
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-semibold mb-0">
+                            <i class="bi bi-lightning-charge-fill text-warning me-2"></i>Quick Actions
+                        </h5>
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm rounded-pill px-3 hover-lift" type="button" id="quickActionsHelp" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-info-circle me-1"></i> Help
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end p-3 shadow-sm" aria-labelledby="quickActionsHelp" style="min-width: 280px;">
+                                <li class="small">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-info-circle-fill text-primary me-2"></i>
+                                        <h6 class="mb-0">Quick Actions Guide</h6>
+                                    </div>
+                                    <p class="text-muted small mb-2">Access frequently used features to manage your department efficiently.</p>
+                                    <div class="list-group list-group-flush">
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-journal-plus text-success me-2"></i>
+                                                <div>
+                                                    <strong>Assign Subjects:</strong>
+                                                    <span class="d-block text-muted small">Manage teaching loads and course assignments</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-mortarboard-fill text-primary me-2"></i>
+                                                <div>
+                                                    <strong>Student List:</strong>
+                                                    <span class="d-block text-muted small">View and manage student records by year level</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item border-0 px-0 py-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-clipboard-data text-info me-2"></i>
+                                                <div>
+                                                    <strong>View Grades:</strong>
+                                                    <span class="d-block text-muted small">Monitor and analyze student performance</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                     
                     <div class="d-flex flex-column gap-3 flex-grow-1 justify-content-between">
-                        <a href="{{ route('chairperson.assignSubjects') }}" class="btn btn-light text-start rounded-3 p-3">
+                        <a href="{{ route('chairperson.assignSubjects') }}" 
+                           class="btn btn-light text-start rounded-3 p-3 hover-lift position-relative"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="right"
+                           title="Manage teaching loads and course assignments">
                             <div class="d-flex align-items-center">
                                 <div class="rounded-3 p-2 bg-success-subtle me-3">
-                                    <i class="bi bi-journal-plus text-success"></i>
+                                    <i class="bi bi-journal-plus text-success fs-5"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">Assign Subjects</h6>
-                                    <small class="text-muted">Manage teaching loads</small>
+                                    <h6 class="mb-1">Assign Subjects</h6>
+                                    <small class="text-muted d-block">Manage teaching loads</small>
+                                </div>
+                                <div class="ms-auto">
+                                    <i class="bi bi-chevron-right text-muted"></i>
                                 </div>
                             </div>
                         </a>
                         
-                        <a href="{{ route('chairperson.studentsByYear') }}" class="btn btn-light text-start rounded-3 p-3">
+                        <a href="{{ route('chairperson.studentsByYear') }}" 
+                           class="btn btn-light text-start rounded-3 p-3 hover-lift position-relative"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="right"
+                           title="View and manage student records by year level">
                             <div class="d-flex align-items-center">
-                                <div class="rounded-3 p-2 bg-success-subtle me-3">
-                                    <i class="bi bi-mortarboard-fill text-success"></i>
+                                <div class="rounded-3 p-2 bg-primary-subtle me-3">
+                                    <i class="bi bi-mortarboard-fill text-primary fs-5"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">Student List</h6>
-                                    <small class="text-muted">View students by year</small>
+                                    <h6 class="mb-1">Student List</h6>
+                                    <small class="text-muted d-block">View students by year</small>
+                                </div>
+                                <div class="ms-auto">
+                                    <i class="bi bi-chevron-right text-muted"></i>
                                 </div>
                             </div>
                         </a>
 
-                        <a href="{{ route('chairperson.viewGrades') }}" class="btn btn-light text-start rounded-3 p-3">
+                        <a href="{{ route('chairperson.viewGrades') }}" 
+                           class="btn btn-light text-start rounded-3 p-3 hover-lift position-relative"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="right"
+                           title="Monitor and analyze student performance">
                             <div class="d-flex align-items-center">
-                                <div class="rounded-3 p-2 bg-success-subtle me-3">
-                                    <i class="bi bi-clipboard-data text-success"></i>
+                                <div class="rounded-3 p-2 bg-info-subtle me-3">
+                                    <i class="bi bi-clipboard-data text-info fs-5"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-0">View Grades</h6>
-                                    <small class="text-muted">Monitor student performance</small>
+                                    <h6 class="mb-1">View Grades</h6>
+                                    <small class="text-muted d-block">Monitor student performance</small>
+                                </div>
+                                <div class="ms-auto">
+                                    <i class="bi bi-chevron-right text-muted"></i>
                                 </div>
                             </div>
                         </a>
