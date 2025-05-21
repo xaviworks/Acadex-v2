@@ -39,17 +39,29 @@ class DeanController extends Controller
     // View Students under Dean
     // ============================
 
-    public function viewStudents()
+    public function viewStudents(Request $request)
     {
         Gate::authorize('dean');
 
-        $students = Student::with('course')
+        $selectedCourseId = $request->input('course_id');
+        
+        $query = Student::with('course')
             ->where('department_id', Auth::user()->department_id)
             ->where('is_deleted', false)
             ->orderBy('last_name')
+            ->orderBy('first_name');
+
+        if ($selectedCourseId) {
+            $query->where('course_id', $selectedCourseId);
+        }
+
+        $students = $query->get();
+        $courses = Course::where('department_id', Auth::user()->department_id)
+            ->where('is_deleted', false)
+            ->orderBy('course_code')
             ->get();
 
-        return view('dean.students', compact('students'));
+        return view('dean.students', compact('students', 'courses', 'selectedCourseId'));
     }
 
     // ============================

@@ -13,6 +13,20 @@
                 No students found under your department.
             </div>
         @else
+            <div class="mb-4">
+                <form action="{{ route('dean.students') }}" method="GET" class="d-flex align-items-center gap-3">
+                    <label for="courseFilter" class="form-label mb-0">Filter by Course:</label>
+                    <select name="course_id" id="courseFilter" class="form-select" style="width: auto;" onchange="this.form.submit()">
+                        <option value="">All Courses</option>
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}" {{ $selectedCourseId == $course->id ? 'selected' : '' }}>
+                                {{ $course->course_code }}
+                            </option>
+                        @endforeach
+                    </select>
+                </form>
+            </div>
+
             <div class="bg-white shadow-lg rounded-4 overflow-x-auto">
                 <table class="table table-bordered align-middle mb-0">
                     <thead class="table-light">
@@ -25,7 +39,7 @@
                     <tbody>
                         @foreach($students as $student)
                             <tr>
-                                <td>{{ $student->first_name }} {{ $student->last_name }}</td>
+                                <td>{{ $student->last_name }}, {{ $student->first_name }}</td>
                                 <td>{{ $student->course->course_code ?? 'N/A' }}</td>
                                 <td>{{ $student->year_level ?? 'N/A' }}</td>
                             </tr>
