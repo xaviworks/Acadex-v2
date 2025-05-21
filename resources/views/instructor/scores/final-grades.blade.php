@@ -56,7 +56,7 @@
                         @foreach($finalData as $data)
                             <tr class="hover-shadow-sm">
                                 <td class="fw-semibold text-start">
-                                    {{ $data['student']->first_name }} {{ $data['student']->last_name }}
+                                    {{ $data['student']->last_name }}, {{ $data['student']->first_name }}
                                 </td>
                                 <td class="text-center">{{ isset($data['prelim']) ? (int) round($data['prelim']) : '–' }}</td>
                                 <td class="text-center">{{ isset($data['midterm']) ? (int) round($data['midterm']) : '–' }}</td>

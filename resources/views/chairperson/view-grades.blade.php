@@ -123,7 +123,7 @@
                                 $remarks = $average !== null ? ($average >= 75 ? 'Passed' : 'Failed') : null;
                             @endphp
                             <tr class="hover:bg-light">
-                                <td>{{ $student->first_name }} {{ $student->last_name }}</td>
+                                <td>{{ $student->last_name }}, {{ $student->first_name }}</td>
                                 <td class="text-center">{{ $prelim !== null ? round($prelim) : '-' }}</td>
                                 <td class="text-center">{{ $midterm !== null ? round($midterm) : '-' }}</td>
                                 <td class="text-center">{{ $prefinal !== null ? round($prefinal) : '-' }}</td>
