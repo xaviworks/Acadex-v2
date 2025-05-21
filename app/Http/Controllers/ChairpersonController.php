@@ -301,8 +301,8 @@ class ChairpersonController extends Controller
             ->where('course_id', Auth::user()->course_id)
             ->where('is_deleted', false)
             ->with('course')
-            ->orderBy('year_level')
             ->orderBy('last_name')
+            ->orderBy('first_name')
             ->get();
 
         return view('chairperson.students-by-year', compact('students'));

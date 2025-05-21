@@ -29,6 +29,8 @@ class FinalGradeController extends Controller
             $subjectId = $request->subject_id;
             $students = Student::whereHas('subjects', fn($q) => $q->where('subject_id', $subjectId))
                 ->where('is_deleted', false)
+                ->orderBy('last_name')
+                ->orderBy('first_name')
                 ->get();
 
             $terms = ['prelim', 'midterm', 'prefinal', 'final'];

@@ -118,6 +118,7 @@ class DeanController extends Controller
                         ->where('students.is_deleted', false)
                         ->wherePivot('is_deleted', false)
                         ->orderBy('students.last_name')
+                        ->orderBy('students.first_name')
                         ->get();
     
                     // Get final grades for the students in the selected subject

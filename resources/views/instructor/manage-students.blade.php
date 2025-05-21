@@ -41,7 +41,7 @@
                         @foreach ($students as $student)
                             <tr>
                                 <td class="fw-semibold">
-                                    {{ $student->first_name }} {{ $student->last_name }}
+                                    {{ $student->last_name }}, {{ $student->first_name }}
                                 </td>
                                 <td>{{ $student->year_level == 1 ? '1st' : ($student->year_level == 2 ? '2nd' : ($student->year_level == 3 ? '3rd' : '4th')) }} Year</td>
                                 <td>

@@ -42,6 +42,8 @@ class StudentController extends Controller
     
             $students = $subject->students()
                 ->where('students.is_deleted', 0)
+                ->orderBy('last_name')
+                ->orderBy('first_name')
                 ->get();
 
         }
