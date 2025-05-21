@@ -266,18 +266,6 @@
                     </h5>
                     
                     <div class="d-flex flex-column gap-3 flex-grow-1 justify-content-between">
-                        <a href="{{ route('chairperson.instructors') }}" class="btn btn-light text-start rounded-3 p-3">
-                            <div class="d-flex align-items-center">
-                                <div class="rounded-3 p-2 bg-success-subtle me-3">
-                                    <i class="bi bi-person-plus-fill text-success"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Manage Instructors</h6>
-                                    <small class="text-muted">Add or modify faculty</small>
-                                </div>
-                            </div>
-                        </a>
-                        
                         <a href="{{ route('chairperson.assignSubjects') }}" class="btn btn-light text-start rounded-3 p-3">
                             <div class="d-flex align-items-center">
                                 <div class="rounded-3 p-2 bg-success-subtle me-3">
@@ -286,6 +274,18 @@
                                 <div>
                                     <h6 class="mb-0">Assign Subjects</h6>
                                     <small class="text-muted">Manage teaching loads</small>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ route('chairperson.studentsByYear') }}" class="btn btn-light text-start rounded-3 p-3">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-3 p-2 bg-success-subtle me-3">
+                                    <i class="bi bi-mortarboard-fill text-success"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Student List</h6>
+                                    <small class="text-muted">View students by year</small>
                                 </div>
                             </div>
                         </a>

@@ -127,6 +127,9 @@
                             <i class="bi bi-bar-chart-fill me-2"></i>Subject Completion Status
                         </h5>
                     </div>
+                    <div class="mb-4" style="height: 300px;">
+                        <canvas id="subjectPerformanceChart"></canvas>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
