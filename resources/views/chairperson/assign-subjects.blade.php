@@ -20,8 +20,8 @@
         <div class="d-flex align-items-center">
             <label for="viewMode" class="me-2 fw-semibold">View Mode:</label>
             <select id="viewMode" class="form-select form-select-sm w-auto" onchange="toggleViewMode()">
-                <option value="tabbed" selected>Tabbed</option>
-                <option value="accordion">Accordion</option>
+                <option value="year" selected>Year View</option>
+                <option value="full">Full View</option>
             </select>
         </div>
     </div>
@@ -34,162 +34,163 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
+    <!-- YEAR VIEW (Tabbed) -->
+    <div id="yearView">
+        <!-- Year Level Tabs -->
+        <ul class="nav nav-tabs" id="yearTabs" role="tablist">
+            @for ($level = 1; $level <= 4; $level++)
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link {{ $level === 1 ? 'active' : '' }}"
+                       id="year-level-{{ $level }}"
+                       data-bs-toggle="tab"
+                       href="#level-{{ $level }}"
+                       role="tab"
+                       aria-controls="level-{{ $level }}"
+                       aria-selected="{{ $level === 1 ? 'true' : 'false' }}">
+                       {{ ordinalSuffix($level) }} Year
+                    </a>
+                </li>
+            @endfor
+        </ul>
 
-    <!-- TABBED VIEW (default) -->
-    <div id="tabbedView">
-           <!-- Year Level Tabs -->
-    <ul class="nav nav-tabs" id="yearTabs" role="tablist">
-        @for ($level = 1; $level <= 4; $level++)
-            <li class="nav-item" role="presentation">
-                <a class="nav-link {{ $level === 1 ? 'active' : '' }}"
-                   id="year-level-{{ $level }}"
-                   data-bs-toggle="tab"
-                   href="#level-{{ $level }}"
-                   role="tab"
-                   aria-controls="level-{{ $level }}"
-                   aria-selected="{{ $level === 1 ? 'true' : 'false' }}">
-                   {{ ordinalSuffix($level) }} Year
-                </a>
-            </li>
-        @endfor
-    </ul>
+        <div class="tab-content" id="yearTabsContent">
+            @for ($level = 1; $level <= 4; $level++)
+                @php
+                    $subjectsByYear = $yearLevels[$level] ?? collect();
+                @endphp
 
-    <div class="tab-content" id="yearTabsContent">
-        @for ($level = 1; $level <= 4; $level++)
-            @php
-                $subjectsByYear = $yearLevels[$level] ?? collect();
-            @endphp
-
-            <div class="tab-pane fade {{ $level === 1 ? 'show active' : '' }}"
-                 id="level-{{ $level }}"
-                 role="tabpanel"
-                 aria-labelledby="year-level-{{ $level }}">
-                <div class="bg-white shadow rounded-4 overflow-x-auto mt-3">
-                    @if ($subjectsByYear->isNotEmpty())
-                        <table class="table table-bordered align-middle mb-0">
-                            <thead class="table-success">
-                                <tr>
-                                    <th>Subject Code</th>
-                                    <th>Description</th>
-                                    <th>Assigned Instructor</th>
-                                    <th class="text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($subjectsByYear as $subject)
-                                    <tr>
-                                        <td>{{ $subject->subject_code }}</td>
-                                        <td>{{ $subject->subject_description }}</td>
-                                        <td>{{ $subject->instructor ? $subject->instructor->name : '—' }}</td>
-                                        <td class="text-center">
-                                            @if ($subject->instructor)
-                                                <button
-                                                    onclick="openConfirmUnassignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
-                                                    class="btn btn-danger btn-sm">
-                                                    <i class="bi bi-x-circle me-1"></i> Unassign
-                                                </button>
-                                            @else
-                                                <button
-                                                    onclick="openConfirmAssignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
-                                                    class="btn btn-success shadow-sm btn-sm">
-                                                    <i class="bi bi-person-plus me-1"></i> Assign
-                                                </button>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                    <div class="bg-warning bg-opacity-25 text-warning border border-warning px-4 py-3 rounded-4 shadow-sm">
-                        No subjects available for {{ ordinalSuffix($level) }} Year.
-                    </div>
-                    
-                    @endif
-                </div>
-            </div>
-        @endfor
-    </div>
-</div>
-    </div>
-
-<!-- ACCORDION VIEW -->
-<div id="accordionView" class="d-none">
-    <div class="accordion" id="yearAccordion">
-        @for ($level = 1; $level <= 4; $level++)
-            @php
-                $subjectsByYear = $yearLevels[$level] ?? collect();
-                $accordionId = "yearLevelAccordion$level";
-            @endphp
-    
-            <div class="accordion-item mb-3 rounded-4 shadow-sm border-0 overflow-hidden">
-                <h2 class="accordion-header" id="heading-{{ $level }}">
-                    <button class="accordion-button {{ $level !== 1 ? 'collapsed' : '' }}"
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#{{ $accordionId }}"
-                            aria-expanded="{{ $level === 1 ? 'true' : 'false' }}"
-                            aria-controls="{{ $accordionId }}"
-                            style="background-color: #259c59; color: white;" 
-                            title="Click to toggle {{ ordinalSuffix($level) }} Year subjects">
-                        {{ ordinalSuffix($level) }} Year Subjects
-                    </button>
-                </h2>
-                <div id="{{ $accordionId }}"
-                     class="accordion-collapse collapse {{ $level === 1 ? 'show' : '' }}"
-                     aria-labelledby="heading-{{ $level }}"
-                     data-bs-parent="#yearAccordion">
-                    <div class="accordion-body">
+                <div class="tab-pane fade {{ $level === 1 ? 'show active' : '' }}"
+                     id="level-{{ $level }}"
+                     role="tabpanel"
+                     aria-labelledby="year-level-{{ $level }}">
+                    <div class="bg-white shadow rounded-4 overflow-x-auto mt-3">
                         @if ($subjectsByYear->isNotEmpty())
-                            <div class="table-responsive">
-                                <table class="table table-bordered align-middle mb-0">
-                                    <thead class="table-success">
-                                        <tr class="table-hover table-success">
-                                            <th>Subject Code</th>
-                                            <th>Description</th>
-                                            <th>Assigned Instructor</th>
-                                            <th class="text-center">Action</th>
+                            <table class="table table-bordered align-middle mb-0">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th>Subject Code</th>
+                                        <th>Description</th>
+                                        <th>Assigned Instructor</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($subjectsByYear as $subject)
+                                        <tr>
+                                            <td>{{ $subject->subject_code }}</td>
+                                            <td>{{ $subject->subject_description }}</td>
+                                            <td>{{ $subject->instructor ? $subject->instructor->name : '—' }}</td>
+                                            <td class="text-center">
+                                                @if ($subject->instructor)
+                                                    <button
+                                                        onclick="openConfirmUnassignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
+                                                        class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-x-circle me-1"></i> Unassign
+                                                    </button>
+                                                @else
+                                                    <button
+                                                        onclick="openConfirmAssignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
+                                                        class="btn btn-success shadow-sm btn-sm">
+                                                        <i class="bi bi-person-plus me-1"></i> Assign
+                                                    </button>
+                                                @endif
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($subjectsByYear as $subject)
-                                            <tr>
-                                                <td>{{ $subject->subject_code }}</td>
-                                                <td>{{ $subject->subject_description }}</td>
-                                                <td>{{ $subject->instructor ? $subject->instructor->name : '—' }}</td>
-                                                <td class="text-center">
-                                                    @if ($subject->instructor)
-                                                        <button
-                                                            onclick="openConfirmUnassignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
-                                                            class="btn btn-danger btn-sm" title="Unassign Instructor">
-                                                            <i class="bi bi-x-circle me-1"></i> Unassign
-                                                        </button>
-                                                    @else
-                                                        <button
-                                                            onclick="openConfirmAssignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
-                                                            class="btn btn-success btn-sm shadow-sm" title="Assign Instructor">
-                                                            <i class="bi bi-person-plus me-1"></i> Assign
-                                                        </button>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         @else
-                            <div class="bg-warning bg-opacity-25 text-warning border border-warning px-4 py-3 rounded-4 shadow-sm">
-                                No subjects available for {{ ordinalSuffix($level) }} Year.
-                            </div>
+                        <div class="bg-warning bg-opacity-25 text-warning border border-warning px-4 py-3 rounded-4 shadow-sm">
+                            No subjects available for {{ ordinalSuffix($level) }} Year.
+                        </div>
                         @endif
                     </div>
                 </div>
-            </div>
-        @endfor
+            @endfor
+        </div>
     </div>
-</div>
 
-    
+    <!-- FULL VIEW (All Years) -->
+    <div id="fullView" class="d-none">
+        <div class="row g-4">
+            @for ($level = 1; $level <= 4; $level++)
+                @php
+                    $subjectsByYear = $yearLevels[$level] ?? collect();
+                @endphp
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-header bg-transparent border-0 py-3">
+                            <div class="d-flex align-items-center">
+                                <h5 class="mb-0 fw-semibold text-success">
+                                    {{ ordinalSuffix($level) }} Year
+                                </h5>
+                                <span class="badge bg-success-subtle text-success ms-3">
+                                    {{ $subjectsByYear->count() }} {{ Str::plural('subject', $subjectsByYear->count()) }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            @if ($subjectsByYear->isNotEmpty())
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-success">
+                                            <tr>
+                                                <th class="border-0 py-3">Subject Code</th>
+                                                <th class="border-0 py-3">Description</th>
+                                                <th class="border-0 py-3">Assigned Instructor</th>
+                                                <th class="border-0 py-3 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($subjectsByYear as $subject)
+                                                <tr>
+                                                    <td class="fw-medium">{{ $subject->subject_code }}</td>
+                                                    <td>{{ $subject->subject_description }}</td>
+                                                    <td>
+                                                        @if($subject->instructor)
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="bi bi-person-check-fill text-success me-2"></i>
+                                                                <span>{{ $subject->instructor->name }}</span>
+                                                            </div>
+                                                        @else
+                                                            <span class="text-muted">—</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="text-center">
+                                                        @if ($subject->instructor)
+                                                            <button
+                                                                onclick="openConfirmUnassignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
+                                                                class="btn btn-outline-danger btn-sm" 
+                                                                title="Unassign Instructor">
+                                                                <i class="bi bi-x-circle me-1"></i> Unassign
+                                                            </button>
+                                                        @else
+                                                            <button
+                                                                onclick="openConfirmAssignModal({{ $subject->id }}, '{{ addslashes($subject->subject_code . ' - ' . $subject->subject_description) }}')"
+                                                                class="btn btn-success shadow-sm btn-sm" 
+                                                                title="Assign Instructor">
+                                                                <i class="bi bi-person-plus me-1"></i> Assign
+                                                            </button>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="text-center py-5">
+                                    <div class="text-muted mb-3">
+                                        <i class="bi bi-journal-x display-6"></i>
+                                    </div>
+                                    <p class="text-muted mb-0">No subjects available for {{ ordinalSuffix($level) }} Year.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endfor
+        </div>
     </div>
 </div>
 
@@ -287,17 +288,39 @@
 
     function toggleViewMode() {
         const mode = document.getElementById('viewMode').value;
-        const accordionView = document.getElementById('accordionView');
-        const tabbedView = document.getElementById('tabbedView');
+        const yearView = document.getElementById('yearView');
+        const fullView = document.getElementById('fullView');
 
-        if (mode === 'accordion') {
-            accordionView.classList.remove('d-none');
-            tabbedView.classList.add('d-none');
+        if (mode === 'full') {
+            yearView.classList.add('d-none');
+            fullView.classList.remove('d-none');
         } else {
-            accordionView.classList.add('d-none');
-            tabbedView.classList.remove('d-none');
+            yearView.classList.remove('d-none');
+            fullView.classList.add('d-none');
         }
     }
 </script>
+@endpush
+
+@push('styles')
+<style>
+    .bg-success-subtle {
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    .btn-outline-success:hover, .btn-outline-danger:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .table-success {
+        background-color: #198754 !important;
+    }
+    .table-success th {
+        color: white;
+        font-weight: 500;
+    }
+</style>
 @endpush
 @endsection
