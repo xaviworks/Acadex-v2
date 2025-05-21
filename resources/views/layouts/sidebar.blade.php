@@ -96,7 +96,7 @@
                         <a href="{{ route('chairperson.studentsByYear') }}" 
                            class="nav-link {{ request()->routeIs('chairperson.studentsByYear') ? 'active' : '' }} d-flex align-items-center sidebar-link">
                             <i class="bi bi-person-lines-fill me-3"></i>
-                            <span>Students by Year</span>
+                            <span>Students List</span>
                         </a>
                     </li>
                     <li class="nav-item">
