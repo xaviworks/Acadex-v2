@@ -81,6 +81,7 @@ class StudentController extends Controller
         ]);
     
         $academicPeriodId = session('active_academic_period_id');
+        $instructor = Auth::user();
     
         $subject = Subject::where('id', $request->subject_id)
             ->where('academic_period_id', $academicPeriodId)
@@ -91,8 +92,8 @@ class StudentController extends Controller
             'middle_name' => $request->middle_name,
             'last_name' => $request->last_name,
             'year_level' => $request->year_level,
-            'department_id' => Auth::user()->department_id,
-            'course_id' => $request->course_id,
+            'department_id' => $instructor->department_id,
+            'course_id' => $instructor->course_id,
             'academic_period_id' => $subject->academic_period_id,
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
@@ -150,5 +151,29 @@ class StudentController extends Controller
             ->delete();
 
         return redirect()->back()->with('success', 'Student dropped from subject.');
+    }
+
+    // 📝 Update Student Details and Status
+    public function update(Request $request, $studentId)
+    {
+        Gate::authorize('instructor');
+
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'year_level' => 'required|integer|min:1|max:5',
+            'subject_id' => 'required|exists:subjects,id',
+        ]);
+
+        // Update student details
+        $student = Student::findOrFail($studentId);
+        $student->update([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'year_level' => $request->year_level,
+            'updated_by' => Auth::id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Student details updated successfully.');
     }
 }

@@ -101,11 +101,28 @@
         const subject = document.querySelector("select[name='subject_id']").selectedOptions[0].text;
         const bannerUrl = "{{ asset('images/banner-header.png') }}";
         
-        // Count passed and failed students
-        const passedStudents = document.querySelectorAll('.badge.bg-success').length;
-        const failedStudents = document.querySelectorAll('.badge.bg-danger').length;
-        const totalStudents = passedStudents + failedStudents;
-        const passRate = totalStudents > 0 ? ((passedStudents / totalStudents) * 100).toFixed(1) : 0;
+        // Count passed and failed students from the data
+        @php
+            $passedStudents = 0;
+            $failedStudents = 0;
+            if (!empty($finalData)) {
+                foreach ($finalData as $data) {
+                    if (isset($data['remarks'])) {
+                        if (strtolower($data['remarks']) === 'passed') {
+                            $passedStudents++;
+                        } elseif (strtolower($data['remarks']) === 'failed') {
+                            $failedStudents++;
+                        }
+                    }
+                }
+            }
+            $totalStudents = $passedStudents + $failedStudents;
+            $passRate = $totalStudents > 0 ? round(($passedStudents / $totalStudents) * 100, 1) : 0;
+        @endphp
+        const passedStudents = {{ $passedStudents }};
+        const failedStudents = {{ $failedStudents }};
+        const totalStudents = {{ $totalStudents }};
+        const passRate = {{ $passRate }};
 
         // Get current academic period
         @php
@@ -174,8 +191,8 @@
                             margin: 15px 0;
                             text-transform: uppercase;
                             letter-spacing: 2px;
-                            color: #2c3e50;
-                            border-bottom: 2px solid #2c3e50;
+                            color: #1a5f38;
+                            border-bottom: 2px solid #1a5f38;
                             padding-bottom: 8px;
                         }
 
@@ -191,18 +208,19 @@
                             border-collapse: collapse;
                             margin-bottom: 25px;
                             background-color: #fff;
+                            font-size: 11px;
                         }
 
                         .header-table td {
-                            padding: 10px 15px;
-                            border: 1px solid #dee2e6;
+                            padding: 8px 12px;
+                            border: 1px solid #7fb3a3;
                         }
 
                         .header-label {
                             font-weight: bold;
-                            width: 150px;
-                            background-color: #f8f9fa;
-                            color: #2c3e50;
+                            width: 120px;
+                            background-color: #1a5f38;
+                            color: #fff;
                         }
 
                         .header-value {
@@ -210,124 +228,265 @@
                         }
 
                         .stats-container {
-                            background-color: #f8f9fa;
-                            border: 1px solid #dee2e6;
+                            background-color: #f0f7f4;
+                            border: 1px solid #7fb3a3;
                             border-radius: 4px;
-                            margin-bottom: 20px;
-                            padding: 10px;
+                            margin: 0;
+                            padding: 8px;
                             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
                         }
 
                         .stats-title {
                             font-weight: 600;
                             text-transform: uppercase;
-                            margin-bottom: 8px;
-                            font-size: 11px;
-                            color: #2c3e50;
-                            border-bottom: 1px solid #dee2e6;
-                            padding-bottom: 4px;
+                            margin-bottom: 6px;
+                            font-size: 10px;
+                            color: #1a5f38;
+                            border-bottom: 1px solid #7fb3a3;
+                            padding-bottom: 3px;
                         }
 
                         .stats-grid {
                             display: grid;
                             grid-template-columns: repeat(3, 1fr);
-                            gap: 10px;
+                            gap: 6px;
                         }
 
                         .stat-item {
                             background-color: #fff;
-                            padding: 8px;
+                            padding: 4px;
                             border-radius: 3px;
-                            border: 1px solid #dee2e6;
+                            border: 1px solid #7fb3a3;
                             text-align: center;
                         }
 
                         .stat-label {
-                            font-size: 10px;
-                            color: #666;
-                            margin-bottom: 2px;
+                            font-size: 9px;
+                            color: #1a5f38;
+                            margin-bottom: 1px;
                             letter-spacing: 0.5px;
+                            font-weight: 600;
                         }
 
                         .stat-value {
-                            font-size: 14px;
+                            font-size: 12px;
                             font-weight: bold;
+                            color: #1a5f38;
                         }
 
                         .passed-count { color: #28a745; }
                         .failed-count { color: #dc3545; }
-                        .total-count { color: #17a2b8; }
+                        .total-count { color: #1a5f38; }
 
-                        table {
+                        /* Print-specific table styles */
+                        .print-table {
                             width: 100%;
                             border-collapse: collapse;
-                            border: 2px solid #dee2e6;
+                            border: 2px solid #1a5f38;
                             background-color: #fff;
-                            margin-top: 20px;
+                            margin-top: 15px;
+                            font-size: 11px;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                         }
 
-                        th, td {
-                            border: 1px solid #dee2e6;
-                            padding: 12px;
-                            font-size: 12px;
+                        .print-table th, .print-table td {
+                            border: 1px solid #7fb3a3;
+                            padding: 8px;
+                            font-size: 11px;
+                            text-align: center;
+                            vertical-align: middle;
                         }
 
-                        th {
-                            background-color: #f8f9fa;
+                        /* Add specific border styling for grade columns */
+                        .print-table th:nth-child(3),
+                        .print-table th:nth-child(4),
+                        .print-table th:nth-child(5),
+                        .print-table th:nth-child(6),
+                        .print-table th:nth-child(7),
+                        .print-table th:nth-child(8),
+                        .print-table td:nth-child(3),
+                        .print-table td:nth-child(4),
+                        .print-table td:nth-child(5),
+                        .print-table td:nth-child(6),
+                        .print-table td:nth-child(7),
+                        .print-table td:nth-child(8) {
+                            border-left: 1px solid #7fb3a3;
+                            border-right: 1px solid #7fb3a3;
+                        }
+
+                        .print-table th {
+                            background-color: #1a5f38;
+                            color: #fff;
                             font-weight: bold;
                             text-transform: uppercase;
                             text-align: center;
-                            color: #2c3e50;
+                            white-space: nowrap;
+                            border: 1px solid #1a5f38;
+                            padding: 10px 8px;
                         }
 
-                        tr:nth-child(even) {
-                            background-color: #f8f9fa;
+                        .print-table th:first-child {
+                            background-color: #0d4b2a;
                         }
 
-                        tr:hover {
-                            background-color: #f2f2f2;
+                        .print-table tr:nth-child(even) {
+                            background-color: #f0f7f4;
                         }
 
-                        td {
+                        .print-table tr:hover {
+                            background-color: #e8f3ef;
+                        }
+
+                        /* Print-specific column widths */
+                        .print-table th:nth-child(1) { width: 5%; } /* Number */
+                        .print-table th:nth-child(2) { width: 25%; text-align: left; } /* Student Name */
+                        .print-table th:nth-child(3) { width: 12%; } /* Prelim */
+                        .print-table th:nth-child(4) { width: 12%; } /* Midterm */
+                        .print-table th:nth-child(5) { width: 12%; } /* Prefinal */
+                        .print-table th:nth-child(6) { width: 12%; } /* Final */
+                        .print-table th:nth-child(7) { width: 12%; } /* Final Average */
+                        .print-table th:nth-child(8) { width: 10%; } /* Remarks */
+
+                        .print-table td:first-child {
                             text-align: center;
+                            background-color: #f0f7f4;
+                            font-weight: 500;
                         }
 
-                        td:first-child {
+                        .print-table td:nth-child(2) {
                             text-align: left;
                             font-weight: 500;
                         }
 
-                        .text-success {
-                            color: #28a745;
-                            font-weight: bold;
+                        .print-table td:not(:first-child):not(:nth-child(2)) {
+                            text-align: center;
                         }
 
-                        .badge {
-                            padding: 5px 10px;
-                            border-radius: 4px;
-                            font-size: 11px;
+                        /* Grade value styling */
+                        .print-table td:nth-child(3),
+                        .print-table td:nth-child(4),
+                        .print-table td:nth-child(5),
+                        .print-table td:nth-child(6),
+                        .print-table td:nth-child(7) {
+                            font-family: 'Arial', sans-serif;
+                            font-weight: 500;
+                        }
+
+                        /* Final Average column special styling */
+                        .print-table td:nth-child(7) {
+                            font-weight: bold;
+                            color: #1a5f38;
+                        }
+
+                        /* Remarks badge styling */
+                        .print-badge {
+                            padding: 4px 8px;
+                            border-radius: 3px;
+                            font-size: 10px;
                             font-weight: bold;
                             text-transform: uppercase;
                             letter-spacing: 0.5px;
+                            display: inline-block;
+                            text-align: center;
+                            min-width: 60px;
                         }
 
-                        .bg-success {
+                        .print-badge.passed {
                             background-color: #d4edda;
                             color: #155724;
                             border: 1px solid #c3e6cb;
                         }
 
-                        .bg-danger {
+                        .print-badge.failed {
                             background-color: #f8d7da;
                             color: #721c24;
                             border: 1px solid #f5c6cb;
                         }
 
-                        .footer {
-                            margin-top: 30px;
-                            padding-top: 20px;
-                            border-top: 1px solid #dee2e6;
+                        /* Header table styling */
+                        .header-table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-bottom: 25px;
+                            background-color: #fff;
+                            font-size: 11px;
+                            border: 2px solid #1a5f38;
+                        }
+
+                        .header-table td {
+                            padding: 8px 12px;
+                            border: 1px solid #7fb3a3;
+                        }
+
+                        .header-label {
+                            font-weight: bold;
+                            width: 120px;
+                            background-color: #1a5f38;
+                            color: #fff;
+                        }
+
+                        .header-value {
+                            font-family: 'Arial', sans-serif;
+                            font-weight: 500;
+                        }
+
+                        /* Stats container styling */
+                        .stats-container {
+                            background-color: #f0f7f4;
+                            border: 1px solid #7fb3a3;
+                            border-radius: 4px;
+                            margin: 0;
+                            padding: 8px;
+                            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                        }
+
+                        .stats-title {
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            margin-bottom: 6px;
+                            font-size: 10px;
+                            color: #1a5f38;
+                            border-bottom: 1px solid #7fb3a3;
+                            padding-bottom: 3px;
+                        }
+
+                        .stats-grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 6px;
+                        }
+
+                        .stat-item {
+                            background-color: #fff;
+                            padding: 4px;
+                            border-radius: 3px;
+                            border: 1px solid #7fb3a3;
+                            text-align: center;
+                        }
+
+                        .stat-label {
+                            font-size: 9px;
+                            color: #1a5f38;
+                            margin-bottom: 1px;
+                            letter-spacing: 0.5px;
+                            font-weight: 600;
+                        }
+
+                        .stat-value {
                             font-size: 12px;
+                            font-weight: bold;
+                            color: #1a5f38;
+                        }
+
+                        .passed-count { color: #28a745; }
+                        .failed-count { color: #dc3545; }
+                        .total-count { color: #1a5f38; }
+
+                        .footer {
+                            margin-top: 20px;
+                            padding-top: 15px;
+                            border-top: 1px solid #dee2e6;
+                            font-size: 11px;
                             color: #666;
                             text-align: center;
                         }
@@ -358,28 +517,64 @@
                                 <td class="header-label">School Year:</td>
                                 <td class="header-value">${academicPeriod}</td>
                             </tr>
+                            <tr>
+                                <td colspan="4" style="padding: 0;">
+                                    <div class="stats-container">
+                                        <div class="stats-title">Class Performance Summary</div>
+                                        <div class="stats-grid">
+                                            <div class="stat-item">
+                                                <div class="stat-label">PASSED STUDENTS</div>
+                                                <div class="stat-value passed-count">${passedStudents}</div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-label">FAILED STUDENTS</div>
+                                                <div class="stat-value failed-count">${failedStudents}</div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-label">PASSING RATE</div>
+                                                <div class="stat-value total-count">${passRate}%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         </table>
 
-                        <div class="stats-container">
-                            <div class="stats-title">Class Performance Summary</div>
-                            <div class="stats-grid">
-                                <div class="stat-item">
-                                    <div class="stat-label">PASSED STUDENTS</div>
-                                    <div class="stat-value passed-count">${passedStudents}</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">FAILED STUDENTS</div>
-                                    <div class="stat-value failed-count">${failedStudents}</div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="stat-label">PASSING RATE</div>
-                                    <div class="stat-value total-count">${passRate}%</div>
-                                </div>
-                            </div>
-                        </div>
+                        <table class="print-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student Name</th>
+                                    <th>Prelim</th>
+                                    <th>Midterm</th>
+                                    <th>Prefinal</th>
+                                    <th>Final</th>
+                                    <th>Final Average</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${Array.from(document.querySelectorAll('#print-area tbody tr')).map((row, index) => `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${row.cells[0].textContent.trim()}</td>
+                                        <td>${row.cells[1].textContent.trim()}</td>
+                                        <td>${row.cells[2].textContent.trim()}</td>
+                                        <td>${row.cells[3].textContent.trim()}</td>
+                                        <td>${row.cells[4].textContent.trim()}</td>
+                                        <td>${row.cells[5].textContent.trim()}</td>
+                                        <td>
+                                            ${row.cells[6].textContent.trim().includes('Passed') 
+                                                ? `<span class="print-badge passed">Passed</span>`
+                                                : row.cells[6].textContent.trim().includes('Failed')
+                                                ? `<span class="print-badge failed">Failed</span>`
+                                                : row.cells[6].textContent.trim()}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
-
-                    ${content}
 
                     <div class="footer">
                         This is a computer-generated document. No signature is required.
