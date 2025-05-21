@@ -2,7 +2,7 @@
     @include('instructor.partials.term-stepper')
     @include('instructor.partials.activity-header')
 
-    <form method="POST" action="{{ route('instructor.grades.store') }}">
+    <form method="POST" action="{{ route('instructor.grades.store') }}" id="gradeForm">
         @csrf
         <input type="hidden" name="subject_id" value="{{ $subject->id }}">
         <input type="hidden" name="term" value="{{ $term }}">

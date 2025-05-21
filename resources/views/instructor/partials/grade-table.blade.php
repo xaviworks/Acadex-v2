@@ -1,6 +1,5 @@
 @php
     $hasData = count($students) > 0 && count($activities) > 0;
-    $maxRows = 10; // Limit to 10 rows
 @endphp
 
 @if ($hasData)
@@ -63,7 +62,7 @@
                         </tr>
                     </thead>
                     <tbody id="studentTableBody">
-                        @foreach ($students->take($maxRows) as $student)
+                        @foreach ($students as $student)
                             <tr class="student-row">
                                 <td class="px-3 py-2 fw-medium text-dark" style="width: 200px;">
                                     <div class="text-truncate" title="{{ $student->last_name }}, {{ $student->first_name }} @if($student->middle_name) {{ strtoupper(substr($student->middle_name, 0, 1)) }}. @endif">

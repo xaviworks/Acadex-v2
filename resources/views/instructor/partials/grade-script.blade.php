@@ -1,12 +1,19 @@
 <script>
     // Define hasUnsavedChanges globally
     let hasUnsavedChanges = false;
+    let checkForChanges; // Declare the function variable globally
 
     function bindGradeInputEvents() {
         console.log("Binding grade input events...");
         
         // Safely query elements with null checks
-        const inputs = Array.from(document.querySelectorAll('.grade-input') || []);
+        const tableBody = document.getElementById('studentTableBody');
+        if (!tableBody) {
+            console.log("Table body not found, skipping grade input binding");
+            return;
+        }
+
+        const inputs = Array.from(tableBody.querySelectorAll('.grade-input') || []);
         const itemsInputs = Array.from(document.querySelectorAll('.items-input') || []);
         const saveButton = document.getElementById('saveGradesBtn');
         const form = document.querySelector('form');
@@ -20,8 +27,8 @@
             originalValues.set(input, input.value);
         });
 
-        // Function to check for changes
-        function checkForChanges() {
+        // Define checkForChanges function
+        checkForChanges = function() {
             let hasChanges = false;
             let hasInvalidInputs = false;
 
@@ -40,7 +47,7 @@
                 hasChanges,
                 hasInvalidInputs
             };
-        }
+        };
 
         // Function to update save button state
         function updateSaveButtonState() {
@@ -215,7 +222,7 @@
         if (studentSearch) {
             studentSearch.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
-                const rows = document.querySelectorAll('.student-row');
+                const rows = tableBody.querySelectorAll('.student-row');
                 
                 rows.forEach(function(row) {
                     const studentName = row.querySelector('td')?.textContent.toLowerCase() || '';
@@ -229,8 +236,7 @@
         if (sortFilter) {
             // Function to sort the table
             function sortTable(order) {
-                const tbody = document.getElementById('studentTableBody');
-                const rows = Array.from(tbody.querySelectorAll('.student-row'));
+                const rows = Array.from(tableBody.querySelectorAll('.student-row'));
                 
                 rows.sort((a, b) => {
                     const nameA = a.querySelector('td')?.textContent.trim().toLowerCase() || '';
@@ -245,9 +251,9 @@
                 });
                 
                 // Clear the table body
-                tbody.innerHTML = '';
+                tableBody.innerHTML = '';
                 // Append sorted rows
-                rows.forEach(row => tbody.appendChild(row));
+                rows.forEach(row => tableBody.appendChild(row));
             }
 
             // Sort initially in A to Z order
@@ -537,9 +543,11 @@
 
                 // Clear unsaved changes before submitting
                 hasUnsavedChanges = false;
-
-                // Submit form using fetch
+                
+                // Get form data
                 const formData = new FormData(form);
+                
+                // Submit form using fetch
                 fetch(form.action, {
                     method: 'POST',
                     body: formData,
@@ -547,7 +555,12 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     // Update original values after successful save
                     inputs.forEach(input => {
@@ -560,8 +573,19 @@
                         saveButton.querySelector('.spinner-border')?.classList.add('d-none');
                     }
 
-                    // Reload the page after successful save
-                    window.location.reload();
+                    // Show success message
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'alert alert-success alert-dismissible fade show';
+                    successMessage.innerHTML = `
+                        <strong>Success!</strong> Grades have been saved successfully.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    document.querySelector('.container-fluid').insertBefore(successMessage, document.querySelector('.container-fluid').firstChild);
+
+                    // Remove success message after 3 seconds
+                    setTimeout(() => {
+                        successMessage.remove();
+                    }, 3000);
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -578,27 +602,102 @@
 
         // Setup navigation sequence
         const sequence = [];
-        [...activityIds].sort().forEach(activityId => {
-            [...studentIds].sort().forEach(studentId => {
-                const el = inputGrid[activityId]?.[studentId];
-                if (el) sequence.push(el);
+        const rows = Array.from(tableBody.querySelectorAll('.student-row'));
+        const activityColumns = Array.from(document.querySelectorAll('th')).slice(1, -1); // Skip student name column and final grade column
+
+        // Create sequence by going down each column first
+        activityColumns.forEach((_, colIndex) => {
+            rows.forEach((row) => {
+                const input = row.querySelectorAll('.grade-input')[colIndex];
+                if (input) sequence.push(input);
             });
         });
 
+        // Enhanced keyboard navigation with column-based flow
         sequence.forEach((input, idx) => {
             if (!input) return; // Skip if input is null
             
             input.addEventListener('keydown', e => {
                 if (e.key === 'Tab' || e.key === 'Enter') {
                     e.preventDefault();
+                    
+                    // Get the next input in sequence
                     const next = sequence[idx + 1];
                     if (next) {
+                        // Add visual feedback for current row
+                        const currentRow = input.closest('tr');
+                        if (currentRow) {
+                            currentRow.classList.add('navigating');
+                            setTimeout(() => currentRow.classList.remove('navigating'), 500);
+                        }
+                        
+                        // Focus and select next input
                         next.focus();
                         next.select();
+                        
+                        // Add visual feedback for next row
+                        const nextRow = next.closest('tr');
+                        if (nextRow) {
+                            nextRow.classList.add('navigating');
+                            setTimeout(() => nextRow.classList.remove('navigating'), 500);
+                        }
+
+                        // Scroll the next input into view if needed
+                        next.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }
             });
         });
+
+        // Add styles for navigation feedback
+        const navigationStyle = document.createElement('style');
+        navigationStyle.textContent = `
+            .student-row.navigating {
+                background-color: rgba(25, 135, 84, 0.1) !important;
+                transition: background-color 0.3s ease;
+            }
+            
+            .grade-input:focus {
+                border-color: var(--primary-green);
+                box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+                background-color: #fff;
+                position: relative;
+            }
+
+            /* Add visual indicator for current column */
+            .grade-input:focus::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -2px;
+                height: 100%;
+                width: 3px;
+                background-color: var(--primary-green);
+                border-radius: 2px;
+            }
+
+            /* Add visual indicator for current row */
+            .student-row:has(.grade-input:focus) {
+                background-color: rgba(25, 135, 84, 0.05) !important;
+            }
+
+            /* Add visual indicator for current column */
+            .grade-input:focus {
+                position: relative;
+            }
+
+            .grade-input:focus::before {
+                content: '';
+                position: absolute;
+                top: -2px;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background-color: var(--primary-green);
+                border-radius: 2px;
+            }
+        `;
+        document.head.appendChild(navigationStyle);
 
         // Initial state check
         updateSaveButtonState();
@@ -610,26 +709,38 @@
         bindGradeInputEvents();
     });
 
-    // Add navigation prevention with modal only if there are actual unsaved changes
+    // Modify the beforeunload event handler
     window.addEventListener('beforeunload', function(e) {
-        const { hasChanges } = checkForChanges();
-        if (hasChanges) {
-            e.preventDefault();
-            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
-            return e.returnValue;
+        if (typeof checkForChanges === 'function') {
+            const { hasChanges } = checkForChanges();
+            if (hasChanges && !form.submitting) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
         }
     });
 
-    // Prevent navigation when clicking links if there are unsaved changes
+    // Add a flag to track form submission
+    if (form) {
+        form.submitting = false;
+        form.addEventListener('submit', function() {
+            this.submitting = true;
+        });
+    }
+
+    // Modify the click event handler for links
     document.addEventListener('click', function(e) {
-        const { hasChanges } = checkForChanges();
-        if (hasChanges) {
-            const link = e.target.closest('a');
-            if (link && !link.hasAttribute('data-bs-toggle')) {
-                e.preventDefault();
-                if (confirm('You have unsaved changes. Are you sure you want to leave this page?')) {
-                    hasUnsavedChanges = false; // Clear the flag before navigation
-                    window.location.href = link.href;
+        if (typeof checkForChanges === 'function') {
+            const { hasChanges } = checkForChanges();
+            if (hasChanges && !form.submitting) {
+                const link = e.target.closest('a');
+                if (link && !link.hasAttribute('data-bs-toggle')) {
+                    e.preventDefault();
+                    if (confirm('You have unsaved changes. Are you sure you want to leave this page?')) {
+                        hasUnsavedChanges = false; // Clear the flag before navigation
+                        window.location.href = link.href;
+                    }
                 }
             }
         }

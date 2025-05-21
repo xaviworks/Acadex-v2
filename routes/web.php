@@ -104,6 +104,7 @@ Route::prefix('instructor')
         Route::get('/students', [StudentController::class, 'index'])->name('students.index');
         Route::get('/students/enroll', [StudentController::class, 'create'])->name('students.create');
         Route::post('/students', [StudentController::class, 'store'])->name('students.store');
+        Route::put('/students/{student}/update', [StudentController::class, 'update'])->name('students.update');
         Route::delete('/students/{student}/drop', [StudentController::class, 'drop'])->name('students.drop');
 
         // ✅ Student Import Routes

@@ -32,6 +32,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>Student Name</th>
+                            <th>Year Level</th>
+                            <th>Status</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -41,7 +43,26 @@
                                 <td class="fw-semibold">
                                     {{ $student->first_name }} {{ $student->last_name }}
                                 </td>
+                                <td>{{ $student->year_level == 1 ? '1st' : ($student->year_level == 2 ? '2nd' : ($student->year_level == 3 ? '3rd' : '4th')) }} Year</td>
+                                <td>
+                                    @if($student->pivot->is_deleted)
+                                        <span class="badge bg-danger">Dropped</span>
+                                    @else
+                                        <span class="badge bg-success">Enrolled</span>
+                                    @endif
+                                </td>
                                 <td class="text-end">
+                                    <button type="button"
+                                            class="btn btn-success btn-sm"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#manageStudentModal"
+                                            data-student-id="{{ $student->id }}"
+                                            data-student-first-name="{{ $student->first_name }}"
+                                            data-student-last-name="{{ $student->last_name }}"
+                                            data-student-year-level="{{ $student->year_level }}"
+                                            data-student-status="{{ $student->pivot->is_deleted ? 'dropped' : 'enrolled' }}">
+                                        <i class="bi bi-pencil-square"></i> Manage
+                                    </button>
                                     <button type="button"
                                             class="btn btn-danger btn-sm"
                                             data-bs-toggle="modal"
@@ -105,21 +126,61 @@
                             </select>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Assign Course <span class="text-danger">*</span></label>
-                            <select name="course_id" class="form-select" required>
-                                <option value="">-- Select Course --</option>
-                                @foreach($courses as $course)
-                                    <option value="{{ $course->id }}">
-                                        {{ $course->course_code }} - {{ $course->course_description }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <label class="form-label">Course</label>
+                            <input type="text" class="form-control bg-light" value="{{ Auth::user()->course->course_code }} - {{ Auth::user()->course->course_description }}" readonly>
+                            <input type="hidden" name="course_id" value="{{ Auth::user()->course_id }}">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">Enroll Student</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Manage Student Modal --}}
+<div class="modal fade" id="manageStudentModal" tabindex="-1" aria-labelledby="manageStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form method="POST" id="manageStudentForm">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="subject_id" value="{{ request('subject_id') }}">
+            <div class="modal-content shadow-sm border-0 rounded-3">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="manageStudentModalLabel">👤 Manage Student</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="first_name" id="manage_first_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="last_name" id="manage_last_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Year Level <span class="text-danger">*</span></label>
+                            <select name="year_level" id="manage_year_level" class="form-select" required>
+                                <option value="">-- Select Year Level --</option>
+                                @foreach([1 => '1st', 2 => '2nd', 3 => '3rd', 4 => '4th'] as $level => $label)
+                                    <option value="{{ $level }}">{{ $label }} Year</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Course</label>
+                            <input type="text" class="form-control bg-light" value="{{ Auth::user()->course->course_code }} - {{ Auth::user()->course->course_description }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Changes</button>
                 </div>
             </div>
         </form>
@@ -139,11 +200,16 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to drop <strong id="studentNamePlaceholder">this student</strong> from the subject?
+                    <p>Are you sure you want to drop <strong id="studentNamePlaceholder">this student</strong> from the subject?</p>
+                    <p class="text-danger mb-2">This action cannot be undone.</p>
+                    <div class="mb-3">
+                        <label class="form-label">Type "drop" to confirm</label>
+                        <input type="text" class="form-control" id="dropConfirmation" required>
+                    </div>
                 </div>
                 <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger">Yes, Drop</button>
+                    <button type="submit" class="btn btn-danger" id="confirmDropBtn" disabled>Drop Student</button>
                 </div>
             </div>
         </form>
@@ -177,6 +243,9 @@ function handleSubjectChange(select) {
 
 document.addEventListener('DOMContentLoaded', function () {
     const dropModal = document.getElementById('confirmDropModal');
+    const dropConfirmation = document.getElementById('dropConfirmation');
+    const confirmDropBtn = document.getElementById('confirmDropBtn');
+
     dropModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const studentId = button.getAttribute('data-student-id');
@@ -186,6 +255,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
         form.action = `/instructor/students/${studentId}/drop`;
         placeholder.textContent = studentName;
+        
+        dropConfirmation.value = '';
+        confirmDropBtn.disabled = true;
+    });
+
+    dropConfirmation.addEventListener('input', function() {
+        confirmDropBtn.disabled = this.value.toLowerCase() !== 'drop';
+    });
+
+    const manageModal = document.getElementById('manageStudentModal');
+    manageModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const studentId = button.getAttribute('data-student-id');
+        const firstName = button.getAttribute('data-student-first-name');
+        const lastName = button.getAttribute('data-student-last-name');
+        const yearLevel = button.getAttribute('data-student-year-level');
+        
+        const form = manageModal.querySelector('#manageStudentForm');
+        form.action = `/instructor/students/${studentId}/update`;
+        
+        document.getElementById('manage_first_name').value = firstName;
+        document.getElementById('manage_last_name').value = lastName;
+        document.getElementById('manage_year_level').value = yearLevel;
     });
 });
 </script>
