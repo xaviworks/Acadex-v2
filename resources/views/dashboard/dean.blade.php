@@ -62,12 +62,12 @@
                             <i class="bi bi-book-half text-info fs-4"></i>
                         </div>
                         <div>
-                            <h6 class="text-muted mb-0">Total Programs</h6>
+                            <h6 class="text-muted mb-0">Total Courses</h6>
                             <h3 class="fw-bold text-info mb-0">{{ $studentsPerCourse->count() }}</h3>
                         </div>
                     </div>
                     <p class="text-muted small mb-0">
-                        <i class="bi bi-arrow-right"></i> Active academic programs
+                        <i class="bi bi-arrow-right"></i> Active academic courses
                     </p>
                 </div>
             </div>
@@ -100,7 +100,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h5 class="fw-semibold mb-0">
-                            <i class="bi bi-pie-chart-fill me-2"></i>Program Distribution
+                            <i class="bi bi-pie-chart-fill me-2"></i>Course Distribution
                         </h5>
                     </div>
                     
@@ -108,7 +108,7 @@
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Program Code</th>
+                                    <th>Course Code</th>
                                     <th>Students</th>
                                     <th>Distribution</th>
                                 </tr>
