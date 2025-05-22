@@ -5,49 +5,49 @@ chrome.runtime.onInstalled.addListener(function() {
   // Default accounts from UserSeeder
   const defaultAccounts = [
     {
-      username: 'admin@brokenshire.edu.ph',
+      username: 'admin',
       password: 'password',
       createdAt: new Date().toISOString(),
       lastUsed: null
     },
     {
-      username: 'chairperson.bsit@brokenshire.edu.ph',
+      username: 'chairperson.bsit',
       password: 'password',
       createdAt: new Date().toISOString(),
       lastUsed: null
     },
     {
-      username: 'instructor.bsit@brokenshire.edu.ph',
+      username: 'instructor.bsit',
       password: 'password',
       createdAt: new Date().toISOString(),
       lastUsed: null
     },
     {
-      username: 'chairperson.bsba@brokenshire.edu.ph',
+      username: 'chairperson.bsba',
       password: 'password',
       createdAt: new Date().toISOString(),
       lastUsed: null
     },
     {
-      username: 'instructor.bsba@brokenshire.edu.ph',
+      username: 'instructor.bsba',
       password: 'password',
       createdAt: new Date().toISOString(),
       lastUsed: null
     },
     {
-      username: 'chairperson.bspsy@brokenshire.edu.ph',
+      username: 'chairperson.bspsy',
       password: 'password',
       createdAt: new Date().toISOString(),
       lastUsed: null
     },
     {
-      username: 'dean@brokenshire.edu.ph',
+      username: 'dean',
       password: 'password',
       createdAt: new Date().toISOString(),
       lastUsed: null
     },
     {
-      username: 'instructor.bspsy@brokenshire.edu.ph',
+      username: 'instructor.bspsy',
       password: 'password',
       createdAt: new Date().toISOString(),
       lastUsed: null
