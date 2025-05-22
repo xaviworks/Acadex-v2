@@ -67,7 +67,7 @@
                     autocomplete="current-password"
                     placeholder="Enter your password"
                 />
-                <div class="absolute inset-y-0 right-0 flex items-center mr-5 mt-1">
+                <div class="absolute inset-y-0 right-0 flex items-center pr-3 mt-1">
                     <button
                         type="button"
                         id="togglePassword"
