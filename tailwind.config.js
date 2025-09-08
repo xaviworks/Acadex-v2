@@ -17,7 +17,9 @@ export default {
         },
     },
 
-    darkMode: false,
+    // Use class-based dark mode so theme doesn't follow the OS automatically.
+    // Default stays light unless a `.dark` class is added manually.
+    darkMode: 'class',
 
     plugins: [forms],
 };
